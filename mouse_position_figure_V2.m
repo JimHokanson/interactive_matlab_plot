@@ -1,4 +1,4 @@
-function mouse_position_figure_V2
+function h = mouse_position_figure_V2
 
 %Next steps:
 %-----------
@@ -18,7 +18,17 @@ function mouse_position_figure_V2
 f = figure;
 h = annotation('line',[0 1],[0.5 0.5],'Linewidth',2);
 set(h,'Units','pixels');
-set(f,'WindowButtonMotionFcn',@(src,ev) moveLine(h,f));
+
+set(f,'WindowButtonDownFcn', @(~,~) mouseClicked(h, f));
+set(f,'WindowButtonUpFcn', @(~,~) mouseReleased(h,f));
+%{
+try 
+    set(f,'WindowButtonMotionFcn',@(src,ev) moveLine(src,ev));
+catch
+        set(f,'WindowButtonMotionFcn',@(src,ev) moveLine(h,f));
+
+end
+%}
 end
 
 function moveLine(h,f)
@@ -27,6 +37,23 @@ function moveLine(h,f)
     h.Position(2) = temp(2);
     %disp(h.Position)
 end
+function mouseClicked(h, f)
+disp('clicked')
+set(f,'WindowButtonMotionFcn',@(~,~) moveLine(h,f));
+end
+function mouseReleased(h,f)
+disp('released')
+set(f,'WindowButtonMotionFcn','');
+end
+%{
+      WindowButtonDownFcn: ''
+    WindowButtonMotionFcn: ''
+        WindowButtonUpFcn: ''
+        WindowKeyPressFcn: ''
+      WindowKeyReleaseFcn: ''
+     WindowScrollWheelFcn: ''
+%}
+
 
 % 
 % 
