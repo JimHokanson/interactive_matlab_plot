@@ -14,19 +14,32 @@ classdef interactive_plot < handle
     % axes are...
     
     %{
+            %Old code
+    %%             ax1 = subplot(3,1,1);
+%             ax2 = subplot(3,1,2);
+%             ax3 = subplot(3,1,3);
+%             ax4 = subplot(3,1,4);
+%             plot(ax1,sin(1:8));
+%             plot(ax2,10:-1:1);
+%             plot(ax3, cos(1:9));
+
+            %axes_handles = {ax1, ax2, ax3};
+            
+    
             %Test Code
             %--------------------------
+            %
+            N_PLOTS = 8;
             f = figure;
-            ax1 = subplot(3,1,1);
-            ax2 = subplot(3,1,2);
-            ax3 = subplot(3,1,3);
-            plot(ax1,sin(1:8));
-            plot(ax2,10:-1:1);
-            plot(ax3, cos(1:9));
-            
-            axes_handles = {ax1, ax2, ax3};
-            
-            obj = interactive_plot(f,axes_handles)
+            n_points = 1000;
+            ax_ca = cell(1,N_PLOTS);
+            for i = 1:N_PLOTS
+                ax_ca{i} = subplot(N_PLOTS,1,i);
+                y = linspace(0,i,n_points);
+                plot(round(y))
+            end
+
+            obj = interactive_plot(f,ax_ca)
     %}
     
     properties
@@ -127,7 +140,9 @@ classdef interactive_plot < handle
             %   - we need to understand this to create dragging
             createLine = @(height) annotation('line',[0 1],[height, height],'Linewidth',3);
             
-             obj.lines{1} = createLine(y_high(1));
+            %JAH: Skip creating callbacks on the outer lines for now
+            %- only worry about inner lines
+            obj.lines{1} = createLine(y_high(1));
             % the middle lines are harder to figure out...
             for k = 1:n_axes-1
                 % these two values should be the same, but this will allow
@@ -294,8 +309,14 @@ function moveLine(h,f, obj)
     % lines.... and then if those lines get outside of boundaries, have to
     % start pushing the other lines as well.... this is going to get really
     % complicated.....   
+    
+    
+    %JAH: One of these loops is empty. Rewrite the code to make this more
+    %explicit.
     for m = 1:length(lines_above_to_move)
        L = lines_above_to_move{m};
+       
+       %Don't collapse all of the lines, offset them appropriately
        L.Position(2) = cur_position; 
     end
     
