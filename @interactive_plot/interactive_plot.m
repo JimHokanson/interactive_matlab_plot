@@ -44,8 +44,8 @@ classdef interactive_plot < handle
     
     properties
         fig_handle
-        axes
-        
+        axes_handles
+        mouse_manager
         line_moving_processor
         
         %Added graphical components
@@ -88,9 +88,8 @@ classdef interactive_plot < handle
             %Video card info incorrect
             %- opengl info
             
-            
             obj.fig_handle = fig_handle;
-            obj.axes = axes;
+            obj.axes_handles = axes;
             
             shape = size(obj.fig_handle.Children);
             obj.sp = sl.plot.subplotter.fromFigure(obj.fig_handle, shape);
@@ -99,105 +98,29 @@ classdef interactive_plot < handle
 
             rows = 1:shape(1);
             cols = 1:shape(2);
-            obj.sp.removeVerticalGap(rows, cols, 'gap_size',0);
             
-            n_axes = length(obj.axes);
-            n_lines = n_axes + 1;
+            % need a gap size between the axes of a few pixels.
+            % removeVerticalGap works in normalized units. need to find a
+            % conversion factor. 
             
-            set(fig_handle, 'Units', 'normalized');
             
-            % get all of the y limits
-            y_low = zeros(n_axes,1);
-            y_high = zeros(n_axes,1);
+            % figure out how to ste the gap size in normalized units when
+            % given a desired gap size in pixels
+            set(obj.fig_handle,'Units', 'pixels');
+            height_in_pixels = obj.fig_handle.Position(4);
+            set(obj.fig_handle, 'Units','normalized');
+            height_in_norm = obj.fig_handle.Position(4);
             
-            for k = 1:n_axes
-                cur_ax = obj.axes{k};
-                cur_pos = cur_ax.Position;
-                %position is [x,y, width, length]
-                y_low(k) = cur_pos(2);
-                y_high(k) = y_low(k) + cur_pos(4);
-            end
+            units_per_pixel = height_in_norm/height_in_pixels;
+                        
+            n_pixels = 1; %will have a 1 pixel gap
+            n_units = n_pixels*units_per_pixel;
             
-            %--------------------------------------------------------------
-            %JAH: Move all of this into the line processor
-            %--------------------------------------------------------------
+            obj.sp.removeVerticalGap(rows, cols, 'gap_size',n_units);
+            set(fig_handle, 'Units', 'normalized'); %reset units back to normal
             
-            % IMPORTANT: assume that we have the figures given in order
-            % from top of the figure down. need to find a way to ensure
-            % that this is happening in the future!
-            
-            % find the positions of all of the lines
-            % start at the top of the figure
-            
-            % the first line is just the top position of the first plot
-            obj.lines = cell(1,n_axes+1);
-
-            %JAH: For local functions that are one liners it is better to create
-            %an anonymous function
-            %   - I made this function from the function that was below
-            %
-            %JAH: What are the units on Linewidth? Is this pixels?
-            %   - we need to understand this to create dragging
-            createLine = @(height) annotation('line',[0 1],[height, height],'Linewidth',3);
-            
-            %JAH: Skip creating callbacks on the outer lines for now
-            %- only worry about inner lines
-            obj.lines{1} = createLine(y_high(1));
-            % the middle lines are harder to figure out...
-            for k = 1:n_axes-1
-                % these two values should be the same, but this will allow
-                % for support of the case where they aren't... I think...
-                % this may not be the best way to do this...
-               temp = (y_low(k) + y_high(k+1))/2;
-               obj.lines{k+1} =  createLine(temp); 
-            end
-            
-            % the last line is just the low position of the last plot
-            obj.lines{end} = createLine(y_low(end));
-            
-            %JAH: TODO: Pass in relevant info
-            %- setup appropriate callbacks in the processor
-            %
-            %
-            %obj.line_moving_processor = interactive_plot.line_moving_processor();
-            
-            for k = 1:(n_lines)
-                %JAH: I prefer to use h__ to identify local functions
-                %Pass in the line_id to the callback
-                 set(obj.lines{k}, 'ButtonDownFcn', @(~,~) h__lineClicked(obj.lines{k},obj.fig_handle, obj));
-            end
-            set(obj.fig_handle,'WindowButtonUpFcn', @(~,~) h__mouseReleased(obj, obj.fig_handle));
-        end
-        function resizePlots(obj)
-            % get the positions of all of the lines
- 
-            % TODO: don't adjust for the plots whose lines have not changed
-            %           will this cause a big speed error when plotting
-            %           lots of data?
-            obj.trackLinePositions();
-            
-            for k = 1:length(obj.axes)
-               top = obj.positions(k);
-               bottom = obj.positions(k+1);
-               height = top - bottom;
-
-               ax = obj.axes{k};
-               x = ax.Position(1);
-               %y = ax.Position(2);
-               w = ax.Position(3);
-               %h = ax.Position(4);
-                set(ax, 'Position', [x, bottom, w, height]);
-            end
-        end
-        function trackLinePositions(obj)
-            %
-            n_lines = length(obj.lines);
-            
-            obj.positions = zeros(1,n_lines);
-            for k = 1:n_lines
-                L = obj.lines{k};
-                obj.positions(k) = L.Position(2);
-            end
+            obj.line_moving_processor = interactive_plot.line_moving_processor(obj);
+            obj.mouse_manager = interactive_plot.mouse_motion_callback_manager(obj);
         end
     end
 end
