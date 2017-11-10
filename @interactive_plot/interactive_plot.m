@@ -47,12 +47,10 @@ classdef interactive_plot < handle
         axes_handles
         mouse_manager
         line_moving_processor
+        scroll_bar
         
         %Added graphical components
         %--------------------------
-        lines 
-        positions
-        
         %JAH: Eventually we will want to port this to being local
         %- All modules should be able to stand on their own for
         %distribution
@@ -62,10 +60,24 @@ classdef interactive_plot < handle
         
         %JAH: I like to initialize semi-constants in the property
         %definition
-        TOP_BOUNDARY = 0.9
-        BOTTOM_BOUNDARY = 0.1
+
+        THICKNESS = 0.002
     end
-    
+    methods (Static)
+        function obj = runTest()
+        N_PLOTS = 8;
+            f = figure;
+            n_points = 1000;
+            ax_ca = cell(1,N_PLOTS);
+            for i = 1:N_PLOTS
+                ax_ca{i} = subplot(N_PLOTS,1,i);
+                y = linspace(0,i,n_points);
+                plot(round(y))
+            end
+
+            obj = interactive_plot(f,ax_ca);
+        end
+    end
     methods
         function obj = interactive_plot(fig_handle, axes)
             %
@@ -106,37 +118,18 @@ classdef interactive_plot < handle
             
             % figure out how to ste the gap size in normalized units when
             % given a desired gap size in pixels
-            set(obj.fig_handle,'Units', 'pixels');
-            height_in_pixels = obj.fig_handle.Position(4);
             set(obj.fig_handle, 'Units','normalized');
-            height_in_norm = obj.fig_handle.Position(4);
-            
-            units_per_pixel = height_in_norm/height_in_pixels;
-                        
-            n_pixels = 1; %will have a 1 pixel gap
-            n_units = n_pixels*units_per_pixel;
-            
-            obj.sp.removeVerticalGap(rows, cols, 'gap_size',n_units);
+
+            obj.sp.removeVerticalGap(rows, cols, 'gap_size',obj.THICKNESS);
             set(fig_handle, 'Units', 'normalized'); %reset units back to normal
             
             obj.line_moving_processor = interactive_plot.line_moving_processor(obj);
             obj.mouse_manager = interactive_plot.mouse_motion_callback_manager(obj);
+            obj.scroll_bar = interactive_plot.scroll_bar(obj);
         end
     end
 end
 
-% function h = createLine(hieght)
-% h = annotation('line',[0 1],[hieght, hieght],'Linewidth',2);
-% end
-function h__lineClicked(h,f,obj)
-    %JAH: Instantiate line_moving_processor and do the logic in there
-    %   - The interactive plot should handle interactive plotting, not just
-    %moving lines!
-    %
-    %JAH: We might want other mouse movement functionality - i.e. figure
-    %resizing. Make calls to something that manages these states.
-    set(f,'WindowButtonMotionFcn',@(~,~) moveLine(h,f,obj));
-end
 
 function moveLine(h,f, obj)
     %
@@ -252,11 +245,6 @@ function moveLine(h,f, obj)
     
     
 end
-function h__mouseReleased(obj, f)
-set(f,'WindowButtonMotionFcn','');
-obj.resizePlots();
-end
-
 
 
 
