@@ -128,7 +128,6 @@ elseif cur_mouse_y_pos < cur_line_y_pos
     end
 else % case where the new position and the old position are identical (rare but happens)
     %JAH: Fixed bug, this would collapse all lines to a single point
-    obj.clump_ids
     return;
     %new_y_positions = cur_mouse_y_pos;
 end
