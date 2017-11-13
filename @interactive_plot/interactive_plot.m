@@ -65,6 +65,9 @@ classdef interactive_plot < handle
     end
     methods (Static)
         function obj = runTest()
+            %
+            %   interactive_plot.runTest()
+            
         N_PLOTS = 8;
             f = figure;
             n_points = 1000;

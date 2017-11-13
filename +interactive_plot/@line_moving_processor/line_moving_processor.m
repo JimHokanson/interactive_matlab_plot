@@ -74,6 +74,8 @@ classdef line_moving_processor < handle
                 y_high(k) = y_low(k) + cur_pos(4);
             end
             
+            %JAH: It would be better to push all line creation into the
+            %method with submethods for inner and outer
             %[x,y,w,h]
             obj.line_handles{1} = obj.createLine(y_high(1) + obj.THICKNESS/2,1);
             
@@ -111,21 +113,34 @@ classdef line_moving_processor < handle
             end
         end
         function resizePlots(obj)
+            %
+            %   resize is based on updated y_positions.
+
             for k = 1:length(obj.axes_handles)
                 top = obj.y_positions(k) - obj.THICKNESS/2;
                 bottom = obj.y_positions(k+1) + obj.THICKNESS/2;
                 height = top - bottom;
                 
+                %JAH: ???? - not sure what this means?
                 %TODO: build in logic so there is no overlap with the
                 %lines!!!!!!!
                 
                 ax = obj.axes_handles{k};
-                x = ax.Position(1); %bottom left corner of plot
-                w = ax.Position(3); %width of the plot from x (left to right)
-                set(ax, 'Position', [x, bottom, w, height]);
+   
+                %Update bottom and height simultaneously
+                p = ax.Position;
+                p(2) = bottom;
+                p(4) = height;
+                ax.Position = p;
             end
         end
         function cb_innerLineClicked(obj, id)
+            %
+            %   Line clicked so:
+            %   - initialize mouse-movement callback
+            %   - initialize grouping
+            %   
+            
             % When you first click a line, the clump is only that line
             obj.clump_ids = id;
             obj.parent.mouse_manager.initializeLineMoving(id);
@@ -140,7 +155,11 @@ classdef line_moving_processor < handle
     end
     methods (Hidden)
         function h = createLine(obj, y_pos, id)
-            h = annotation('rectangle', [0, y_pos - obj.THICKNESS/2, 1, obj.THICKNESS], 'FaceColor', 'k');
+            n_line_handles = length(obj.line_handles);
+            colors = sl.plot.color.getEvenlySpacedColors(n_line_handles);
+            h = annotation(...
+                'rectangle', [0, y_pos - obj.THICKNESS/2, 1, obj.THICKNESS],...
+                'FaceColor', colors(id,:));
             obj.y_positions(id) = y_pos;
         end
     end
