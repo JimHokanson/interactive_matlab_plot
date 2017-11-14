@@ -29,33 +29,44 @@ classdef scroll_bar <handle
     
     methods
         function obj = scroll_bar(parent)
-        obj.parent = parent;
-        obj.fig_handle = parent.fig_handle;
-        
-        set(obj.fig_handle, 'Units', 'normalized');
-        temp1 = obj.parent.axes_handles{1};
-        temp2 = temp1.Position;
-        obj.left_limit = temp2(1);
-        obj.right_limit = temp2(1) + temp2(3);
-        width = obj.right_limit - obj.left_limit;
-        obj.background_bar = annotation('rectangle', [obj.left_limit, obj.base_y, width, obj.bar_height], 'FaceColor', 'w');
-        
-        
-        data_objs =  get(temp1, 'Children');
-        time_vector = data_objs.XData;
-        obj.total_time_range = max(time_vector) - min(time_vector);
-        
-        %create the slider
-        obj.slider = annotation('rectangle', [obj.left_limit, obj.base_y, width, obj.bar_height], 'FaceColor', 'k');
-        obj.slider_left_x = obj.left_limit;
-        obj.slider_right_x = obj.right_limit;
-        
-        % get the time range that we have zoomed to (currently just base it
-        % on the first plot -- will need to figure out how to update all
-        % plots zooming together
-        set(obj.slider, 'ButtonDownFcn', @(~,~) obj.parent.mouse_manager.initializeScrolling);
-        ax = obj.parent.axes_handles{1};
-        %addlistener(ax, 'XLim', 'PostSet', @(~,~) obj.checkTimeRange);
+            obj.parent = parent;
+            obj.fig_handle = parent.fig_handle;
+
+            set(obj.fig_handle, 'Units', 'normalized');
+            temp1 = obj.parent.axes_handles{1};
+            temp2 = temp1.Position;
+            obj.left_limit = temp2(1);
+            obj.right_limit = temp2(1) + temp2(3);
+            width = obj.right_limit - obj.left_limit;
+            obj.background_bar = annotation(...
+                'rectangle', [obj.left_limit, obj.base_y, width, obj.bar_height], ...
+                'FaceColor', 'w');
+
+
+            %JAH: Base this on the axes, not on the data
+            data_objs =  get(temp1, 'Children');
+            time_vector = data_objs.XData;
+            obj.total_time_range = max(time_vector) - min(time_vector);
+
+            %create the slider
+            obj.slider = annotation(...
+                'rectangle', [obj.left_limit, obj.base_y, width, obj.bar_height], ...
+                'FaceColor', 'k');
+            obj.slider_left_x = obj.left_limit;
+            obj.slider_right_x = obj.right_limit;
+
+            %JAH: Add callback for on click on rectangle to engage mouse
+            %movement
+            
+            %JAH: Add callback on xlim change of an axes to resize the rectangle
+            
+            
+            % get the time range that we have zoomed to (currently just base it
+            % on the first plot -- will need to figure out how to update all
+            % plots zooming together
+            set(obj.slider, 'ButtonDownFcn', @(~,~) obj.parent.mouse_manager.initializeScrolling);
+            ax = obj.parent.axes_handles{1};
+            %addlistener(ax, 'XLim', 'PostSet', @(~,~) obj.checkTimeRange);
         end
         function checkTimeRange(obj)
            % just check axes 1 for proof of concept...
