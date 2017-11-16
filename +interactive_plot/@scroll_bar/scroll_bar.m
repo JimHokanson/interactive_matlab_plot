@@ -63,7 +63,7 @@ classdef scroll_bar <handle
             
             % get the time range that we have zoomed to (currently just base it
             % on the first plot -- will need to figure out how to update all
-            % plots zooming together
+            % plots zooming togetherz
             set(obj.slider, 'ButtonDownFcn', @(~,~) obj.parent.mouse_manager.initializeScrolling);
             ax = obj.parent.axes_handles{1};
             %addlistener(ax, 'XLim', 'PostSet', @(~,~) obj.checkTimeRange);
