@@ -16,7 +16,7 @@ classdef axis_resizer
         fig_h
         
         %For axis resizing
-        ax
+        axes_handles
         start_y_position %figure based, normalized 
         
     end
@@ -24,6 +24,7 @@ classdef axis_resizer
     methods
         function obj = axis_resizer(parent)
              obj.parent = parent;
+             obj.axes_handles = parent.axes_handles;
              
 %             obj.fig_h = fig_handle;
 %             obj.ax = axes;
@@ -31,9 +32,15 @@ classdef axis_resizer
             
             %TODO: Register mouse moving to this class
         end
-        function registerResizeCall(obj)
+        function registerResizeCall(obj,y_position)
             %- called from defaul motion callback
             %TODO: Log position
+            %disp(y_position);
+            
+            obj.parent.mouse_manager.initializeAxisResize();
+        end
+        function processResize(obj)
+            
         end
     end
     

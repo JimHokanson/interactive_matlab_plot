@@ -111,10 +111,11 @@ classdef interactive_plot < handle
             %- this may be a limitation of the software
             set(fig_handle, 'Units', 'normalized'); 
             
-            obj.mouse_manager = interactive_plot.mouse_motion_callback_manager(obj);
             obj.line_moving_processor = interactive_plot.line_moving_processor(obj);
             obj.scroll_bar = interactive_plot.scroll_bar(obj);
             obj.axis_resizer = interactive_plot.axis_resizer(obj);
+         	obj.mouse_manager = interactive_plot.mouse_motion_callback_manager(obj);
+
         end
     end
 end
