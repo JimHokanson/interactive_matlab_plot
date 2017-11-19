@@ -44,7 +44,7 @@ classdef scroll_bar <handle
         function obj = scroll_bar(parent)
             obj.parent = parent;
             obj.fig_handle = parent.fig_handle;
-
+            
             set(obj.fig_handle, 'Units', 'normalized');
             temp1 = obj.parent.axes_handles{1};
             temp2 = temp1.Position;
@@ -66,50 +66,58 @@ classdef scroll_bar <handle
             obj.right_button = annotation('textbox',...
                 [x2, y, L, L], 'String','>', 'VerticalAlignment',...
                 'middle', 'HorizontalAlignment', 'center');%, 'FaceColor', 'k');
-
-
+            
+            
             %JAH: Base this on the axes, not on the data
             % -- need to figure this out based on the axes (or all of the
             % axes??)
             data_objs =  get(temp1, 'Children');
             time_vector = data_objs.XData;
             obj.total_time_range = max(time_vector) - min(time_vector);
-
+            
             %create the slider
             obj.slider = annotation(...
                 'rectangle', [obj.left_limit, obj.base_y, width, obj.bar_height], ...
                 'FaceColor', 'k');
             obj.slider_left_x = obj.left_limit;
             obj.slider_right_x = obj.right_limit;
-
-           
+            
+            
             %JAH: Add callback on xlim change of an axes to resize the rectangle
             ax = obj.parent.axes_handles{1};
             addlistener(ax, 'XLim', 'PostSet', @(~,~) obj.checkTimeRange);
-
+            
             %  Add callback for on click on rectangle to engage mouse movement
             set(obj.slider, 'ButtonDownFcn', @(~,~) obj.parent.mouse_manager.initializeScrolling);
         end
         function checkTimeRange(obj)
-           % checks the limits of the axis of the first plot and sets the
-           % scroll bar based on the limits relative to the total time
-           % range in the data
-           
-           %convert from units of space to proportion of time
-           obj.width_per_time = (obj.right_limit - obj.left_limit)/obj.total_time_range;
-           
-           % just check axes 1 for proof of concept...
-           ax = obj.parent.axes_handles{1};
-           x_min = ax.XLim(1);
-           x_max = ax.XLim(2);
-           
-           obj.slider_left_x = obj.left_limit + x_min*obj.width_per_time;
-           obj.slider_right_x = obj.left_limit + x_max*obj.width_per_time;
-           obj.width = obj.slider_right_x - obj.slider_left_x;
-           obj.time_range_in_view = ax.XLim;
-           
-           % put the 
-           set(obj.slider, 'Position', [obj.slider_left_x, obj.base_y, obj.width, obj.bar_height]);
+            try
+                % checks the limits of the axis of the first plot and sets the
+                % scroll bar based on the limits relative to the total time
+                % range in the data
+                
+                %convert from units of space to proportion of time
+                obj.width_per_time = (obj.right_limit - obj.left_limit)/obj.total_time_range;
+                
+                % just check axes 1 for proof of concept...
+                ax = obj.parent.axes_handles{1};
+                x_min = ax.XLim(1);
+                x_max = ax.XLim(2);
+                
+                obj.slider_left_x = obj.left_limit + x_min*obj.width_per_time;
+                obj.slider_right_x = obj.left_limit + x_max*obj.width_per_time;
+                obj.width = obj.slider_right_x - obj.slider_left_x;
+                obj.time_range_in_view = ax.XLim;
+                
+                % put the
+                set(obj.slider, 'Position', [obj.slider_left_x, obj.base_y, obj.width, obj.bar_height]);
+            catch ME
+                %JAH: This is temporary until Greg fixes this code
+                %   - most likely we need to verify handles are valid or
+                %   destory the listener earlier than we currently are
+                %   
+                fprintf(2,'Caught error on on time range change\n')
+            end
         end
         function scroll(obj)
             %obj.prev_mouse_x has been set when the mouse is first clicked.
