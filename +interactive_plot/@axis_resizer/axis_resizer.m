@@ -1,4 +1,4 @@
-classdef axis_resizer
+classdef axis_resizer < handle
     %
     %   Class:
     %   interactive_plot.axis_resizer
@@ -17,14 +17,24 @@ classdef axis_resizer
         
         %For axis resizing
         axes_handles
-        start_y_position %figure based, normalized 
+        start_y_click_position %figure based, normalized 
         clicked_ax
+        
+        
+        %TODO: Move to another class for pan
+        top_y_start
+        bottom_y_start
+        ylim_start
+        y_range
+        m
+        b
     end
     
     methods
         function obj = axis_resizer(parent)
              obj.parent = parent;
              obj.axes_handles = parent.axes_handles;
+             obj.fig_h = parent.fig_handle;
              
 %             obj.fig_h = fig_handle;
 %             obj.ax = axes;
@@ -41,7 +51,7 @@ classdef axis_resizer
             %       2 - down
             %       3 - pan
             
-            obj.start_y_position = y_position;
+            obj.start_y_click_position = y_position;
             
             %TODO: This could be faster ...
             ax = obj.axes_handles;
@@ -61,11 +71,39 @@ classdef axis_resizer
             elseif type == 2
                 obj.parent.mouse_manager.initializeDownScale();
             else
+                obj.top_y_start = y_top;
+                obj.bottom_y_start = y_bottom;
+                ylim = get(cur_ax,'ylim');
+                obj.y_range = ylim(2)-ylim(1);
+                obj.ylim_start = ylim;
+                
+                %how much mouse movement to ylim movement?
+                %y = m*x + b
+                %ylim(2) = m*y_top + b
+                %ylim(1) = m*y_bottom + b
+                
+                %As we move the mouse, we need to shift the 
+                %current axes by a given amount ...
+                
+                obj.m = obj.y_range/(y_top - y_bottom);
+                %obj.b = ylim(2) - obj.m*y_top;
+                
+                
                 obj.parent.mouse_manager.initializeAxisPan();
             end
         end
         function processPan(obj)
+            cur_mouse_coords = get(obj.fig_h, 'CurrentPoint');
+            y = cur_mouse_coords(2);
+            %x = cur_mouse_coords(1);
             
+            y_delta = y - obj.start_y_click_position
+            %ylim_new = zeros(1,2);
+            %TODO: Just hold onto original ylim
+            %ylim_new = obj.bottom_y_start - obj.m*y_delta;
+            
+            ylim_new = obj.ylim_start - obj.m*y_delta;
+            set(obj.clicked_ax,'ylim',ylim_new);
         end
         function processUpScale(obj)
             
