@@ -18,7 +18,7 @@ classdef axis_resizer
         %For axis resizing
         axes_handles
         start_y_position %figure based, normalized 
-        
+        clicked_ax
     end
     
     methods
@@ -32,14 +32,45 @@ classdef axis_resizer
             
             %TODO: Register mouse moving to this class
         end
-        function registerResizeCall(obj,y_position)
-            %- called from defaul motion callback
-            %TODO: Log position
-            %disp(y_position);
+        function registerResizeCall(obj,y_position,type)
+            %
+            %   Inputs
+            %   ------
+            %   type :
+            %       1 - up
+            %       2 - down
+            %       3 - pan
             
-            obj.parent.mouse_manager.initializeAxisResize();
+            obj.start_y_position = y_position;
+            
+            %TODO: This could be faster ...
+            ax = obj.axes_handles;
+            for i = 1:length(ax)
+                cur_ax = ax{i};
+                p = get(cur_ax,'Position');
+                y_bottom = p(2);
+                y_top = y_bottom + p(4);
+                if y_position > y_bottom && y_position < y_top
+                    obj.clicked_ax = cur_ax;
+                    break;
+                end
+            end
+            
+            if type == 1
+                obj.parent.mouse_manager.initializeUpScale();
+            elseif type == 2
+                obj.parent.mouse_manager.initializeDownScale();
+            else
+                obj.parent.mouse_manager.initializeAxisPan();
+            end
         end
-        function processResize(obj)
+        function processPan(obj)
+            
+        end
+        function processUpScale(obj)
+            
+        end
+     	function processDownScale(obj)
             
         end
     end
