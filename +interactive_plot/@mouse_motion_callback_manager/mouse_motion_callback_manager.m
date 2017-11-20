@@ -5,7 +5,8 @@ classdef mouse_motion_callback_manager < handle
     %
     %   Processors should call this function.
     %
-    %
+    %   JAH: this class got named a bit too specifically. Ideally this
+    %   would be mouse_callback_manager
     
     properties
         fig_handle
@@ -46,6 +47,8 @@ classdef mouse_motion_callback_manager < handle
             
             
         end
+        %Line moving
+        %------------------------------------------------------------------
         function initializeLineMoving(obj, id)
             set(obj.fig_handle, 'WindowButtonMotionFcn',@(~,~) obj.parent.line_moving_processor.moveLine(id));
             set(obj.fig_handle, 'WindowButtonUpFcn',  @(~,~) obj.releaseLineMoving());
@@ -55,6 +58,8 @@ classdef mouse_motion_callback_manager < handle
             obj.parent.line_moving_processor.resizePlots();
             obj.initDefaultState();
         end
+        %Axis resizing
+        %------------------------------------------------------------------
         function initializeUpScale(obj)
             set(obj.fig_handle, 'WindowButtonMotionFcn',...
                 @(~,~) obj.axis_resizer.processUpScale());
@@ -77,6 +82,26 @@ classdef mouse_motion_callback_manager < handle
         function releaseAxisResize(obj)
             obj.initDefaultState();
         end
+
+
+        %Scrolling
+        %------------------------------------------------------------------
+        function initializeScrolling(obj)
+            % temporary hack. this is not efficient
+            %--
+            cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
+            cur_mouse_x = cur_mouse_coords(1);
+            obj.parent.scroll_bar.prev_mouse_x = cur_mouse_x;
+            %--
+            set(obj.fig_handle, 'WindowButtonMotionFcn', @(~,~) obj.parent.scroll_bar.scroll());
+            set(obj.fig_handle, 'WindowButtonUpFcn', @(~,~) obj.releaseScrollBar());
+        end
+        function releaseScrollBar(obj)
+            set(obj.fig_handle, 'WindowButtonMotionFcn', '');
+            obj.parent.scroll_bar.updateAxes();
+        end
+        %Defaults
+        %------------------------------------------------------------------
         function initDefaultState(obj)
             %TODO: Anything we want here ...
             set(obj.fig_handle,'WindowButtonMotionFcn',@(~,~) obj.defaultMouseMovingCallback());
@@ -102,20 +127,6 @@ classdef mouse_motion_callback_manager < handle
                     obj.axis_resizer.registerResizeCall(y,3);
                 end
             end
-        end
-        function initializeScrolling(obj)
-            % temporary hack. this is not efficient
-            %--
-            cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
-            cur_mouse_x = cur_mouse_coords(1);
-            obj.parent.scroll_bar.prev_mouse_x = cur_mouse_x;
-            %--
-            set(obj.fig_handle, 'WindowButtonMotionFcn', @(~,~) obj.parent.scroll_bar.scroll());
-            set(obj.fig_handle, 'WindowButtonUpFcn', @(~,~) obj.releaseScrollBar());
-        end
-        function releaseScrollBar(obj)
-            set(obj.fig_handle, 'WindowButtonMotionFcn', '');
-            obj.parent.scroll_bar.updateAxes();
         end
         function defaultMouseMovingCallback(obj)
             %
@@ -172,25 +183,6 @@ classdef mouse_motion_callback_manager < handle
             if ptr ~= obj.cur_ptr
                 h__setPtr(obj,ptr)
             end
-            
-            
-            %             if x > obj.x1 && ...
-            %                     obj.x2 < x && ...
-            %                     y > obj.y_min && ...
-            %                     y < obj.y_max
-            %             end
-            %
-            %
-            %             %Removed x_min check, might want this back to have buttons
-            %             %on far left
-            %             %
-            %             %far left buttons - zoom in, zoom out, autoscale
-            %             if x < obj.x_max && ...
-            %                     y > obj.y_min && ...
-            %                     y < obj.y_max
-            %
-            %                 obj.axis_resizer.registerResizeCall(y);
-            %             end
         end
     end
 end

@@ -45,16 +45,31 @@ classdef scroll_bar <handle
             obj.parent = parent;
             obj.fig_handle = parent.fig_handle;
             
+            %JAH: This is a big change to make this deep in the code
+            %  - In general we'll assume this is true at the most top level
+            %   thus this code is redundant at best
             set(obj.fig_handle, 'Units', 'normalized');
-            temp1 = obj.parent.axes_handles{1};
-            temp2 = temp1.Position;
-            obj.left_limit = temp2(1);
-            obj.right_limit = temp2(1) + temp2(3);
+            
+            
+            %JAH: Split with comments - I've added them ...
+            
+            %Create scrollbar
+            %----------------------------------------
+            %- limits
+            axes_handles = obj.parent.axes_handles;
+            temp1 = axes_handles{1};
+            p = temp1.Position;
+            obj.left_limit = p(1);
+            obj.right_limit = p(1) + p(3);
+            
+            %Background - doesn't move
             width = obj.right_limit - obj.left_limit;
             obj.background_bar = annotation(...
                 'rectangle', [obj.left_limit, obj.base_y, width, obj.bar_height], ...
                 'FaceColor', 'w');
             
+            %Buttons
+            %-----------------------------------------
             L = obj.bar_height;
             x1 = obj.left_limit - L;
             x2 = obj.right_limit;
@@ -71,11 +86,26 @@ classdef scroll_bar <handle
             %JAH: Base this on the axes, not on the data
             % -- need to figure this out based on the axes (or all of the
             % axes??)
-            data_objs =  get(temp1, 'Children');
-            time_vector = data_objs.XData;
-            obj.total_time_range = max(time_vector) - min(time_vector);
+            %
+            %JAH: As part of this code base we will require all axes to be
+            %   x-linked, so any axex is fine
+            
+            %JAH: temp1 is way too far away for a name like this ...
+            %- temp should only last for a couple lines
+            
+            %JAH: commented out this code below ...
+            
+%             data_objs =  get(temp1, 'Children');
+%             time_vector = data_objs.XData;
+%             obj.total_time_range = max(time_vector) - min(time_vector);
+            
+            ax1 = axes_handles{1};
+            xlim = get(ax1,'xlim');
+            obj.total_time_range = xlim(2) - xlim(1);
+            
             
             %create the slider
+            %---------------------------------------
             obj.slider = annotation(...
                 'rectangle', [obj.left_limit, obj.base_y, width, obj.bar_height], ...
                 'FaceColor', 'k');
@@ -83,19 +113,30 @@ classdef scroll_bar <handle
             obj.slider_right_x = obj.right_limit;
             
             
-            %JAH: Add callback on xlim change of an axes to resize the rectangle
             ax = obj.parent.axes_handles{1};
+            
+            %JAH: I like to have the callbacks named a bit more accurately
+            %xLimChanged???
             addlistener(ax, 'XLim', 'PostSet', @(~,~) obj.checkTimeRange);
             
             %  Add callback for on click on rectangle to engage mouse movement
             set(obj.slider, 'ButtonDownFcn', @(~,~) obj.parent.mouse_manager.initializeScrolling);
         end
         function checkTimeRange(obj)
+            
+            %JAH: Ideally add a comment at the top to specify what this 
+            %function is doing
+            
+            %JAH: Added try/catch due to error puking on closing figure
+            
             try
                 % checks the limits of the axis of the first plot and sets the
                 % scroll bar based on the limits relative to the total time
                 % range in the data
                 
+                %JAH: This is constant, why calculate it multiple times in
+                %a callback????
+                %
                 %convert from units of space to proportion of time
                 obj.width_per_time = (obj.right_limit - obj.left_limit)/obj.total_time_range;
                 
@@ -120,6 +161,13 @@ classdef scroll_bar <handle
             end
         end
         function scroll(obj)
+            %
+            %   JAH: This scroll implementation currently doesn't change
+            %   the axes limits as dragged. I had thought it would. This
+            %   should be exposed in an options class with the default
+            %   behavior being to enable movement of the axes with the
+            %   scroll bar.
+            
             %obj.prev_mouse_x has been set when the mouse is first clicked.
             cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
             cur_mouse_x = cur_mouse_coords(1);
