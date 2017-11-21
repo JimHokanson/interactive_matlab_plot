@@ -5,8 +5,16 @@ classdef mouse_motion_callback_manager < handle
     %
     %   Processors should call this function.
     %
+    %   The idea is to place any mouse related logic that interacts with
+    %   the figure here. Anything that can be tied specifically into a
+    %   component should go there instead.
+    %
     %   JAH: this class got named a bit too specifically. Ideally this
     %   would be mouse_callback_manager
+    %
+    %   We might also want 2+ classes
+    %   - mouse movement
+    %   - mouse clicking (specifically on the figure)
     
     properties
         fig_handle
@@ -60,15 +68,15 @@ classdef mouse_motion_callback_manager < handle
         end
         %Axis resizing
         %------------------------------------------------------------------
-        function initializeUpScale(obj)
+        function initializeScaleTopFixed(obj)
             set(obj.fig_handle, 'WindowButtonMotionFcn',...
-                @(~,~) obj.axis_resizer.processUpScale());
+                @(~,~) obj.axis_resizer.processScaleTopFixed());
             set(obj.fig_handle, 'WindowButtonUpFcn',  ...
                 @(~,~) obj.releaseAxisResize());
         end
-    	function initializeDownScale(obj)
+    	function initializeScaleBottomFixed(obj)
             set(obj.fig_handle, 'WindowButtonMotionFcn',...
-                @(~,~) obj.axis_resizer.processDownScale());
+                @(~,~) obj.axis_resizer.processScaleBottomFixed());
             set(obj.fig_handle, 'WindowButtonUpFcn',  ...
                 @(~,~) obj.releaseAxisResize());
         end

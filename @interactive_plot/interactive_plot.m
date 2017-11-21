@@ -48,6 +48,7 @@ classdef interactive_plot < handle
                 ax_ca{i} = subplot(N_PLOTS,1,i);
                 y = linspace(0,i,n_points);
                 plot(round(y))
+                set(gca,'ylim',[-4 4]);
             end
             
             obj = interactive_plot(f,ax_ca);
