@@ -25,7 +25,7 @@ classdef interactive_plot < handle
         axis_resizer
         scroll_bar
         fig_size_change
-        
+        options
         %Added graphical components
         %--------------------------
         %JAH: Eventually we will want to port this to being local
@@ -66,12 +66,12 @@ classdef interactive_plot < handle
                 end
             else
                 n = 50000;
-               	t = linspace(0,100,n);
+                t = linspace(0,100,n);
                 y = [(sin(0.10 * t) + 0.05 * randn(1, n))', ...
                     (cos(0.43 * t) + 0.001 * t .* randn(1, n))', ...
                     round(mod(t/10, 5))'];
                 y(t > 40 & t < 50,:) = 0;                      % Drop a section of data.
-                y(randi(numel(y), 1, 20)) = randn(1, 20);       % Emulate spikes. 
+                y(randi(numel(y), 1, 20)) = randn(1, 20);       % Emulate spikes.
                 ax_ca = cell(1,3);
                 for i = 1:3
                     ax_ca{i} = subplot(3,1,i);
@@ -95,8 +95,12 @@ classdef interactive_plot < handle
             %
             %   Optional Inputs
             %   ---------------
-            %   Not yet supported
-            %
+            %       - 'update_on_drag': (default) true or false. If true,
+            %          plots will be updated as scrolling happens
+            %       - 'scroll': if true (default), the scroll bar is
+            %          included
+            %       - 'lines': if true (default), the draggable lines are
+            %          included
             %   Improvements
             %   -------------
             %   1) Support multiple columns
@@ -105,9 +109,7 @@ classdef interactive_plot < handle
             %   4) Manual yticks with support for changing via buttons &
             %   mouse
             
-            in.scroll = true;
-            in.lines = true;
-            in = sl.in.processVarargin(in,varargin);
+            obj.options = interactive_plot.options();
             
             %JAH: Had remote desktop active
             %TODO: Verify proper renderer
@@ -118,9 +120,8 @@ classdef interactive_plot < handle
             obj.axes_handles = axes;
             
             shape = size(obj.fig_handle.Children);
-            obj.sp = sl.plot.subplotter.fromFigure(obj.fig_handle, shape);
             
-            obj.sp.linkXAxes();
+            obj.linkXAxes();
             
             rows = 1:shape(1);
             cols = 1:shape(2);
@@ -144,13 +145,70 @@ classdef interactive_plot < handle
             %
             %- Note, we may not be able to do non-normalized units
             %- this may be a limitation of the software
-            set(fig_handle, 'Units', 'normalized'); 
+            set(fig_handle, 'Units', 'normalized');
             
-            obj.line_moving_processor = interactive_plot.line_moving_processor(obj);
-            obj.scroll_bar = interactive_plot.scroll_bar(obj);
+            if obj.options.lines
+                obj.line_moving_processor = interactive_plot.line_moving_processor(obj);
+            end
+            
+            if obj.options.scroll
+                obj.scroll_bar = interactive_plot.scroll_bar(obj);
+            end
+            
             obj.axis_resizer = interactive_plot.axis_resizer(obj);
-         	obj.mouse_manager = interactive_plot.mouse_motion_callback_manager(obj);
+            obj.mouse_manager = interactive_plot.mouse_motion_callback_manager(obj);
             obj.fig_size_change = interactive_plot.fig_size_change(obj);
         end
+        function linkXAxes(obj,varargin)
+            % obj.linkXAxes
+            % Links all of the x-axes
+            % Optional Inputs:
+            % ----------------
+            %   'by_column': this is for later work when we allow multiple
+            %   columns. Don't do this for now
+            
+            in.by_column = false;
+            in = sl.in.processVarargin(in,varargin);
+                
+            h = obj.axes_handles;
+            if in.by_column
+                for i = 1:obj.n_columns
+                    column_h = [h{:,i}];
+                    linkaxes(column_h,'x');
+                end
+            else
+                all_handles = [h{:}];
+                linkaxes(all_handles,'x');
+            end
+        end
+        function removeVerticalGap(obj,rows,columns,varargin)
+             %x Removes vertical gaps from subplots
+            %
+            %    removeVerticalGap(obj,rows,columns,varargin)
+            %
+            %    Inputs:
+            %    -------
+            %    rows : array
+            %        Must be more than 1, should be continuous, starts at
+            %        the top
+            %        The value -1 indicates that all rows should be
+            %        compressed.
+            %    columns :
+            %        Which columns are affected
+            %
+            %    Optional Inputs:
+            %    ----------------
+            %    gap_size: default 0.02
+            %        The normalized figure space that should be placed
+            %        between figures.
+            %    remove_x_labels : logical (default true)
+            %
+            %
+            if nargin == 1
+                rows = 1:obj.n_rows;
+                columns = 1:obj.n_columns;
+            end
+        end
+         
     end
 end

@@ -19,6 +19,8 @@ classdef scroll_bar <handle
         
         left_button
         right_button
+        zoom_in_button
+        zoom_out_button
         background_bar
         slider
         
@@ -26,7 +28,8 @@ classdef scroll_bar <handle
         left_limit % the edges of the background bar
         right_limit
         bar_height = 0.04;
-        width
+        bar_width
+        button_width = 0.02;
         
         total_time_range
         time_range_in_view
@@ -51,19 +54,7 @@ classdef scroll_bar <handle
             obj.parent = parent;
             obj.fig_handle = parent.fig_handle;
             
-            %JAH: This is a big change to make this deep in the code
-            %  - In general we'll assume this is true at the most top level
-            %   thus this code is redundant at best
-            %   - this should be removed
-            %   - I've started a section on code assumptions in the parent
-            %   at the top of the class
-            set(obj.fig_handle, 'Units', 'normalized');
-            
-            
-            %JAH: In general try and split secontions with comments 
-            %   - this provides much easier visualization of what is going
-            %   on where
-            % - I've added them ...
+            % assume that at this point all figure units are normalized
             
             %Create scrollbar
             %----------------------------------------
@@ -71,28 +62,39 @@ classdef scroll_bar <handle
             axes_handles = obj.parent.axes_handles;
             temp1 = axes_handles{1};
             p = temp1.Position;
-            obj.left_limit = p(1);
-            obj.right_limit = p(1) + p(3);
+            obj.left_limit = p(1) + obj.button_width;
+            obj.right_limit = p(1) + p(3) - 3*obj.button_width;
             
             %Background - doesn't move
-            width = obj.right_limit - obj.left_limit;
+            obj.bar_width = obj.right_limit - obj.left_limit;
             obj.background_bar = annotation(...
-                'rectangle', [obj.left_limit, obj.base_y, width, obj.bar_height], ...
+                'rectangle', [obj.left_limit, obj.base_y, obj.bar_width, obj.bar_height], ...
                 'FaceColor', 'w');
             
             %Buttons
             %-----------------------------------------
-            L = obj.bar_height;
+            H = obj.bar_height;
+            L = obj.button_width;
             x1 = obj.left_limit - L;
             x2 = obj.right_limit;
+            x3 = obj.right_limit + L;
+            x4 = obj.right_limit + 2*L;
             y = obj.base_y;
             
             obj.left_button = annotation('textbox',...
-                [x1, y, L, L], 'String','<', 'VerticalAlignment',...
-                'middle', 'HorizontalAlignment', 'center');%,'FaceColor', 'k');
+                [x1, y, L, H], 'String','<', 'VerticalAlignment',...
+                'middle', 'HorizontalAlignment', 'center');
             obj.right_button = annotation('textbox',...
-                [x2, y, L, L], 'String','>', 'VerticalAlignment',...
-                'middle', 'HorizontalAlignment', 'center');%, 'FaceColor', 'k');
+                [x2, y, L, H], 'String','>', 'VerticalAlignment',...
+                'middle', 'HorizontalAlignment', 'center');
+            % NYI
+            %--------------------------
+            obj.zoom_out_button = annotation('textbox',...
+                [x3, y, L, H], 'String','-', 'VerticalAlignment',...
+                'middle', 'HorizontalAlignment', 'center');
+            obj.zoom_in_button = annotation('textbox',...
+                [x4, y, L, H], 'String','+', 'VerticalAlignment',...
+                'middle', 'HorizontalAlignment', 'center');
             
             
             %JAH: Base this on the axes, not on the data
@@ -119,7 +121,7 @@ classdef scroll_bar <handle
             %create the slider
             %---------------------------------------
             obj.slider = annotation(...
-                'rectangle', [obj.left_limit, obj.base_y, width, obj.bar_height], ...
+                'rectangle', [obj.left_limit, obj.base_y, obj.bar_width, obj.bar_height], ...
                 'FaceColor', 'k');
             obj.slider_left_x = obj.left_limit;
             obj.slider_right_x = obj.right_limit;
@@ -127,29 +129,31 @@ classdef scroll_bar <handle
             
             ax = obj.parent.axes_handles{1};
             
-            %JAH: I like to have the callbacks named a bit more accurately
-            %xLimChanged???
-            addlistener(ax, 'XLim', 'PostSet', @(~,~) obj.checkTimeRange);
+            % add an action listener which updates the size of the scroll
+            % bar when the zoom is changed
+            addlistener(ax, 'XLim', 'PostSet', @(~,~) obj.xLimChanghed);
             
             %  Add callback for on click on rectangle to engage mouse movement
             set(obj.slider, 'ButtonDownFcn', @(~,~) obj.parent.mouse_manager.initializeScrolling);
         end
-        function checkTimeRange(obj)
-            
-            %JAH: Ideally add a comment at the top to specify what this 
-            %function is doing
+        function xLimChanghed(obj)
+            %  obj.xLimChanged()
+            %
+            % Called by action listener on x limits of the first axes. 
+            % checks the limits of the axis of the first plot and sets the
+            % scroll bar based on the limits relative to the total time
+            % range in the data
             
             %JAH: Added try/catch due to error puking on closing figure
-            
             try
-                % checks the limits of the axis of the first plot and sets the
-                % scroll bar based on the limits relative to the total time
-                % range in the data
-                
                 %JAH: This is constant, why calculate it multiple times in
                 %a callback????
                 %
                 %convert from units of space to proportion of time
+                %
+                %GHG: This is temporary to account for possible change in
+                %axes size relative to the figure. We will have a listener
+                %for that
                 obj.width_per_time = (obj.right_limit - obj.left_limit)/obj.total_time_range;
                 
                 % just check axes 1 for proof of concept...
@@ -159,11 +163,10 @@ classdef scroll_bar <handle
                 
                 obj.slider_left_x = obj.left_limit + x_min*obj.width_per_time;
                 obj.slider_right_x = obj.left_limit + x_max*obj.width_per_time;
-                obj.width = obj.slider_right_x - obj.slider_left_x;
+                obj.bar_width = obj.slider_right_x - obj.slider_left_x;
                 obj.time_range_in_view = ax.XLim;
                 
-                % put the
-                set(obj.slider, 'Position', [obj.slider_left_x, obj.base_y, obj.width, obj.bar_height]);
+                set(obj.slider, 'Position', [obj.slider_left_x, obj.base_y, obj.bar_width, obj.bar_height]);
             catch ME
                 %JAH: This is temporary until Greg fixes this code
                 %   - most likely we need to verify handles are valid or
@@ -173,16 +176,13 @@ classdef scroll_bar <handle
             end
         end
         function scroll(obj)
+            % obj.scroll()
             %
-            %   Callback for scrolling ...
-            %
-            %   JAH: This scroll implementation currently doesn't change
-            %   the axes limits as dragged. I had thought it would. Current
-            %   behavior is to just change on mouse up.
-            %
-            %   - This should be exposed in an options class with the
-            %   default behavior being to enable movement of the axes with
-            %   the scroll bar.
+            % Callback function for scrolling
+            % Called whenever the mouse is both clicked and moves
+            % This function may call updateAxes as scrolling occurs
+            % depending on the options specified in the options class held
+            % by the parent.
             
             %obj.prev_mouse_x has been set when the mouse is first clicked.
             cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
@@ -194,17 +194,20 @@ classdef scroll_bar <handle
             
             if new_right_limit >= obj.right_limit
                 % have to base position on this edge
-                obj.slider_left_x = obj.right_limit - obj.width;
+                obj.slider_left_x = obj.right_limit - obj.bar_width;
                 obj.slider_right_x = obj.right_limit;
             elseif new_left_limit <= obj.left_limit
                 obj.slider_left_x = obj.left_limit;
-                obj.slider_right_x = obj.slider_left_x + obj.width;
+                obj.slider_right_x = obj.slider_left_x + obj.bar_width;
             else % not at a boundary
                 obj.slider_left_x = new_left_limit;
                 obj.slider_right_x = new_right_limit;
             end
-            set(obj.slider, 'Position', [obj.slider_left_x, obj.base_y, obj.width, obj.bar_height]);
+            set(obj.slider, 'Position', [obj.slider_left_x, obj.base_y, obj.bar_width, obj.bar_height]);
             obj.prev_mouse_x = cur_mouse_x;
+            if obj.parent.options.update_on_drag
+                obj.updateAxes();               
+            end
         end
         function updateAxes(obj)
             % convert the left position to a time

@@ -106,7 +106,9 @@ classdef mouse_motion_callback_manager < handle
         end
         function releaseScrollBar(obj)
             set(obj.fig_handle, 'WindowButtonMotionFcn', '');
-            obj.parent.scroll_bar.updateAxes();
+            if ~obj.parent.options.update_on_drag
+               obj.parent.scroll_bar.updateAxes();
+            end
         end
         %Defaults
         %------------------------------------------------------------------
