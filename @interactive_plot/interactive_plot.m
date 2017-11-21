@@ -5,6 +5,10 @@ classdef interactive_plot < handle
     %
     %   Test Code:
     %   interactive_plot.runTest()
+    %
+    %   Changes/assumptions
+    %   -------------------
+    %   1) Figure units changed to normalized
     
     
     %Resizing Issues
@@ -20,6 +24,7 @@ classdef interactive_plot < handle
         line_moving_processor
         axis_resizer
         scroll_bar
+        fig_size_change
         
         %Added graphical components
         %--------------------------
@@ -30,25 +35,48 @@ classdef interactive_plot < handle
         %small portion of that code into here locally ...
         sp %sl.plot.subplotter
         
-        %JAH: I like to initialize semi-constants in the property
-        %definition
-        
-        THICKNESS = 0.002
+        line_thickness = 0.003
+        gap_thickness = 0.002
     end
     methods (Static)
-        function obj = runTest()
+        function obj = runTest(type)
             %
-            %   interactive_plot.runTest()
+            %   interactive_plot.runTest(*type)
             
-            N_PLOTS = 8;
+            %{
+                interactive_plot.runTest(2)
+            %}
+            
+            if nargin == 0
+                type = 1;
+            end
+            
             f = figure;
-            n_points = 1000;
-            ax_ca = cell(1,N_PLOTS);
-            for i = 1:N_PLOTS
-                ax_ca{i} = subplot(N_PLOTS,1,i);
-                y = linspace(0,i,n_points);
-                plot(round(y))
-                set(gca,'ylim',[-4 4]);
+            
+            if type == 1
+                N_PLOTS = 8;
+                
+                n_points = 1000;
+                ax_ca = cell(1,N_PLOTS);
+                for i = 1:N_PLOTS
+                    ax_ca{i} = subplot(N_PLOTS,1,i);
+                    y = linspace(0,i,n_points);
+                    plot(round(y))
+                    set(gca,'ylim',[-4 4]);
+                end
+            else
+                n = 50000;
+               	t = linspace(0,100,n);
+                y = [(sin(0.10 * t) + 0.05 * randn(1, n))', ...
+                    (cos(0.43 * t) + 0.001 * t .* randn(1, n))', ...
+                    round(mod(t/10, 5))'];
+                y(t > 40 & t < 50,:) = 0;                      % Drop a section of data.
+                y(randi(numel(y), 1, 20)) = randn(1, 20);       % Emulate spikes. 
+                ax_ca = cell(1,3);
+                for i = 1:3
+                    ax_ca{i} = subplot(3,1,i);
+                    plot(t,y(:,i));
+                end
             end
             
             obj = interactive_plot(f,ax_ca);
@@ -61,9 +89,13 @@ classdef interactive_plot < handle
             %
             %   Inputs:
             %   ----------
-            %   -fig_handle: handle to the figure
-            %   -axes: cell array of the handles to all of the axes
-            %   on the plot
+            %   fig_handle : handle to the figure
+            %   axes : cell array of the handles to all of the axes
+            %       on the plot
+            %
+            %   Optional Inputs
+            %   ---------------
+            %   Not yet supported
             %
             %   Improvements
             %   -------------
@@ -102,7 +134,9 @@ classdef interactive_plot < handle
             % given a desired gap size in pixels
             set(obj.fig_handle, 'Units','normalized');
             
-            obj.sp.removeVerticalGap(rows, cols, 'gap_size',obj.THICKNESS);
+            %JAH TODO: Specify top position and bottom position
+            obj.sp.removeVerticalGap(rows, cols,...
+                'gap_size',obj.line_thickness);
             
             %JAH: This might not be normal ... Ideally we would record
             %previous state and return to previous state.
@@ -116,32 +150,7 @@ classdef interactive_plot < handle
             obj.scroll_bar = interactive_plot.scroll_bar(obj);
             obj.axis_resizer = interactive_plot.axis_resizer(obj);
          	obj.mouse_manager = interactive_plot.mouse_motion_callback_manager(obj);
-
+            obj.fig_size_change = interactive_plot.fig_size_change(obj);
         end
     end
 end
-
-%{
-         UIContextMenu: [0×0 GraphicsPlaceholder]
-         ButtonDownFcn: ''
-            BusyAction: 'queue'
-          BeingDeleted: 'off'
-         Interruptible: 'on'
-             CreateFcn: ''
-             DeleteFcn: @imlineAPI/deleteContextMenu
-                  Type: 'hggroup'
-                   Tag: 'imline'
-              UserData: []
-              Selected: 'off'
-    SelectionHighlight: 'on'
-               HitTest: 'on'
-         PickableParts: 'visible'
-           DisplayName: ''
-            Annotation: [1×1 matlab.graphics.eventdata.Annotation]
-              Children: [4×1 Line]
-                Parent: [1×1 Axes]
-               Visible: 'on'
-      HandleVisibility: 'on'
-
-%}
-

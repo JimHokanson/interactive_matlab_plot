@@ -1,4 +1,7 @@
 function moveLine(obj, id)
+%
+%   interactive_plot.line_moving_processor.moveLine
+%
 % TODO: Document this much better
 % split this function up into lots of smaller functions!
 %
@@ -7,8 +10,8 @@ cur_line_y_pos = obj.y_positions(id);
 cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
 cur_mouse_y_pos = cur_mouse_coords(2);
 
-line_thickness = obj.THICKNESS;
-gap_thickness = line_thickness*2;
+line_thickness = obj.line_thickness;
+gap_thickness = obj.gap_thickness;
 %JAH: Not sure if we can have a better name for this ...
 top_to_top_thickness = line_thickness + gap_thickness;
 half_line_thickness = line_thickness/2;

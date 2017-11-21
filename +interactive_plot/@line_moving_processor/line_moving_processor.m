@@ -2,28 +2,17 @@ classdef line_moving_processor < handle
     %
     %   Class:
     %   interactive_plot.line_moving_processor
-    
-    %{
-    Design:
-    - each plot gets 2 lines to move, except for the top and bottom
-    - moving the lines moves placeholders (need to render lines on the figs
-    at their locations)
-    - releasing the line stops the movement and changes the axes
-    - lines push, but don't pull
-    
-    Steps
-    -----------------------------
-    
-    
-    Line Behavior
-    -----------------------------
-    1) Axis resize:
- 
+    %
+    %   Main code in:
+    %   interactive_plot.line_moving_processor.moveLine
+    %
+    %   Design:
+    %     - each plot gets 2 lines to move, except for the top and bottom
+    %     - moving the lines moves placeholders (need to render lines on 
+    %       the figs at their locations)
+    %     - releasing the line stops the movement and changes the axes
+    %     - lines push, but don't pull
 
-    TODO:
-    1)
-    
-    %}
     
     properties
         parent
@@ -37,7 +26,8 @@ classdef line_moving_processor < handle
         clump_ids
         % clump_ids must always be sorted
         
-        THICKNESS = 0.003;
+        line_thickness
+        gap_thickness
         
         % we will not allow the lines to exceed these
         % boundaries
@@ -54,6 +44,9 @@ classdef line_moving_processor < handle
             %   -axes_handles: cell array of the handles to the axes in the
             %   figure (must be in order from top to bottom!)
             obj.parent = parent;
+            obj.line_thickness = parent.line_thickness;
+            obj.gap_thickness = parent.gap_thickness;
+            
             obj.fig_handle = parent.fig_handle;
             obj.axes_handles = parent.axes_handles;
             
@@ -77,7 +70,7 @@ classdef line_moving_processor < handle
             %JAH: It would be better to push all line creation into the
             %method with submethods for inner and outer
             %[x,y,w,h]
-            obj.line_handles{1} = obj.createLine(y_high(1) + obj.THICKNESS/2,1);
+            obj.line_handles{1} = obj.createLine(y_high(1) + obj.line_thickness/2,1);
             
             for k = 2:(length(obj.line_handles) - 1)
                 % there will be a 1 pixel gap between the axes. plot the
@@ -89,7 +82,7 @@ classdef line_moving_processor < handle
             end
             
             % create the bottom line 1 pixel down
-            obj.line_handles{end} = obj.createLine(y_low(end)- obj.THICKNESS/2, length(obj.line_handles));
+            obj.line_handles{end} = obj.createLine(y_low(end)- obj.line_thickness/2, length(obj.line_handles));
             
             % set the callback functions for the inner lines
             for k = 2:(length(obj.line_handles) - 1)
@@ -117,8 +110,8 @@ classdef line_moving_processor < handle
             %   resize is based on updated y_positions.
 
             for k = 1:length(obj.axes_handles)
-                top = obj.y_positions(k) - obj.THICKNESS/2;
-                bottom = obj.y_positions(k+1) + obj.THICKNESS/2;
+                top = obj.y_positions(k) - obj.line_thickness/2;
+                bottom = obj.y_positions(k+1) + obj.line_thickness/2;
                 height = top - bottom;
                 
                 %JAH: ???? - not sure what this means?
@@ -158,8 +151,9 @@ classdef line_moving_processor < handle
             n_line_handles = length(obj.line_handles);
             colors = sl.plot.color.getEvenlySpacedColors(n_line_handles);
             h = annotation(...
-                'rectangle', [0, y_pos - obj.THICKNESS/2, 1, obj.THICKNESS],...
-                'FaceColor', colors(id,:));
+                'rectangle', [0, y_pos - obj.line_thickness/2, 1, obj.line_thickness],...
+                'FaceColor', colors(id,:),...
+                'EdgeColor',colors(id,:));
             obj.y_positions(id) = y_pos;
         end
     end

@@ -42,16 +42,28 @@ classdef scroll_bar <handle
     
     methods
         function obj = scroll_bar(parent)
+            
+            %JAH: Design decision
+            %- should the limits be determined based on the axes or the
+            %underlying data, we could default to one and provide an option
+            %for the other
+            
             obj.parent = parent;
             obj.fig_handle = parent.fig_handle;
             
             %JAH: This is a big change to make this deep in the code
             %  - In general we'll assume this is true at the most top level
             %   thus this code is redundant at best
+            %   - this should be removed
+            %   - I've started a section on code assumptions in the parent
+            %   at the top of the class
             set(obj.fig_handle, 'Units', 'normalized');
             
             
-            %JAH: Split with comments - I've added them ...
+            %JAH: In general try and split secontions with comments 
+            %   - this provides much easier visualization of what is going
+            %   on where
+            % - I've added them ...
             
             %Create scrollbar
             %----------------------------------------
@@ -93,7 +105,7 @@ classdef scroll_bar <handle
             %JAH: temp1 is way too far away for a name like this ...
             %- temp should only last for a couple lines
             
-            %JAH: commented out this code below ...
+            %JAH: commented out this code below and rewrote
             
 %             data_objs =  get(temp1, 'Children');
 %             time_vector = data_objs.XData;
@@ -162,11 +174,15 @@ classdef scroll_bar <handle
         end
         function scroll(obj)
             %
+            %   Callback for scrolling ...
+            %
             %   JAH: This scroll implementation currently doesn't change
-            %   the axes limits as dragged. I had thought it would. This
-            %   should be exposed in an options class with the default
-            %   behavior being to enable movement of the axes with the
-            %   scroll bar.
+            %   the axes limits as dragged. I had thought it would. Current
+            %   behavior is to just change on mouse up.
+            %
+            %   - This should be exposed in an options class with the
+            %   default behavior being to enable movement of the axes with
+            %   the scroll bar.
             
             %obj.prev_mouse_x has been set when the mouse is first clicked.
             cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
