@@ -119,6 +119,8 @@ classdef interactive_plot < handle
             obj.fig_handle = fig_handle;
             obj.axes_handles = axes;
             
+            
+            %JAH: We might want to optionally get this from the users
             shape = size(obj.fig_handle.Children);
             
             obj.linkXAxes();
@@ -136,6 +138,8 @@ classdef interactive_plot < handle
             set(obj.fig_handle, 'Units','normalized');
             
             %JAH TODO: Specify top position and bottom position
+            
+            obj.sp = sl.plot.subplotter.fromFigure(obj.fig_handle, shape);
             obj.sp.removeVerticalGap(rows, cols,...
                 'gap_size',obj.line_thickness);
             
