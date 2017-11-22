@@ -2,6 +2,20 @@ classdef axis_resizer < handle
     %
     %   Class:
     %   interactive_plot.axis_resizer
+    %
+    %   JAH: ???? - new name???
+    %   mouse_vertical_zoom_and_pan
+    %
+    %   This class allows the user to vertically pan and zoom on an axes
+    %   by clicking and dragging the mouse. The distinction of using the
+    %   mouse is added because I want to add buttons that also zoom as
+    %   well.
+    %
+    %   See Also
+    %   --------
+    %   interactive_plot
+    %
+    %
     
     %JAH Status:
     %This class works but the names are a mess

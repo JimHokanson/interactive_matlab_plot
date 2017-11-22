@@ -22,10 +22,13 @@ classdef interactive_plot < handle
         axes_handles
         mouse_manager
         line_moving_processor
-        axis_resizer
-        scroll_bar
-        fig_size_change
-        options
+        axis_resizer %interactive_plot.axis_resizer
+        scroll_bar   %interactive_plot.scroll_bar
+        fig_size_change  %interactive_plot.fig_size_change
+        
+        
+        options  %interactive_plot.options
+        
         %Added graphical components
         %--------------------------
         %JAH: Eventually we will want to port this to being local
@@ -35,6 +38,7 @@ classdef interactive_plot < handle
         %small portion of that code into here locally ...
         sp %sl.plot.subplotter
         
+        %We need these for 
         line_thickness = 0.003
         gap_thickness = 0.002
     end
@@ -110,6 +114,7 @@ classdef interactive_plot < handle
             %   mouse
             
             obj.options = interactive_plot.options();
+            %obj.options = interactive_plot.sl.in.processVarargin(obj.options,varargin);
             
             %JAH: Had remote desktop active
             %TODO: Verify proper renderer
