@@ -38,7 +38,7 @@ classdef interactive_plot < handle
         %small portion of that code into here locally ...
         sp %sl.plot.subplotter
         
-        %We need these for 
+        %We need these for
         line_thickness = 0.003
         gap_thickness = 0.002
     end
@@ -131,7 +131,7 @@ classdef interactive_plot < handle
             obj.linkXAxes();
             
             rows = 1:shape(1);
-            cols = 1:shape(2);
+            %cols = 1:shape(2); % for implementing multiple columns
             
             % need a gap size between the axes of a few pixels.
             % removeVerticalGap works in normalized units. need to find a
@@ -143,10 +143,13 @@ classdef interactive_plot < handle
             set(obj.fig_handle, 'Units','normalized');
             
             %JAH TODO: Specify top position and bottom position
-            
+            %{
             obj.sp = sl.plot.subplotter.fromFigure(obj.fig_handle, shape);
             obj.sp.removeVerticalGap(rows, cols,...
                 'gap_size',obj.line_thickness);
+            %}
+            obj.removeVerticalGap(rows, ...
+                'gap_size', obj.line_thickness);
             
             %JAH: This might not be normal ... Ideally we would record
             %previous state and return to previous state.
@@ -161,6 +164,9 @@ classdef interactive_plot < handle
             end
             
             if obj.options.scroll
+                p = obj.axes_handles{1}.Position;
+                obj.options.bar_left_limit = p(1) + obj.options.button_width;
+                obj.options.bar_right_limit = p(1) + p(3) - 3*obj.options.button_width;
                 obj.scroll_bar = interactive_plot.scroll_bar(obj);
             end
             
@@ -178,7 +184,7 @@ classdef interactive_plot < handle
             
             in.by_column = false;
             in = sl.in.processVarargin(in,varargin);
-                
+            
             h = obj.axes_handles;
             if in.by_column
                 for i = 1:obj.n_columns
@@ -189,11 +195,20 @@ classdef interactive_plot < handle
                 all_handles = [h{:}];
                 linkaxes(all_handles,'x');
             end
+            
         end
-        function removeVerticalGap(obj,rows,columns,varargin)
-             %x Removes vertical gaps from subplots
+        function removeVerticalGap(obj,rows,varargin)
+            %x Removes vertical gaps from subplots
             %
             %    removeVerticalGap(obj,rows,columns,varargin)
+            %
+            %    Code modified from Jim Hokanson Matlab Standard Library
+            %      -- sl.plot.subplotter
+            %
+            %    TODO:
+            %    -----------
+            %    re-implement the code for multiple columns
+            %    Remove dependency on standard library
             %
             %    Inputs:
             %    -------
@@ -203,7 +218,7 @@ classdef interactive_plot < handle
             %        The value -1 indicates that all rows should be
             %        compressed.
             %    columns :
-            %        Which columns are affected
+            %        NYI!
             %
             %    Optional Inputs:
             %    ----------------
@@ -213,11 +228,88 @@ classdef interactive_plot < handle
             %    remove_x_labels : logical (default true)
             %
             %
-            if nargin == 1
-                rows = 1:obj.n_rows;
-                columns = 1:obj.n_columns;
+            
+            in.gap_size = 0.02;
+            in.keep_relative_size = true;
+            in.remove_x_labels = true;
+            in.remove_x_ticks = true;
+            in = sl.in.processVarargin(in,varargin);
+            
+            if rows == -1
+                rows = 1:length(obj.axes_handles);
             end
+            % currently only applies to the case for 1 column of data. We
+            % would need to update this if we plan to support more columns
+            all_axes = cellfun(@(x) sl.hg.axes(x),obj.axes_handles(rows),'un',0);
+            all_axes = [all_axes{:}];
+            
+            all_heights = [all_axes.height];
+            pct_all_heights = all_heights./sum(all_heights);
+            
+            for iRow = 1:length(rows)-1
+                cur_row_I = rows(iRow);
+                cur_ax = obj.axes_handles{cur_row_I};
+                a = sl.hg.axes(cur_ax);
+                a.clearLabel('x');
+                a.clearTicks('x');
+            end
+            %Assuming all columns are the same ...
+            top_axes    = all_axes(1);
+            bottom_axes = all_axes(end);
+            
+            top_position = top_axes.position.top;
+            bottom_position = bottom_axes.position.bottom;
+            
+            %TODO: This algorithm makes everything the same size. We need
+            %to divy up based on the height
+            
+            if in.keep_relative_size
+                total_height = top_position - bottom_position;
+                gap_height   = (length(rows)-1)*in.gap_size;
+                available_height = total_height - gap_height;
+                new_heights = available_height*pct_all_heights;
+                
+                temp_start_heights = [0 cumsum(new_heights(1:end-1)+in.gap_size)];
+                new_tops = top_position - temp_start_heights;
+                new_bottoms = new_tops - new_heights;
+            else
+                %Add 1 due to edges
+                %
+                %        top     row 1   TOP OF TOP AXES
+                %
+                %        bottom  row 1  & top row 2
+                %
+                %        bottom  row 2  & top row 3
+                %
+                %        bottom  row 3   BOTTOM OF BOTTOM AXES
+                %
+                %    fill in so that each axes has the same height and so that
+                %    all axes span from the top of the top axes to the bottom of
+                %    the bottom axes
+                temp = linspace(bottom_position,top_position,length(rows)+1);
+                new_bottoms = temp(end-1:-1:1);
+                new_tops = temp(end:-1:2);
+            end
+            
+            for iRow = 1:length(rows)
+                cur_row_I = rows(iRow);
+                cur_new_top = new_tops(iRow);
+                cur_new_bottom = new_bottoms(iRow);
+                
+                cur_ax = obj.axes_handles{cur_row_I};
+                a = sl.hg.axes(cur_ax);
+                
+                %We can run into problems if we get a negative
+                %height between these two calls, so we need one that
+                %sets these at the same time
+                a.position.setTopAndBottom(cur_new_top, cur_new_bottom);
+                
+                
+                % TODO: removed code for multiple columns. Eventually
+                % re-implement this
+            end
+            %TODO: Verify continuity of rows
+            %TODO: Verify same axes if removing x labels ...
         end
-         
     end
 end
