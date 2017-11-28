@@ -25,6 +25,7 @@ classdef interactive_plot < handle
         axis_resizer %interactive_plot.axis_resizer
         scroll_bar   %interactive_plot.scroll_bar
         fig_size_change  %interactive_plot.fig_size_change
+        y_zoom_buttons %interactive_plot.y_zoom_buttons
         
         
         options  %interactive_plot.options
@@ -173,6 +174,9 @@ classdef interactive_plot < handle
             obj.axis_resizer = interactive_plot.axis_resizer(obj);
             obj.mouse_manager = interactive_plot.mouse_motion_callback_manager(obj);
             obj.fig_size_change = interactive_plot.fig_size_change(obj);
+            obj.y_zoom_buttons = interactive_plot.y_zoom_buttons(obj);
+            
+        set(obj.fig_handle,'CloseRequestFcn', @(~,~) obj.cb_close);
         end
         function linkXAxes(obj,varargin)
             % obj.linkXAxes
@@ -310,6 +314,10 @@ classdef interactive_plot < handle
             end
             %TODO: Verify continuity of rows
             %TODO: Verify same axes if removing x labels ...
+        end
+        function cb_close(obj)
+            delete(obj.scroll_bar.ax_listener);
+            delete(obj.fig_handle);
         end
     end
 end

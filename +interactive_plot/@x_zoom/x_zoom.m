@@ -32,15 +32,19 @@ classdef x_zoom < handle
             x4 = obj.parent.right_limit + 2*L; % position of x zoom in button
             y = obj.parent.base_y; % y position of the bottom of the scroll bar
             
-            obj.zoom_out_button = uicontrol(obj.parent.fig_handle,...
-                'Style', 'pushbutton', 'String', '-',...
-                'units', 'normalized', 'Position',[x3, y, L, H],...
-                'Visible', 'on', 'callback', @(~,~) obj.cb_zoomOut);
+%             obj.zoom_out_button = uicontrol(obj.parent.fig_handle,...
+%                 'Style', 'pushbutton', 'String', '-',...
+%                 'units', 'normalized', 'Position',[x3, y, L, H],...
+%                 'Visible', 'on', 'callback', @(~,~) obj.cb_zoomOut);
+              obj.zoom_out_button = interactive_plot.ip_button(obj.parent.fig_handle,[x3,y,L,H],'-');
+              set(obj.zoom_out_button.button, 'Callback',  @(~,~) obj.cb_zoomOut);
 
-            obj.zoom_in_button = uicontrol(obj.parent.fig_handle,...
-                'Style', 'pushbutton', 'String', '+',...
-                'units', 'normalized', 'Position',[x4, y, L, H],...
-                'Visible', 'on', 'callback', @(~,~)obj.cb_zoomIn);
+            obj.zoom_in_button = interactive_plot.ip_button(obj.parent.fig_handle, [x4, y, L, H], '+');
+            set(obj.zoom_in_button.button, 'Callback', @(~,~)obj.cb_zoomIn)
+%             obj.zoom_in_button = uicontrol(obj.parent.fig_handle,...
+%                 'Style', 'pushbutton', 'String', '+',...
+%                 'units', 'normalized', 'Position',[x4, y, L, H],...
+%                 'Visible', 'on', 'callback', @(~,~)obj.cb_zoomIn);
         end
     end
     methods (Hidden)% callbacks
@@ -67,15 +71,24 @@ classdef x_zoom < handle
             
             lower_lim = center - new_time_range/2;
             upper_lim = center + new_time_range/2;
-            new_limits = [lower_lim, upper_lim];
             
             max_lims = obj.parent.total_time_limits;
             
-            if (lower_lim < max_lims(1) || upper_lim > max_lims(2))
-               obj.axes_handles{1}.XLim = max_lims;
+            if new_time_range >= obj.parent.total_time_range
+               new_limits = max_lims; 
+            elseif lower_lim < max_lims(1)
+                % if we are at the left edge, maintain the left position
+                % and add the zoomed-in width
+                new_limits = [max_lims(1), max_lims(1) + new_time_range];
+            elseif upper_lim > max_lims(2)
+                % if at the right edge, maintain the right position, and go
+                % left to the new zoomed width
+                new_limits = [max_lims(2) - new_time_range, max_lims(2)];
             else
-              obj.axes_handles{1}.XLim = new_limits;
+                %the normal case
+                new_limits = [lower_lim, upper_lim];
             end
+              obj.axes_handles{1}.XLim = new_limits;
         end
     end
 end

@@ -3,7 +3,9 @@ classdef scroll_bar <handle
     %
     %   creates a scroll bar on a figure with the interactive plot
     %
-    %
+    %   All changes are made to the first axes in the figure/list. Because
+    %   the axes are linked, this accounts for changes made to all of
+    %   them (that this class makes and detects)
     %
     %   improvements:
     %   -------------
@@ -43,6 +45,8 @@ classdef scroll_bar <handle
         width_per_time
         
         x_zoom
+        
+        ax_listener %listener on the first axes
     end
     
     methods
@@ -137,7 +141,7 @@ classdef scroll_bar <handle
             
             % add an action listener which updates the size of the scroll
             % bar when the zoom is changed
-            addlistener(ax, 'XLim', 'PostSet', @(~,~) obj.xLimChanghed);
+            obj.ax_listener = addlistener(ax, 'XLim', 'PostSet', @(~,~) obj.xLimChanged);
             
             %  Add callback for on click on rectangle to engage mouse movement
             set(obj.slider, 'ButtonDownFcn', @(~,~) obj.parent.mouse_manager.initializeScrolling);
@@ -145,10 +149,10 @@ classdef scroll_bar <handle
             % set up scroll bar based on what the starting zoom is
             % this is testing for the case that the user had already zoomed
             % before feeding the figure to the class.
-            obj.xLimChanghed();
+            obj.xLimChanged();
             obj.x_zoom = interactive_plot.x_zoom(obj);
         end
-        function xLimChanghed(obj)
+        function xLimChanged(obj)
             %  obj.xLimChanged()
             %
             % Called by action listener on x limits of the first axes.
@@ -180,10 +184,12 @@ classdef scroll_bar <handle
                 
                 set(obj.slider, 'Position', [obj.slider_left_x, obj.base_y, obj.bar_width, obj.bar_height]);
             catch ME
-                %JAH: This is temporary until Greg fixes this code
+                %GHG: This seems to be fixed now. Still remains in the code
+                %in case it is actually not...
                 %   - most likely we need to verify handles are valid or
                 %   destory the listener earlier than we currently are
                 %
+               % keyboard
                 fprintf(2,'Caught error on on time range change\n')
             end
         end
