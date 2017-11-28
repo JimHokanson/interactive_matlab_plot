@@ -28,8 +28,8 @@ classdef x_zoom < handle
             % numbering (x3,x4) is based on the buttons which already exist
             % (created in the scroll_bar class which is the parent of this
             % class)
-            x3 = obj.parent.right_limit + L; % position of x zoom out button
-            x4 = obj.parent.right_limit + 2*L; % position of x zoom in button
+            x3 = obj.parent.right_limit + 2*L; % position of x zoom out button
+            x4 = obj.parent.right_limit + 3*L; % position of x zoom in button
             y = obj.parent.base_y; % y position of the bottom of the scroll bar
             
             obj.zoom_out_button = uicontrol(obj.parent.fig_handle,...

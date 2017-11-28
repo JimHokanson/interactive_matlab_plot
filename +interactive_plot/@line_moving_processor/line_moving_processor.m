@@ -17,7 +17,11 @@ classdef line_moving_processor < handle
     properties
         parent
         fig_handle
+        
+        
         axes_handles
+        %Cell array. These must be ordered from top to bottom.
+        
         line_handles
         
         y_positions
@@ -43,11 +47,15 @@ classdef line_moving_processor < handle
             %   ------
             %   -axes_handles: cell array of the handles to the axes in the
             %   figure (must be in order from top to bottom!)
+            
             obj.parent = parent;
             obj.line_thickness = parent.line_thickness;
             obj.gap_thickness = parent.gap_thickness;
             
             obj.fig_handle = parent.fig_handle;
+            
+            %TODO: Verify correct setup of the axes handles since these 
+            %come from the user, not internally ...
             obj.axes_handles = parent.axes_handles;
             
             set(obj.fig_handle, 'Units', 'normalized');
@@ -96,7 +104,10 @@ classdef line_moving_processor < handle
             obj.BOTTOM_BOUNDARY = temp(2);
             
         end
-        % function moveLine(obj, id)
+        %In other files
+        %--------------
+        %   moveLine(obj, id)
+        
         function renderLines(obj)
             n_lines_in_clump = length(obj.clump_ids);
             for k = 1:n_lines_in_clump

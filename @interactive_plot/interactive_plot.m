@@ -43,7 +43,7 @@ classdef interactive_plot < handle
         gap_thickness = 0.002
     end
     methods (Static)
-        function obj = runTest(type)
+        function obj = runTest(type,varargin)
             %
             %   interactive_plot.runTest(*type)
             
@@ -83,7 +83,7 @@ classdef interactive_plot < handle
                 end
             end
             
-            obj = interactive_plot(f,ax_ca);
+            obj = interactive_plot(f,ax_ca,varargin{:});
         end
     end
     methods
@@ -91,30 +91,35 @@ classdef interactive_plot < handle
             %
             %   obj = interactive_plot(fig_handle, axes, varargin)
             %
-            %   Inputs:
-            %   ----------
-            %   fig_handle : handle to the figure
-            %   axes : cell array of the handles to all of the axes
-            %       on the plot
+            %   Inputs
+            %   ------
+            %   fig_handle : handle
+            %       Handle to the figure.
+            %   axes : cell array {n_rows x n_cols}
+            %       Cell array of the handles to all of the axes on the 
+            %       plot. Currently the shape of the axes cell matters.
             %
+            %   
             %   Optional Inputs
             %   ---------------
-            %       - 'update_on_drag': (default) true or false. If true,
-            %          plots will be updated as scrolling happens
-            %       - 'scroll': if true (default), the scroll bar is
-            %          included
-            %       - 'lines': if true (default), the draggable lines are
-            %          included
+            %   update_on_drag : default true
+            %       If true plots will be updated as scrolling happens.
+            %   scroll : default true
+            %       If true a scroll bar is included on the plot.
+            %   lines : default true
+            %       If true draggable lines are included
+            %
+            %
             %   Improvements
-            %   -------------
+            %   ------------
             %   1) Support multiple columns
             %   2) Vertical and hortizontal scaling
             %   3) Adjust yticks to not be on the line ...
             %   4) Manual yticks with support for changing via buttons &
             %   mouse
             
-            obj.options = interactive_plot.options();
-            %obj.options = interactive_plot.sl.in.processVarargin(obj.options,varargin);
+            in = interactive_plot.options();
+            obj.options = interactive_plot.sl.in.processVarargin(in,varargin);
             
             %JAH: Had remote desktop active
             %TODO: Verify proper renderer
@@ -123,13 +128,9 @@ classdef interactive_plot < handle
             
             obj.fig_handle = fig_handle;
             obj.axes_handles = axes;
-            
-            
-            %JAH: We might want to optionally get this from the users
-            shape = size(obj.fig_handle.Children);
-            
             obj.linkXAxes();
             
+            shape = size(obj.fig_handle.Children);
             rows = 1:shape(1);
             %cols = 1:shape(2); % for implementing multiple columns
             
@@ -142,31 +143,39 @@ classdef interactive_plot < handle
             % given a desired gap size in pixels
             set(obj.fig_handle, 'Units','normalized');
             
-            %JAH TODO: Specify top position and bottom position
+            %JAH TODO: Specify top position of top fig and bottom position
+            %of the bottom fig ...
             %{
             obj.sp = sl.plot.subplotter.fromFigure(obj.fig_handle, shape);
             obj.sp.removeVerticalGap(rows, cols,...
                 'gap_size',obj.line_thickness);
             %}
-            obj.removeVerticalGap(rows, ...
-                'gap_size', obj.line_thickness);
             
-            %JAH: This might not be normal ... Ideally we would record
-            %previous state and return to previous state.
-            %reset units back to normal
-            %
-            %- Note, we may not be able to do non-normalized units
-            %- this may be a limitation of the software
+            %Current limitation of the sotftware
             set(fig_handle, 'Units', 'normalized');
             
+            %Initial axes rendering
+            %------------------------------------------------
+            TOP_POSITION = 0.98;
+            BOTTOM_POSITION = 0.08;
+            
+            obj.removeVerticalGap(rows,TOP_POSITION,BOTTOM_POSITION,'gap_size',obj.line_thickness);
+            
+            %Lines
+            %------------------------------------------------
             if obj.options.lines
                 obj.line_moving_processor = interactive_plot.line_moving_processor(obj);
             end
             
+            %Scrollbar
+            %----------------------------------------
             if obj.options.scroll
                 p = obj.axes_handles{1}.Position;
+                %JAH: These aren't options if used this way ...
+                %- In general I don't know if we want to provide these
+                %as options ...
                 obj.options.bar_left_limit = p(1) + obj.options.button_width;
-                obj.options.bar_right_limit = p(1) + p(3) - 3*obj.options.button_width;
+                obj.options.bar_right_limit = p(1) + p(3) - 4*obj.options.button_width;
                 obj.scroll_bar = interactive_plot.scroll_bar(obj);
             end
             
@@ -174,7 +183,12 @@ classdef interactive_plot < handle
             obj.mouse_manager = interactive_plot.mouse_motion_callback_manager(obj);
             obj.fig_size_change = interactive_plot.fig_size_change(obj);
         end
+    end
+    
+    methods (Hidden)
         function linkXAxes(obj,varargin)
+            %
+            %
             % obj.linkXAxes
             % Links all of the x-axes
             % Optional Inputs:
@@ -197,7 +211,7 @@ classdef interactive_plot < handle
             end
             
         end
-        function removeVerticalGap(obj,rows,varargin)
+        function removeVerticalGap(obj,rows,top_input,bottom_input,varargin)
             %x Removes vertical gaps from subplots
             %
             %    removeVerticalGap(obj,rows,columns,varargin)
@@ -227,10 +241,15 @@ classdef interactive_plot < handle
             %        between figures.
             %    remove_x_labels : logical (default true)
             %
-            %
+            %   TODO: top_input and bottom_input are poor names
             
             in.gap_size = 0.02;
+            
+            %JAH: This could be exposed to the user
             in.keep_relative_size = true;
+            
+            %These will always be true (I think) - could be named as
+            %constants at the top of the function (with upper casing)
             in.remove_x_labels = true;
             in.remove_x_ticks = true;
             in = sl.in.processVarargin(in,varargin);
@@ -257,8 +276,11 @@ classdef interactive_plot < handle
             top_axes    = all_axes(1);
             bottom_axes = all_axes(end);
             
-            top_position = top_axes.position.top;
-            bottom_position = bottom_axes.position.bottom;
+          	top_position = top_input;
+            bottom_position = bottom_input;
+            
+%             top_position = top_axes.position.top;
+%             bottom_position = bottom_axes.position.bottom;
             
             %TODO: This algorithm makes everything the same size. We need
             %to divy up based on the height
@@ -297,13 +319,11 @@ classdef interactive_plot < handle
                 cur_new_bottom = new_bottoms(iRow);
                 
                 cur_ax = obj.axes_handles{cur_row_I};
-                a = sl.hg.axes(cur_ax);
-                
-                %We can run into problems if we get a negative
-                %height between these two calls, so we need one that
-                %sets these at the same time
-                a.position.setTopAndBottom(cur_new_top, cur_new_bottom);
-                
+                temp = get(cur_ax,'Position');
+                %LBWH
+                temp(2) = cur_new_bottom;
+                temp(4) = cur_new_top-cur_new_bottom;
+                set(cur_ax,'Position',temp);
                 
                 % TODO: removed code for multiple columns. Eventually
                 % re-implement this

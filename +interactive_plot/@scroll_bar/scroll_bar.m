@@ -1,4 +1,6 @@
 classdef scroll_bar <handle
+    % 
+    %   Class:
     %   interactive_plot.scroll_bar
     %
     %   creates a scroll bar on a figure with the interactive plot
@@ -43,6 +45,7 @@ classdef scroll_bar <handle
         width_per_time
         
         x_zoom
+        auto_scroll
     end
     
     methods
@@ -101,23 +104,6 @@ classdef scroll_bar <handle
                 'units', 'normalized', 'Position',[x2, y, L, H],...
                 'Visible', 'on', 'callback', @(~,~) obj.cb_scrollRight());
             
-
-            %JAH: Base this on the axes, not on the data
-            % -- need to figure this out based on the axes (or all of the
-            % axes??)
-            %
-            %JAH: As part of this code base we will require all axes to be
-            %   x-linked, so any axex is fine
-            
-            %JAH: temp1 is way too far away for a name like this ...
-            %- temp should only last for a couple lines
-            
-            %JAH: commented out this code below and rewrote
-            
-            %             data_objs =  get(temp1, 'Children');
-            %             time_vector = data_objs.XData;
-            %             obj.total_time_range = max(time_vector) - min(time_vector);
-            
             ax1 = obj.parent.axes_handles{1};
             xlim = get(ax1,'xlim');
             obj.total_time_limits = xlim;
@@ -137,7 +123,7 @@ classdef scroll_bar <handle
             
             % add an action listener which updates the size of the scroll
             % bar when the zoom is changed
-            addlistener(ax, 'XLim', 'PostSet', @(~,~) obj.xLimChanghed);
+            addlistener(ax, 'XLim', 'PostSet', @(~,~) obj.xLimChanged);
             
             %  Add callback for on click on rectangle to engage mouse movement
             set(obj.slider, 'ButtonDownFcn', @(~,~) obj.parent.mouse_manager.initializeScrolling);
@@ -145,10 +131,14 @@ classdef scroll_bar <handle
             % set up scroll bar based on what the starting zoom is
             % this is testing for the case that the user had already zoomed
             % before feeding the figure to the class.
-            obj.xLimChanghed();
+            obj.xLimChanged();
+            
+            %JAH: This isn't exactly a scroll bar ....
+            %We could group by x-changers or something ...
             obj.x_zoom = interactive_plot.x_zoom(obj);
+            obj.auto_scroll = interactive_plot.auto_scroll(obj);
         end
-        function xLimChanghed(obj)
+        function xLimChanged(obj)
             %  obj.xLimChanged()
             %
             % Called by action listener on x limits of the first axes.
@@ -166,6 +156,9 @@ classdef scroll_bar <handle
                 %GHG: This is temporary to account for possible change in
                 %axes size relative to the figure. We will have a listener
                 %for that
+                %
+                %JAH: For normalized isn't this constant???
+                %JAH: For streaming this will need to by dynamic ...
                 obj.width_per_time = (obj.right_limit - obj.left_limit)/obj.total_time_range;
                 
                 % just check axes 1 for proof of concept...
@@ -179,12 +172,12 @@ classdef scroll_bar <handle
                 obj.time_range_in_view = ax.XLim;
                 
                 set(obj.slider, 'Position', [obj.slider_left_x, obj.base_y, obj.bar_width, obj.bar_height]);
-            catch ME
+            catch ME %#ok<NASGU>
                 %JAH: This is temporary until Greg fixes this code
                 %   - most likely we need to verify handles are valid or
                 %   destory the listener earlier than we currently are
                 %
-                fprintf(2,'Caught error on on time range change\n')
+                %fprintf(2,'Caught error on on time range change\n')
             end
         end
         function scroll(obj)
