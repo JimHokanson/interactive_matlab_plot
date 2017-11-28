@@ -5,7 +5,9 @@ classdef scroll_bar <handle
     %
     %   creates a scroll bar on a figure with the interactive plot
     %
-    %
+    %   All changes are made to the first axes in the figure/list. Because
+    %   the axes are linked, this accounts for changes made to all of
+    %   them (that this class makes and detects)
     %
     %   improvements:
     %   -------------
@@ -45,7 +47,9 @@ classdef scroll_bar <handle
         width_per_time
         
         x_zoom
+
         auto_scroll
+        ax_listener %listener on the first axes
     end
     
     methods
@@ -123,8 +127,8 @@ classdef scroll_bar <handle
             
             % add an action listener which updates the size of the scroll
             % bar when the zoom is changed
-            addlistener(ax, 'XLim', 'PostSet', @(~,~) obj.xLimChanged);
-            
+            obj.ax_listener = addlistener(ax, 'XLim', 'PostSet', @(~,~) obj.xLimChanged);
+
             %  Add callback for on click on rectangle to engage mouse movement
             set(obj.slider, 'ButtonDownFcn', @(~,~) obj.parent.mouse_manager.initializeScrolling);
             
@@ -132,7 +136,7 @@ classdef scroll_bar <handle
             % this is testing for the case that the user had already zoomed
             % before feeding the figure to the class.
             obj.xLimChanged();
-            
+
             %JAH: This isn't exactly a scroll bar ....
             %We could group by x-changers or something ...
             obj.x_zoom = interactive_plot.x_zoom(obj);
@@ -173,11 +177,15 @@ classdef scroll_bar <handle
                 
                 set(obj.slider, 'Position', [obj.slider_left_x, obj.base_y, obj.bar_width, obj.bar_height]);
             catch ME %#ok<NASGU>
-                %JAH: This is temporary until Greg fixes this code
+
+                %GHG: This seems to be fixed now. Still remains in the code
+                %in case it is actually not...
                 %   - most likely we need to verify handles are valid or
                 %   destory the listener earlier than we currently are
                 %
-                %fprintf(2,'Caught error on on time range change\n')
+               % keyboard
+                fprintf(2,'Caught error on on time range change\n')
+
             end
         end
         function scroll(obj)
