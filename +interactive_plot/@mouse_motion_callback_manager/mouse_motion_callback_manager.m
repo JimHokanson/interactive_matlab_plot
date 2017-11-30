@@ -49,9 +49,13 @@ classdef mouse_motion_callback_manager < handle
             obj.x1 = obj.x2 - 0.02;
             
             obj.initDefaultState();
+            
+            %JAH: Better names needed here, y_max of what????
             obj.y_max = temp(2) + temp(4);
             temp = get(obj.axes_handles{end},'position');
             obj.y_min = temp(2);
+            
+            %JAH: Initialize axes min and max
             
             
         end
@@ -97,6 +101,8 @@ classdef mouse_motion_callback_manager < handle
         function initializeScrolling(obj)
             % temporary hack. this is not efficient
             %--
+            %JAH: This looks fine but I'm not clear why this code is here
+            %and not in the scroll bar class
             cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
             cur_mouse_x = cur_mouse_coords(1);
             obj.parent.scroll_bar.prev_mouse_x = cur_mouse_x;
@@ -113,11 +119,9 @@ classdef mouse_motion_callback_manager < handle
         %Defaults
         %------------------------------------------------------------------
         function initDefaultState(obj)
-            %TODO: Anything we want here ...
             set(obj.fig_handle,'WindowButtonMotionFcn',@(~,~) obj.defaultMouseMovingCallback());
             set(obj.fig_handle,'WindowButtonDownFcn',@(~,~) obj.defaultMouseDownCallback());
             set(obj.fig_handle,'WindowButtonUpFcn','');
-            %TODO: WindowButtonUpFcn
         end
         function defaultMouseDownCallback(obj)
             cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
@@ -169,10 +173,13 @@ classdef mouse_motion_callback_manager < handle
             SCALE2_PTR = 2;
             PAN_PTR = 3;
             
-            
-            
+            %Determine appropriate cursor
+            %----------------------------
             if y > obj.y_min && ...
                     y < obj.y_max
+                
+                %JAH: Let's first check if we are inside the axes
+                %- JAH: Make call to axes_action_manager
                 
                 if x > obj.x1 && ...
                         x < obj.x2
@@ -184,6 +191,8 @@ classdef mouse_motion_callback_manager < handle
                         x < obj.x4
                     ptr = PAN_PTR;
                 else
+                    
+                    
                     ptr = STD_PTR;
                 end
             else

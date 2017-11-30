@@ -2,6 +2,8 @@ classdef auto_scroll < handle
     %
     %   Class:
     %   interactive_plot.auto_scroll
+    %
+    %   Controller for allowing the plot to scroll as more data arrives ...
     
     properties
         parent
@@ -11,6 +13,8 @@ classdef auto_scroll < handle
     
     methods
         function obj = auto_scroll(parent)
+            
+
             obj.parent = parent;
             
             H = obj.parent.bar_height;

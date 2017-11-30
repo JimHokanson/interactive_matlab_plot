@@ -2,6 +2,8 @@ classdef axes_border < handle
     %
     %   Class:
     %   interactive_plot.axes_border
+    %
+    %       JAH: I think this is old and can be deleted ...
     
     properties
         parent

@@ -26,19 +26,13 @@ classdef interactive_plot < handle
         scroll_bar   %interactive_plot.scroll_bar
         fig_size_change  %interactive_plot.fig_size_change
         y_zoom_buttons %interactive_plot.y_zoom_buttons
-        
+        streaming
+        y_tick_display
+        right_panel
         
         options  %interactive_plot.options
-        
-        %Added graphical components
-        %--------------------------
-        %JAH: Eventually we will want to port this to being local
-        %- All modules should be able to stand on their own for
-        %distribution
-        %- move to interactive_plot.sl.plot.subplotter or copy
-        %small portion of that code into here locally ...
-        sp %sl.plot.subplotter
-        
+
+        %TODO: These need to be removed ...
         %We need these for
         line_thickness = 0.003
         gap_thickness = 0.002
@@ -157,6 +151,7 @@ classdef interactive_plot < handle
             
             %Initial axes rendering
             %------------------------------------------------
+            %TODO: Move to options ...
             TOP_POSITION = 0.98;
             BOTTOM_POSITION = 0.08;
             
@@ -184,6 +179,12 @@ classdef interactive_plot < handle
             obj.mouse_manager = interactive_plot.mouse_motion_callback_manager(obj);
             obj.fig_size_change = interactive_plot.fig_size_change(obj);
             obj.y_zoom_buttons = interactive_plot.y_zoom_buttons(obj);
+            
+            obj.streaming = interactive_plot.streaming(obj.options,obj.axes_handles,obj.scroll_bar);
+            obj.y_tick_display = interactive_plot.y_tick_display(obj.axes_handles);
+            
+            obj.right_panel = interactive_plot.right_panel_layout_manager(...
+                obj.fig_handle,obj.axes_handles,obj.options);
             
         set(obj.fig_handle,'CloseRequestFcn', @(~,~) obj.cb_close);
         end
@@ -214,6 +215,13 @@ classdef interactive_plot < handle
                 linkaxes(all_handles,'x');
             end
             
+        end
+        function dataAdded(obj,new_max_time)
+            %Temporary hack
+            %Let's view 20 seconds for now ...
+            if isvalid(obj.fig_handle)
+                obj.streaming.changeMaxTime(new_max_time);
+            end
         end
         function removeVerticalGap(obj,rows,top_input,bottom_input,varargin)
             %x Removes vertical gaps from subplots
@@ -276,9 +284,10 @@ classdef interactive_plot < handle
                 a.clearLabel('x');
                 a.clearTicks('x');
             end
-            %Assuming all columns are the same ...
-            top_axes    = all_axes(1);
-            bottom_axes = all_axes(end);
+            
+%             %Assuming all columns are the same ...
+%             top_axes    = all_axes(1);
+%             bottom_axes = all_axes(end);
             
           	top_position = top_input;
             bottom_position = bottom_input;

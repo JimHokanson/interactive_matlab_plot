@@ -25,6 +25,7 @@ classdef y_zoom_buttons < handle
    end
    methods
        function obj = y_zoom_buttons(parent)
+           BUTTON_HEIGHT = 0.03;
            obj.parent = parent; % interactive_plot class
            obj.fig_handle = obj.parent.fig_handle;
            obj.axes_handles = obj.parent.axes_handles;
@@ -44,8 +45,12 @@ classdef y_zoom_buttons < handle
                bottom = ax.Position(2);
                axes_height = ax.Position(4);
 
-               h = axes_height/2;
-               x = axes_right_edge + obj.SPACE_FROM_AXES;
+               %JAH: I moved this to the left hand side
+               
+               %h = axes_height/2;
+               h = BUTTON_HEIGHT;
+               %x = axes_right_edge + obj.SPACE_FROM_AXES;
+               x = 0;
                y1 = bottom; % lower position of zoom-out button
                y2 = bottom + h; % lower position of zoom-in button
                
@@ -58,10 +63,15 @@ classdef y_zoom_buttons < handle
                % add an action listener to the size of the axes so that
                % whenever they get taller/shorter we can adjust the size of
                % the buttons
+               
+               %JAH: This isn't actually running
+               %Position doesn't work in >= 2014b
                addlistener(ax, 'Position', 'PostSet', @(~,~) obj.yLimChanged(k));
            end
        end
        function yLimChanged(obj, idx)
+           
+           %JAH: This conflicts with the behavior above ...
            % idx is the index of both the axes and the zoom buttons for
            % that axes
            

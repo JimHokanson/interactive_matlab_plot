@@ -142,6 +142,14 @@ classdef scroll_bar <handle
             obj.x_zoom = interactive_plot.x_zoom(obj);
             obj.auto_scroll = interactive_plot.auto_scroll(obj);
         end
+        function updateXMax(obj,new_x_max)
+            %TODO: position of the scroll bar needs to rerender ...
+            
+            %See streaming class
+             obj.total_time_limits(2) = new_x_max;
+             obj.total_time_range = obj.total_time_limits(2) - obj.total_time_limits(1);
+             obj.xLimChanged();
+        end
         function xLimChanged(obj)
             %  obj.xLimChanged()
             %

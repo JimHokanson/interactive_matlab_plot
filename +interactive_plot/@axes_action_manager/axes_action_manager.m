@@ -7,6 +7,8 @@ classdef axes_action_manager
     %   - on mouseover change to appropriate cursor
     %   - 
     
+    %   https://github.com/JimHokanson/interactive_matlab_plot/issues/10
+    
     properties
         cur_action = 'h_zoom'
         %- v_zoom - vertical zoom
@@ -22,6 +24,12 @@ classdef axes_action_manager
     methods
         function obj = axes_action_manager()
             
+        end
+        function mouseOverAxes()
+           %Should be called by the mouse_motion_callback_manager
+           %
+           %    - cursor update ...
+           %    - set mouse down action ...
         end
     end
     

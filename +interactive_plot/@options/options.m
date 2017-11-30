@@ -11,6 +11,7 @@ classdef options < handle
         scroll
         lines
         streaming
+        axes_names
     end
     
     properties (Hidden)

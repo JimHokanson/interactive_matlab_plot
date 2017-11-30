@@ -125,7 +125,9 @@ classdef line_moving_processor < handle
                 bottom = obj.y_positions(k+1) + obj.line_thickness/2;
                 height = top - bottom;
                 
-                %JAH: ???? - not sure what this means?
+                %JAH: ???? - not sure what this means? - don't we already
+                %have no overlap????
+                %
                 %TODO: build in logic so there is no overlap with the
                 %lines!!!!!!!
                 
