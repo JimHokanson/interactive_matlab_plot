@@ -10,6 +10,7 @@ classdef axes_action_manager < handle
     %   https://github.com/JimHokanson/interactive_matlab_plot/issues/10
     
     properties
+        axes_handles
         cur_action = 'h_zoom'
         %- v_zoom - vertical zoom
         %- u_zoom - unrestricted zoom
@@ -23,10 +24,25 @@ classdef axes_action_manager < handle
     end
     
     methods
-        function obj = axes_action_manager()
+        function obj = axes_action_manager(axes_handles)
             %
             %   obj = interactive_plot.axes_action_manager()
+
+            %JAH: This is a work in progress
             
+            c = uicontextmenu;
+
+            % Create child menu items for the uicontextmenu
+            m1 = uimenu(c,'Label','dashed','Callback',@(~,~)disp('1'));
+            m2 = uimenu(c,'Label','dotted','Callback',@(~,~)disp('2'));
+            m3 = uimenu(c,'Label','solid','Callback',@(~,~)disp('3'));
+
+            
+            n_axes = length(axes_handles);
+            for i = 1:n_axes
+               cur_axes = axes_handles{i};
+               cur_axes.UIContextMenu = c;
+            end
         end
         function [ptr,action] = getMousePointerAndAction(obj,x,y)
            %Should be called by the mouse_motion_callback_manager
@@ -50,6 +66,43 @@ classdef axes_action_manager < handle
     
 end
 
+%{
+function myprogram
+
+    f = figure('WindowStyle','normal');
+    ax = axes;
+    x = 0:100;
+    y = x.^2;
+
+    ax = gca;
+    plotline = plot(x,y);
+    c = uicontextmenu;
+
+    % Assign the uicontextmenu to the plot line
+    plotline.UIContextMenu = c;
+
+    % Create child menu items for the uicontextmenu
+    m1 = uimenu(c,'Label','dashed','Callback',@(~,~)disp('1'));
+    m2 = uimenu(c,'Label','dotted','Callback',@(~,~)disp('2'));
+    m3 = uimenu(c,'Label','solid','Callback',@(~,~)disp('3'));
+
+        function setlinestyle(source,callbackdata)
+            switch source.Label
+                case 'dashed'
+                    plotline.LineStyle = '--';
+                case 'dotted'
+                    plotline.LineStyle = ':';
+                case 'solid'
+                    plotline.LineStyle = '-';
+            end
+        end
+end
+
+%}
+
+
+%This is only a scratch section
+%------------------------------------------------
 function h__setPtr(obj,ptr)
 %16x16
 %hotspot: 9 8
