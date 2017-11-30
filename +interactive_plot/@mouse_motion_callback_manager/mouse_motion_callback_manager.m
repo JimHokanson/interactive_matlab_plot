@@ -28,8 +28,10 @@ classdef mouse_motion_callback_manager < handle
         x2
         x3
         x4
-        y_min
-        y_max
+        y_min_axes
+        y_max_axes
+        x_min_axes
+        x_max_axes
         cur_ptr = 0
     end
     
@@ -51,9 +53,9 @@ classdef mouse_motion_callback_manager < handle
             obj.initDefaultState();
             
             %JAH: Better names needed here, y_max of what????
-            obj.y_max = temp(2) + temp(4);
+            obj.y_max_axes = temp(2) + temp(4);
             temp = get(obj.axes_handles{end},'position');
-            obj.y_min = temp(2);
+            obj.y_min_axes = temp(2);
             
             %JAH: Initialize axes min and max
             
@@ -78,13 +80,13 @@ classdef mouse_motion_callback_manager < handle
             set(obj.fig_handle, 'WindowButtonUpFcn',  ...
                 @(~,~) obj.releaseAxisResize());
         end
-    	function initializeScaleBottomFixed(obj)
+        function initializeScaleBottomFixed(obj)
             set(obj.fig_handle, 'WindowButtonMotionFcn',...
                 @(~,~) obj.axis_resizer.processScaleBottomFixed());
             set(obj.fig_handle, 'WindowButtonUpFcn',  ...
                 @(~,~) obj.releaseAxisResize());
         end
-      	function initializeAxisPan(obj)
+        function initializeAxisPan(obj)
             set(obj.fig_handle, 'WindowButtonMotionFcn',...
                 @(~,~) obj.axis_resizer.processPan());
             set(obj.fig_handle, 'WindowButtonUpFcn',  ...
@@ -94,8 +96,8 @@ classdef mouse_motion_callback_manager < handle
         function releaseAxisResize(obj)
             obj.initDefaultState();
         end
-
-
+        
+        
         %Scrolling
         %------------------------------------------------------------------
         function initializeScrolling(obj)
@@ -113,7 +115,7 @@ classdef mouse_motion_callback_manager < handle
         function releaseScrollBar(obj)
             set(obj.fig_handle, 'WindowButtonMotionFcn', '');
             if ~obj.parent.options.update_on_drag
-               obj.parent.scroll_bar.updateAxes();
+                obj.parent.scroll_bar.updateAxes();
             end
         end
         %Defaults
@@ -127,19 +129,10 @@ classdef mouse_motion_callback_manager < handle
             cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
             y = cur_mouse_coords(2);
             x = cur_mouse_coords(1);
-            if y > obj.y_min && ...
-                    y < obj.y_max
-                
-                if x > obj.x1 && ...
-                        x < obj.x2
-                    obj.axis_resizer.registerResizeCall(y,1);
-                elseif x > obj.x2 && ...
-                        x < obj.x3
-                    obj.axis_resizer.registerResizeCall(y,2);
-                elseif x > obj.x3 && ...
-                        x < obj.x4
-                    obj.axis_resizer.registerResizeCall(y,3);
-                end
+            
+            [~,action] = h__getInfoByMousePosition(obj,x,y);
+            if ~isempty(action)
+                action();
             end
         end
         function defaultMouseMovingCallback(obj)
@@ -168,42 +161,51 @@ classdef mouse_motion_callback_manager < handle
             y = cur_mouse_coords(2);
             x = cur_mouse_coords(1);
             
-            STD_PTR = 0;
-            SCALE1_PTR = 1;
-            SCALE2_PTR = 2;
-            PAN_PTR = 3;
-            
             %Determine appropriate cursor
             %----------------------------
-            if y > obj.y_min && ...
-                    y < obj.y_max
-                
-                %JAH: Let's first check if we are inside the axes
-                %- JAH: Make call to axes_action_manager
-                
-                if x > obj.x1 && ...
-                        x < obj.x2
-                    ptr = SCALE1_PTR;
-                elseif x > obj.x2 && ...
-                        x < obj.x3
-                    ptr = SCALE2_PTR;
-                elseif x > obj.x3 && ...
-                        x < obj.x4
-                    ptr = PAN_PTR;
-                else
-                    
-                    
-                    ptr = STD_PTR;
-                end
-            else
-                ptr = STD_PTR;
-            end
+            ptr = h__getInfoByMousePosition(obj,x,y);
             
             if ptr ~= obj.cur_ptr
                 h__setPtr(obj,ptr)
             end
         end
     end
+end
+
+function [ptr,action] = h__getInfoByMousePosition(obj,x,y)
+
+STD_PTR = 0;
+SCALE1_PTR = 1;
+SCALE2_PTR = 2;
+PAN_PTR = 3;
+
+action = [];
+
+if y > obj.y_min_axes && ...
+        y < obj.y_max_axes
+    
+    %JAH: Let's first check if we are inside the axes
+    %- JAH: Make call to axes_action_manager
+    
+    if x > obj.x1 && x < obj.x2
+        ptr = SCALE1_PTR;
+        action = @()obj.axis_resizer.registerResizeCall(y,1);
+    elseif x > obj.x2 && x < obj.x3
+        ptr = SCALE2_PTR;
+        action = @()obj.axis_resizer.registerResizeCall(y,2);
+    elseif x > obj.x3 && x < obj.x4
+        ptr = PAN_PTR;
+        action = @()obj.axis_resizer.registerResizeCall(y,2);
+    else
+        
+        
+        ptr = STD_PTR;
+    end
+else
+    ptr = STD_PTR;
+end
+
+
 end
 
 function h__setPtr(obj,ptr)
@@ -241,7 +243,7 @@ switch ptr
             NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
             ];
         hotspot = [8 8];
-	case 2
+    case 2
         %1  2   3   4   5   6   7   8   9   10  11  12  13  14  15  16
         cdata=[...
             NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
@@ -261,7 +263,7 @@ switch ptr
             NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
             NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
             ];
-        hotspot = [8 8];        
+        hotspot = [8 8];
     case 3
         %1  2   3   4   5   6   7   8   9   10  11  12  13  14  15  16
         cdata=[...
