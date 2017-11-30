@@ -29,6 +29,7 @@ classdef interactive_plot < handle
         streaming
         y_tick_display
         right_panel
+        axes_action_manager
         
         options  %interactive_plot.options
 
@@ -175,6 +176,7 @@ classdef interactive_plot < handle
                 obj.scroll_bar = interactive_plot.scroll_bar(obj);
             end
             
+            obj.axes_action_manager = interactive_plot.axes_action_manager();
             obj.axis_resizer = interactive_plot.axis_resizer(obj);
             obj.mouse_manager = interactive_plot.mouse_motion_callback_manager(obj);
             obj.fig_size_change = interactive_plot.fig_size_change(obj);
@@ -185,6 +187,8 @@ classdef interactive_plot < handle
             
             obj.right_panel = interactive_plot.right_panel_layout_manager(...
                 obj.fig_handle,obj.axes_handles,obj.options);
+            
+            
             
         set(obj.fig_handle,'CloseRequestFcn', @(~,~) obj.cb_close);
         end

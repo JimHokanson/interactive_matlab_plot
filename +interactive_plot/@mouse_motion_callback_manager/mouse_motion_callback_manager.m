@@ -18,6 +18,7 @@ classdef mouse_motion_callback_manager < handle
     
     properties
         fig_handle
+        axes_action_manager
         parent %interactive plot class
         axes_handles
         axis_resizer
@@ -38,6 +39,7 @@ classdef mouse_motion_callback_manager < handle
     methods
         function obj = mouse_motion_callback_manager(parent)
             obj.parent = parent;
+            obj.axes_action_manager = parent.axes_action_manager;
             obj.fig_handle = parent.fig_handle;
             obj.axes_handles = parent.axes_handles;
             obj.axis_resizer = parent.axis_resizer;
@@ -49,17 +51,15 @@ classdef mouse_motion_callback_manager < handle
             obj.x3 = obj.x4 - 0.02;
             obj.x2 = obj.x3 - 0.02;
             obj.x1 = obj.x2 - 0.02;
+            obj.x_min_axes = temp(1);
+            obj.x_max_axes = temp(1)+temp(3);
             
             obj.initDefaultState();
             
-            %JAH: Better names needed here, y_max of what????
             obj.y_max_axes = temp(2) + temp(4);
             temp = get(obj.axes_handles{end},'position');
             obj.y_min_axes = temp(2);
-            
-            %JAH: Initialize axes min and max
-            
-            
+                        
         end
         %Line moving
         %------------------------------------------------------------------
@@ -165,6 +165,10 @@ classdef mouse_motion_callback_manager < handle
             %----------------------------
             ptr = h__getInfoByMousePosition(obj,x,y);
             
+            if isempty(ptr)
+                return;
+            end
+            
             if ptr ~= obj.cur_ptr
                 h__setPtr(obj,ptr)
             end
@@ -181,13 +185,11 @@ PAN_PTR = 3;
 
 action = [];
 
-if y > obj.y_min_axes && ...
-        y < obj.y_max_axes
+if y > obj.y_min_axes && y < obj.y_max_axes
     
-    %JAH: Let's first check if we are inside the axes
-    %- JAH: Make call to axes_action_manager
-    
-    if x > obj.x1 && x < obj.x2
+    if x > obj.x_min_axes && x < obj.x_max_axes
+        [ptr,action] = obj.axes_action_manager.getMousePointerAndAction(x,y);
+    elseif x > obj.x1 && x < obj.x2
         ptr = SCALE1_PTR;
         action = @()obj.axis_resizer.registerResizeCall(y,1);
     elseif x > obj.x2 && x < obj.x3
@@ -285,6 +287,28 @@ switch ptr
             NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
             ];
         hotspot = [8 8];
+    case 4  %Vertical Scroll ....
+        %1  2   3   4   5   6   7   8   9   10  11  12  13  14  15  16
+        cdata=[...
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN 1   1   1   NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN 1   1   1   1   1   NaN NaN NaN NaN NaN NaN         
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN 1   1   1   1   1   1   1 NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN 1   1   1   1   1   NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN 1   1   1   NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            ];
+        hotspot = [8 8];
+    case 5
 end
 
 Data = {...
