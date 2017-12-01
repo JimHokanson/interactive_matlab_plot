@@ -12,6 +12,9 @@ classdef options < handle
         lines
         streaming
         axes_names
+        
+        % NYI-------
+        display_channel_names
     end
     
     properties (Hidden)
@@ -27,6 +30,13 @@ classdef options < handle
         bar_left_limit
         
         % TODO: include line sizing options
+        
+        % NYI------------
+        yzoom_in_scale
+        yzoom_out_scale
+        
+        xzoom_in_scale
+        xzoom_out_scale
     end
     methods
         function obj = options(varargin)  
