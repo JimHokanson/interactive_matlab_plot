@@ -22,6 +22,7 @@ classdef axes_action_manager < handle
         %- 6) measure_y - draw vertical line and show how tall the line is
         %- 7) y average - this would be a horizontal select
         ptr_map
+        all_actions
     end
     
     methods
@@ -33,6 +34,11 @@ classdef axes_action_manager < handle
             
             %p = containers.Map;
             %p('h
+            
+%             obj.all_actions = {
+%                 obj.initHZoom ...
+%                 obj.initYZoom ...
+%                 obj.initUZoom};
                         
             c = uicontextmenu;
 
@@ -68,13 +74,12 @@ classdef axes_action_manager < handle
             %ptr = 4;
             action = [];
             
-            %TODO: We need to provide actions ...
-            %TODO; we need to switch on current actions
+            %When ready use this!
+            %action = obj.all_actions{obj.cur_action};
             
-%             local_ptr = 1;
-%             if local_ptr ~= obj.cur_ptr
-%                 h__setPtr(obj,1);
-%             end
+        end
+        function initHZoom(obj)
+           %code goes here! 
         end
     end
     
