@@ -10,6 +10,7 @@ classdef axes_action_manager < handle
     %   https://github.com/JimHokanson/interactive_matlab_plot/issues/10
     
     properties
+        mouse_man
         axes_handles
         cur_action = 1
         %- 1) h_zoom - horizontal zoom
@@ -26,12 +27,14 @@ classdef axes_action_manager < handle
         
         %Hzoom 
         x_start_position
+        y_start_position
+        h_rect
         h_line
         
     end
     
     methods
-        function obj = axes_action_manager(axes_handles)
+        function obj = axes_action_manager(axes_handles,mouse_man)
             %
             %   obj = interactive_plot.axes_action_manager()
 
@@ -40,7 +43,9 @@ classdef axes_action_manager < handle
             %p = containers.Map;
             %p('h
             
-            obj.all_actions = {@obj.initHZoom};
+            obj.mouse_man = mouse_man;
+            
+            obj.all_actions = {};
 %             obj.all_actions = {...
 %                 obj.HZoom, ...
 %                 obj.YZoom, ...
@@ -65,10 +70,13 @@ classdef axes_action_manager < handle
                cur_axes.UIContextMenu = c;
             end
         end
+        %TODO: Add mouse down action listener ...
+        %- this should allow us to clear the current drawing for data
+        %select
         function setActiveAction(obj,selected_value)
             obj.cur_action = selected_value;
         end
-        function [ptr,action] = getMousePointerAndAction(obj,x,y)
+        function [ptr,action] = getMousePointerAndAction(obj,x,y,is_action)
            %Should be called by the mouse_motion_callback_manager
            %
            %    - cursor update ...
@@ -78,6 +86,27 @@ classdef axes_action_manager < handle
            
             ptr = obj.cur_action + 20;
             %ptr = 4;
+            
+            %TODO: Are we over the lines
+            
+            if is_action
+                obj.x_start_position = x;
+                obj.y_start_position = y;
+        
+                switch obj.cur_action
+                    case 1
+                        obj.initHZoom();
+                    case 2
+                    case 3
+                    case 4
+                        %data select
+                        obj.initDataSelect();
+                    case 5
+                    case 6
+                    case 7
+                end
+                
+            end
             action = [];
             
             %When ready use this!
@@ -92,9 +121,10 @@ classdef axes_action_manager < handle
             % 3) create the line at the proper x0,y0
             
             
+            x = obj.x_start_position;
+            y = obj.y_start_position;
             
-            
-            obj.x_start_position = x;
+            %obj.x_start_position = x;
             
             obj.h_line = annotation('line', 'X', [x,x], 'Y' ,[y,y]); 
             
@@ -108,6 +138,18 @@ classdef axes_action_manager < handle
             % adjust the xlimits to show this
             % delete the line
 
+        end
+        function initDataSelect(obj)
+            obj.mouse_man.setMouseMotionFunction(@obj.dataSelectMove);
+            obj.mouse_man.setMouseUpFunction(@obj.dataSelectMouseUp);
+            obj.h_rect = annotation(
+        end
+        function dataSelectMove(obj)
+            
+        end
+        function dataSelectMouseUp(obj)
+            %Translate figure based animation to actual data
+            obj.mouse_man.initDefaultState();
         end
         function runHZoom(obj)
             cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');

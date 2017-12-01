@@ -61,6 +61,12 @@ classdef mouse_motion_callback_manager < handle
             obj.y_min_axes = temp(2);
                         
         end
+        function setMouseMotionFunction(obj,fcn)
+            set(obj.fig_handle, 'WindowButtonMotionFcn',@(~,~)fcn());
+        end
+        function setMouseUpFunction(obj,fcn)
+            set(obj.fig_handle, 'WindowButtonMotionFcn',@(~,~)fcn());
+        end
         %Line moving
         %------------------------------------------------------------------
         function initializeLineMoving(obj, id)
@@ -129,10 +135,7 @@ classdef mouse_motion_callback_manager < handle
             y = cur_mouse_coords(2);
             x = cur_mouse_coords(1);
             
-            [~,action] = h__getInfoByMousePosition(obj,x,y);
-            if ~isempty(action)
-                action();
-            end
+            h__getInfoByMousePosition(obj,x,y,true);
         end
         function defaultMouseMovingCallback(obj)
             %
@@ -162,7 +165,7 @@ classdef mouse_motion_callback_manager < handle
             
             %Determine appropriate cursor
             %----------------------------
-            ptr = h__getInfoByMousePosition(obj,x,y);
+            ptr = h__getInfoByMousePosition(obj,x,y,false);
             
             if isempty(ptr)
                 return;
@@ -175,7 +178,7 @@ classdef mouse_motion_callback_manager < handle
     end
 end
 
-function [ptr,action] = h__getInfoByMousePosition(obj,x,y)
+function ptr = h__getInfoByMousePosition(obj,x,y,is_action)
 
 %JAH: I'm not thrilled with this setup of merging ptr and action
 %but I also didnt like having the same checks twice
@@ -190,16 +193,22 @@ action = [];
 if y > obj.y_min_axes && y < obj.y_max_axes
     
     if x > obj.x_min_axes && x < obj.x_max_axes
-        [ptr,action] = obj.axes_action_manager.getMousePointerAndAction(x,y);
+        ptr = obj.axes_action_manager.getMousePointerAndAction(x,y,is_action);
     elseif x > obj.x1 && x < obj.x2
         ptr = SCALE1_PTR;
-        action = @()obj.axis_resizer.registerResizeCall(y,1);
+        if is_action
+            obj.axis_resizer.registerResizeCall(y,1);
+        end
     elseif x > obj.x2 && x < obj.x3
         ptr = SCALE2_PTR;
-        action = @()obj.axis_resizer.registerResizeCall(y,2);
+        if is_action
+            obj.axis_resizer.registerResizeCall(y,2);
+        end
     elseif x > obj.x3 && x < obj.x4
         ptr = PAN_PTR;
-        action = @()obj.axis_resizer.registerResizeCall(y,2);
+        if is_action
+            obj.axis_resizer.registerResizeCall(y,2);
+        end
     else
         
         
