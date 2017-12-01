@@ -39,7 +39,6 @@ classdef mouse_motion_callback_manager < handle
     methods
         function obj = mouse_motion_callback_manager(parent)
             obj.parent = parent;
-            obj.axes_action_manager = parent.axes_action_manager;
             obj.fig_handle = parent.fig_handle;
             obj.axes_handles = parent.axes_handles;
             obj.axis_resizer = parent.axis_resizer;

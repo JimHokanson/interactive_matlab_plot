@@ -11,6 +11,7 @@ classdef axes_action_manager < handle
     
     properties
         mouse_man
+        h_fig
         axes_handles
         cur_action = 1
         %- 1) h_zoom - horizontal zoom
@@ -34,7 +35,7 @@ classdef axes_action_manager < handle
     end
     
     methods
-        function obj = axes_action_manager(axes_handles,mouse_man)
+        function obj = axes_action_manager(h_fig,axes_handles,mouse_man)
             %
             %   obj = interactive_plot.axes_action_manager()
 
@@ -43,7 +44,9 @@ classdef axes_action_manager < handle
             %p = containers.Map;
             %p('h
             
+            obj.h_fig = h_fig;
             obj.mouse_man = mouse_man;
+            mouse_man.axes_action_manager = obj;
             
             obj.all_actions = {};
 %             obj.all_actions = {...
@@ -128,7 +131,7 @@ classdef axes_action_manager < handle
             
             obj.h_line = annotation('line', 'X', [x,x], 'Y' ,[y,y]); 
             
-            obj.parent.initHZoom();
+            %obj.mouse_man.initHZoom();
 
             % get the current x position of the mouse, register what this
             % position corresponds to in the data
@@ -142,10 +145,18 @@ classdef axes_action_manager < handle
         function initDataSelect(obj)
             obj.mouse_man.setMouseMotionFunction(@obj.dataSelectMove);
             obj.mouse_man.setMouseUpFunction(@obj.dataSelectMouseUp);
-            obj.h_rect = annotation(
+            %left
+            %bottom
+            %width
+            %height
+            obj.h_rect = annotation('rectangle',[x y 0.001 0.001]);
         end
         function dataSelectMove(obj)
-            
+            cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
+            y1 = cur_mouse_coords(2);
+            x1 = cur_mouse_coords(1);
+            %
+            %
         end
         function dataSelectMouseUp(obj)
             %Translate figure based animation to actual data
@@ -173,39 +184,33 @@ classdef axes_action_manager < handle
     
 end
 
-%{
-function myprogram
+function h__getRectanglePosition(x1,y1,x2,y2)
 
-    f = figure('WindowStyle','normal');
-    ax = axes;
-    x = 0:100;
-    y = x.^2;
+%
+%   A
+%     \
+%       B
+%
+%       B
+%     /
+%   A
+%
+%      A
+%    /
+%   B
+%
+%   
+%   B
+%    \
+%      A
 
-    ax = gca;
-    plotline = plot(x,y);
-    c = uicontextmenu;
+height = abs(y2 - y1);
+width = abs(x2 - x1);
 
-    % Assign the uicontextmenu to the plot line
-    plotline.UIContextMenu = c;
 
-    % Create child menu items for the uicontextmenu
-    m1 = uimenu(c,'Label','dashed','Callback',@(~,~)disp('1'));
-    m2 = uimenu(c,'Label','dotted','Callback',@(~,~)disp('2'));
-    m3 = uimenu(c,'Label','solid','Callback',@(~,~)disp('3'));
 
-        function setlinestyle(source,callbackdata)
-            switch source.Label
-                case 'dashed'
-                    plotline.LineStyle = '--';
-                case 'dotted'
-                    plotline.LineStyle = ':';
-                case 'solid'
-                    plotline.LineStyle = '-';
-            end
-        end
+
 end
-
-%}
 
 
 %This is only a scratch section
