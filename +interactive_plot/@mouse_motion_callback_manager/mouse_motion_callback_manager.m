@@ -178,6 +178,9 @@ end
 
 function [ptr,action] = h__getInfoByMousePosition(obj,x,y)
 
+%JAH: I'm not thrilled with this setup of merging ptr and action
+%but I also didnt like having the same checks twice
+
 STD_PTR = 0;
 SCALE1_PTR = 1;
 SCALE2_PTR = 2;
@@ -266,7 +269,7 @@ switch ptr
             NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
             ];
         hotspot = [8 8];
-    case 3
+    case 3  %vertical pan on lhs
         %1  2   3   4   5   6   7   8   9   10  11  12  13  14  15  16
         cdata=[...
             NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
@@ -287,7 +290,28 @@ switch ptr
             NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
             ];
         hotspot = [8 8];
-    case 4  %Vertical Scroll ....
+    case 21 %Horizontal zoom ...
+            %1  2   3   4   5   6   7   8   9   10  11  12  13  14  15  16
+        cdata=[...
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN       
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN 1   NaN NaN NaN NaN 1   NaN NaN NaN NaN 1   NaN NaN NaN
+            NaN 1   1   NaN NaN NaN NaN 1   NaN NaN NaN NaN 1   1   NaN NaN
+            1   1   1   NaN 1   1   1   1   1   1   1   NaN 1   1   1   NaN
+            NaN 1   1   NaN NaN NaN NaN 1   NaN NaN NaN NaN 1   1   NaN NaN
+            NaN NaN 1   NaN NaN NaN NaN 1   NaN NaN NaN NaN 1   NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            ];
+        hotspot = [8 8];
+    case 22  %Vertical zoom ...
         %1  2   3   4   5   6   7   8   9   10  11  12  13  14  15  16
         cdata=[...
             NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
@@ -308,7 +332,113 @@ switch ptr
             NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
             ];
         hotspot = [8 8];
-    case 5
+    case 23  %Unconstrained zoom ...
+        %1  2   3   4   5   6   7   8   9   10  11  12  13  14  15  16
+        cdata=[...
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN 1   1   1   1   1   NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN 1   1   1   NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN 1   1   NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN         
+            NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN 1   NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN 1   1   1   1   1   1   1 NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN 1   NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN 1   1   NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN 1   1   1   NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN 1   1   1   1   1   NaN NaN
+            ];
+        hotspot = [8 8];
+     case 24  %data select
+        %1  2   3   4   5   6   7   8   9   10  11  12  13  14  15  16
+        cdata=[...
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN         
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN 1   1   1   1   1   1   1 NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            ];
+        hotspot = [8 8];    
+    case 25   %measure x
+        %1  2   3   4   5   6   7   8   9   10  11  12  13  14  15  16
+        cdata=[...
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN         
+            NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN
+            NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN
+            NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN
+            NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN
+            NaN 1   NaN 1   1   1   1   1   1   1   1   1   NaN 1   NaN NaN
+            NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN
+            NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN
+            NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN
+            NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            ];
+        hotspot = [8 8];
+
+    case 26
+        %1  2   3   4   5   6   7   8   9   10  11  12  13  14  15  16
+        cdata=[...
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN         
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN 1   1   1   1   1   1   1 NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            ];
+        hotspot = [8 8];
+    case 27
+        %1  2   3   4   5   6   7   8   9   10  11  12  13  14  15  16
+        cdata=[...
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN         
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN 1   1   1   1   1   1   1 NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            ];
+        hotspot = [8 8];
+    
 end
 
 Data = {...

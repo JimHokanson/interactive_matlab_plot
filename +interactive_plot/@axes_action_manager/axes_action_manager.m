@@ -11,16 +11,17 @@ classdef axes_action_manager < handle
     
     properties
         axes_handles
-        cur_action = 'h_zoom'
-        %- v_zoom - vertical zoom
-        %- u_zoom - unrestricted zoom
-        %- data_select
+        cur_action = 1
+        %- 1) h_zoom - 
+        %- 2) v_zoom - vertical zoom
+        %- 3) u_zoom - unrestricted zoom
+        %- 4) data_select
         %       - custom callbacks
         %       - plotting selections overlayed
-        %- measure_x
-        %- measure_y
-        %- y_average
-        cur_ptr
+        %- 5) measure_x
+        %- 6) measure_y - draw vertical line and show how tall the line is
+        %- 7) y average - this would be a horizontal select
+        ptr_map
     end
     
     methods
@@ -30,12 +31,20 @@ classdef axes_action_manager < handle
 
             %JAH: This is a work in progress
             
+            %p = containers.Map;
+            %p('h
+                        
             c = uicontextmenu;
 
             % Create child menu items for the uicontextmenu
-            m1 = uimenu(c,'Label','dashed','Callback',@(~,~)disp('1'));
-            m2 = uimenu(c,'Label','dotted','Callback',@(~,~)disp('2'));
-            m3 = uimenu(c,'Label','solid','Callback',@(~,~)disp('3'));
+            % JAH: Nest menu's?????
+            uimenu(c,'Label','horizontal zoom','Callback',@(~,~)obj.setActiveAction(1));
+            uimenu(c,'Label','vertical zoom','Callback',@(~,~)obj.setActiveAction(2));
+            uimenu(c,'Label','unrestriced zoom','Callback',@(~,~)obj.setActiveAction(3));
+            uimenu(c,'Label','data select','Callback',@(~,~)obj.setActiveAction(4));
+            uimenu(c,'Label','measure x','Callback',@(~,~)obj.setActiveAction(5));
+            uimenu(c,'Label','measure y','Callback',@(~,~)obj.setActiveAction(6));
+            uimenu(c,'Label','y average','Callback',@(~,~)obj.setActiveAction(7));
 
             
             n_axes = length(axes_handles);
@@ -44,6 +53,9 @@ classdef axes_action_manager < handle
                cur_axes.UIContextMenu = c;
             end
         end
+        function setActiveAction(obj,selected_value)
+            obj.cur_action = selected_value;
+        end
         function [ptr,action] = getMousePointerAndAction(obj,x,y)
            %Should be called by the mouse_motion_callback_manager
            %
@@ -51,7 +63,9 @@ classdef axes_action_manager < handle
            %    - set mouse down action ...
            
            %https://undocumentedmatlab.com/blog/undocumented-mouse-pointer-functions
-            ptr = 4;
+           
+            ptr = obj.cur_action + 20;
+            %ptr = 4;
             action = [];
             
             %TODO: We need to provide actions ...
@@ -123,11 +137,11 @@ switch ptr
             NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN       
             NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
             NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN 1   NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN 1   1   NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
-            1   1   1   NaN 1   1   1   1   1   1   1 NaN NaN NaN NaN NaN
-            NaN 1   1   NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN 1   NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN 1   NaN NaN NaN NaN 1   NaN NaN NaN NaN 1   NaN NaN NaN
+            NaN 1   1   NaN NaN NaN NaN 1   NaN NaN NaN NaN 1   1   NaN NaN
+            1   1   1   NaN 1   1   1   1   1   1   1   NaN 1   1   1   NaN
+            NaN 1   1   NaN NaN NaN NaN 1   NaN NaN NaN NaN 1   1   NaN NaN
+            NaN NaN 1   NaN NaN NaN NaN 1   NaN NaN NaN NaN 1   NaN NaN NaN
             NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
             NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
             NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN

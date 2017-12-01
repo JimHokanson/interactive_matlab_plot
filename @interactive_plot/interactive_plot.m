@@ -176,7 +176,7 @@ classdef interactive_plot < handle
                 obj.scroll_bar = interactive_plot.scroll_bar(obj);
             end
             
-            obj.axes_action_manager = interactive_plot.axes_action_manager();
+            obj.axes_action_manager = interactive_plot.axes_action_manager(obj.axes_handles);
             obj.axis_resizer = interactive_plot.axis_resizer(obj);
             obj.mouse_manager = interactive_plot.mouse_motion_callback_manager(obj);
             obj.fig_size_change = interactive_plot.fig_size_change(obj);
