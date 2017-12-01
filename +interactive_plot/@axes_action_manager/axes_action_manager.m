@@ -12,7 +12,7 @@ classdef axes_action_manager < handle
     properties
         axes_handles
         cur_action = 1
-        %- 1) h_zoom - 
+        %- 1) h_zoom - horizontal zoom
         %- 2) v_zoom - vertical zoom
         %- 3) u_zoom - unrestricted zoom
         %- 4) data_select
@@ -23,6 +23,11 @@ classdef axes_action_manager < handle
         %- 7) y average - this would be a horizontal select
         ptr_map
         all_actions
+        
+        %Hzoom 
+        x_start_position
+        h_line
+        
     end
     
     methods
@@ -35,10 +40,11 @@ classdef axes_action_manager < handle
             %p = containers.Map;
             %p('h
             
-%             obj.all_actions = {
-%                 obj.initHZoom ...
-%                 obj.initYZoom ...
-%                 obj.initUZoom};
+            obj.all_actions = {@obj.initHZoom};
+%             obj.all_actions = {...
+%                 obj.HZoom, ...
+%                 obj.YZoom, ...
+%                 obj.UZoom};
                         
             c = uicontextmenu;
 
@@ -75,11 +81,51 @@ classdef axes_action_manager < handle
             action = [];
             
             %When ready use this!
-            %action = obj.all_actions{obj.cur_action};
+           % action = obj.all_actions{obj.cur_action};
             
         end
         function initHZoom(obj)
-           %code goes here! 
+            % initiates the horizontal zoom function 
+            % 1) change the callbacks on the mouse manager
+            %   -motion , up (this class needs to own these)
+            % 2) need to get the initial position
+            % 3) create the line at the proper x0,y0
+            
+            
+            
+            
+            obj.x_start_position = x;
+            
+            obj.h_line = annotation('line', 'X', [x,x], 'Y' ,[y,y]); 
+            
+            obj.parent.initHZoom();
+
+            % get the current x position of the mouse, register what this
+            % position corresponds to in the data
+            % as the mouse moves, draw a horizontal line
+            % register the final position and what it corresponds to in
+            % the data
+            % adjust the xlimits to show this
+            % delete the line
+
+        end
+        function runHZoom(obj)
+            cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
+            x = cur_mouse_coords(1);
+            set(obj.h_line, 'X', [obj.x_start_position, x]);
+        end
+        function endHzoom(obj)
+            
+        delete(obj.h_line);
+        end
+        function YZoom(obj)
+           % initiates the y zoom function on a given axes
+           %NYI!
+        end
+        function UZoom(obj)
+            % initiates the unconstrained zoom function
+            % NYI!
+            
         end
     end
     

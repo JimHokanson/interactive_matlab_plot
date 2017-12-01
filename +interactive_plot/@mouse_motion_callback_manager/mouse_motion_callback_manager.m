@@ -91,7 +91,6 @@ classdef mouse_motion_callback_manager < handle
                 @(~,~) obj.axis_resizer.processPan());
             set(obj.fig_handle, 'WindowButtonUpFcn',  ...
                 @(~,~) obj.releaseAxisResize());
-            
         end
         function releaseAxisResize(obj)
             obj.initDefaultState();
