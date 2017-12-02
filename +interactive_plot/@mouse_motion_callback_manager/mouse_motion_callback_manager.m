@@ -61,10 +61,10 @@ classdef mouse_motion_callback_manager < handle
                         
         end
         function setMouseMotionFunction(obj,fcn)
-            set(obj.fig_handle, 'WindowButtonMotionFcn',@(~,~)fcn());
+            set(obj.fig_handle, 'WindowButtonMotionFcn',@(~,~)feval(fcn));
         end
         function setMouseUpFunction(obj,fcn)
-            set(obj.fig_handle, 'WindowButtonMotionFcn',@(~,~)fcn());
+            set(obj.fig_handle, 'WindowButtonUpFcn',@(~,~)feval(fcn));
         end
         %Line moving
         %------------------------------------------------------------------

@@ -149,17 +149,27 @@ classdef axes_action_manager < handle
             %bottom
             %width
             %height
-            obj.h_rect = annotation('rectangle',[x y 0.001 0.001]);
+            x = obj.x_start_position;
+            y = obj.y_start_position;
+            obj.h_rect = annotation('rectangle',[x y 0.001 0.001],'Color','red');
         end
         function dataSelectMove(obj)
-            cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
+            cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
             y1 = cur_mouse_coords(2);
             x1 = cur_mouse_coords(1);
+            y2 = obj.y_start_position;
+            x2 = obj.x_start_position;
+            
+            
+            p = h__getRectanglePosition(x1,y1,x2,y2);
+            
+            set(obj.h_rect,'Position',p);
             %
             %
         end
         function dataSelectMouseUp(obj)
             %Translate figure based animation to actual data
+            delete(obj.h_rect);
             obj.mouse_man.initDefaultState();
         end
         function runHZoom(obj)
@@ -184,7 +194,7 @@ classdef axes_action_manager < handle
     
 end
 
-function h__getRectanglePosition(x1,y1,x2,y2)
+function p = h__getRectanglePosition(x1,y1,x2,y2)
 
 %
 %   A
@@ -207,8 +217,20 @@ function h__getRectanglePosition(x1,y1,x2,y2)
 height = abs(y2 - y1);
 width = abs(x2 - x1);
 
+if x1 < x2
+    left = x1;
+else
+    left = x2;
+end
+
+if y1 < y2
+    bottom = y1;
+else
+    bottom = y2;
+end
 
 
+p = [left bottom width height];
 
 end
 
