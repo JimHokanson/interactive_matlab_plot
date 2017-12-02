@@ -56,18 +56,16 @@ classdef xy_positions < handle
             
             I = find(obj.tops_and_bottoms < y,1);
             
-            %y is between I - 1 & I
-
             %odd
             if mod(I,2) 
-                %odd
+                %even
                 %- on an axes
                 h_I = (I+1)/2;
                 is_line = false;
             else
                 %even
                 %- on a line
-                h_I = (I-1)/2;
+                h_I = (I/2);
                 is_line = true;
             end
         end

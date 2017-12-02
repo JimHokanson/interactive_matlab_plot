@@ -27,10 +27,11 @@ classdef axes_action_manager < handle
         ptr_map
         
         %Hzoom 
+        selected_axes
         x_start_position
         y_start_position
         h_fig_rect
-        h_rect
+        h_axes_rect
         h_line
         
     end
@@ -41,6 +42,7 @@ classdef axes_action_manager < handle
             %   obj = interactive_plot.axes_action_manager()
             
             obj.h_fig = h_fig;
+            obj.axes_handles = axes_handles;
             obj.mouse_man = mouse_man;
             obj.xy_positions = xy_positions;
             mouse_man.axes_action_manager = obj;
@@ -91,6 +93,8 @@ classdef axes_action_manager < handle
             %TODO: Are we over the lines
             
             if is_action
+                obj.selected_axes = obj.axes_handles{I};
+                
                 obj.x_start_position = x;
                 obj.y_start_position = y;
         
@@ -173,6 +177,32 @@ classdef axes_action_manager < handle
             %- which axes is active?
             
             %rectangle('Position')
+                        
+            
+            %h_fig_rect
+            
+            %TODO: Move this to somewhere common 
+            ylim = get(obj.selected_axes,'YLim');
+            xlim = get(obj.selected_axes,'XLim');
+            x_range = xlim(2)-xlim(1);
+            y_range = ylim(2)-ylim(1);
+            
+            p_axes = get(obj.selected_axes,'position');
+            
+            height = p_axes(4);
+            width  = p_axes(3);
+            
+            x_ax_per_norm = x_range/width;
+            y_ax_per_norm = y_range/height;
+                        
+            p_fig_rect = get(obj.h_fig_rect,'Position');
+                        
+            new_left = xlim(1) + (p_fig_rect(1)-p_axes(1))*x_ax_per_norm;
+            new_bottom = ylim(1) + (p_fig_rect(2)-p_axes(2))*y_ax_per_norm;
+            new_height = (p_fig_rect(4))*y_ax_per_norm;
+            new_width = (p_fig_rect(3))*x_ax_per_norm;
+            
+            obj.h_axes_rect = rectangle('Position',[new_left new_bottom new_width new_height]);
             
             delete(obj.h_fig_rect);
             obj.mouse_man.initDefaultState();
