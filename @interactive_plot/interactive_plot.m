@@ -20,6 +20,7 @@ classdef interactive_plot < handle
     properties
         fig_handle
         axes_handles
+        line_handles
         mouse_manager
         line_moving_processor
         axis_resizer %interactive_plot.axis_resizer
@@ -31,6 +32,8 @@ classdef interactive_plot < handle
         right_panel
         axes_action_manager
         xy_positions
+        toolbar
+        eventz
         
         options  %interactive_plot.options
 
@@ -83,6 +86,9 @@ classdef interactive_plot < handle
             obj = interactive_plot(f,ax_ca,varargin{:});
         end
     end
+    
+    %Constructor
+    %===========================================
     methods
         function obj = interactive_plot(fig_handle, axes, varargin)
             %
@@ -134,6 +140,17 @@ classdef interactive_plot < handle
             rows = 1:shape(1);
             %cols = 1:shape(2); % for implementing multiple columns
             
+            %Grab line handles
+            %------------------------------
+            temp = cell(size(obj.axes_handles));
+            for i = 1:length(temp)
+                temp2 = get(obj.axes_handles{i},'Children');
+                %'matlab.graphics.chart.primitive.Line'
+                %TODO: Filter out non-lines ...
+                obj.line_handles{i} = temp2;
+            end
+            
+            
             % need a gap size between the axes of a few pixels.
             % removeVerticalGap works in normalized units. need to find a
             % conversion factor.
@@ -164,6 +181,8 @@ classdef interactive_plot < handle
             
             
             obj.xy_positions = interactive_plot.xy_positions(obj.axes_handles);
+            
+            obj.eventz = interactive_plot.eventz();
 
             obj.line_moving_processor = ...
                 interactive_plot.line_moving_processor(obj,obj.xy_positions,obj.options);
@@ -188,7 +207,8 @@ classdef interactive_plot < handle
             obj.mouse_manager = interactive_plot.mouse_motion_callback_manager(obj);
             
             obj.axes_action_manager = interactive_plot.axes_action_manager(...
-                obj.fig_handle,obj.axes_handles,obj.xy_positions,obj.mouse_manager);
+                obj.fig_handle,obj.axes_handles,obj.line_handles, ...
+                obj.xy_positions,obj.mouse_manager,obj.eventz);
             
             obj.fig_size_change = interactive_plot.fig_size_change(obj);
             
@@ -201,9 +221,10 @@ classdef interactive_plot < handle
             obj.right_panel = interactive_plot.right_panel_layout_manager(...
                 obj.fig_handle,obj.axes_handles,obj.options);
             
+            obj.toolbar = interactive_plot.toolbar(...
+                obj.fig_handle,obj.axes_handles,obj.axes_action_manager);
             
-            
-        set(obj.fig_handle,'CloseRequestFcn', @(~,~) obj.cb_close);
+            set(obj.fig_handle,'CloseRequestFcn', @(~,~) obj.cb_close);
         end
     end
     

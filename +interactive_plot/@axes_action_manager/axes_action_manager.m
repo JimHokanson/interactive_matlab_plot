@@ -5,14 +5,16 @@ classdef axes_action_manager < handle
     %
     %   - right click to change cur_action
     %   - on mouseover change to appropriate cursor
-    %   - 
+    %   -
     
     %   https://github.com/JimHokanson/interactive_matlab_plot/issues/10
     
     properties
         mouse_man
+        eventz
         h_fig
         axes_handles
+        line_handles
         xy_positions
         cur_action = 1
         %- 1) h_zoom - horizontal zoom
@@ -26,8 +28,15 @@ classdef axes_action_manager < handle
         %- 7) y average - this would be a horizontal select
         ptr_map
         
-        %Hzoom 
-        selected_axes
+        last_calibration
+        
+        selected_axes_I
+        selected_axes %matlab.graphics.axis.Axes
+        selected_line
+        
+        selected_data %interactive_plot.data_selection
+        %Only valid after data selection
+        
         x_start_position
         y_start_position
         h_fig_rect
@@ -37,18 +46,21 @@ classdef axes_action_manager < handle
     end
     
     methods
-        function obj = axes_action_manager(h_fig,axes_handles,xy_positions,mouse_man)
+        function obj = axes_action_manager(h_fig,axes_handles,line_handles,...
+                xy_positions,mouse_man,eventz)
             %
             %   obj = interactive_plot.axes_action_manager()
             
             obj.h_fig = h_fig;
             obj.axes_handles = axes_handles;
+            obj.line_handles = line_handles;
             obj.mouse_man = mouse_man;
+            obj.eventz = eventz;
             obj.xy_positions = xy_positions;
             mouse_man.axes_action_manager = obj;
-                                    
+            
             c = uicontextmenu;
-
+            
             % Create child menu items for the uicontextmenu
             % JAH: Nest menu's?????
             uimenu(c,'Label','horizontal zoom','Callback',@(~,~)obj.setActiveAction(1));
@@ -61,8 +73,8 @@ classdef axes_action_manager < handle
             
             n_axes = length(axes_handles);
             for i = 1:n_axes
-               cur_axes = axes_handles{i};
-               cur_axes.UIContextMenu = c;
+                cur_axes = axes_handles{i};
+                cur_axes.UIContextMenu = c;
             end
         end
         %TODO: Add mouse down action listener ...
@@ -72,13 +84,13 @@ classdef axes_action_manager < handle
             obj.cur_action = selected_value;
         end
         function ptr = getMousePointerAndAction(obj,x,y,is_action)
-           %Should be called by the mouse_motion_callback_manager
-           %
-           %    - cursor update ...
-           %    - set mouse down action ...
-           
-           %https://undocumentedmatlab.com/blog/undocumented-mouse-pointer-functions
-           
+            %Should be called by the mouse_motion_callback_manager
+            %
+            %    - cursor update ...
+            %    - set mouse down action ...
+            
+            %https://undocumentedmatlab.com/blog/undocumented-mouse-pointer-functions
+            
             
             
             [I,is_line] = obj.xy_positions.getActiveAxes(x,y);
@@ -93,11 +105,18 @@ classdef axes_action_manager < handle
             %TODO: Are we over the lines
             
             if is_action
+                %For now we are not worrying about line actions
+                %since I think line callbacks will handle lines
+                
+                obj.clearDataSelection();
+                
+                obj.selected_axes_I = I;
                 obj.selected_axes = obj.axes_handles{I};
+                obj.selected_line = obj.line_handles{I};
                 
                 obj.x_start_position = x;
                 obj.y_start_position = y;
-        
+                
                 switch obj.cur_action
                     case 1
                         obj.initHZoom();
@@ -114,62 +133,51 @@ classdef axes_action_manager < handle
             end
             
             %When ready use this!
-           % action = obj.all_actions{obj.cur_action};
+            % action = obj.all_actions{obj.cur_action};
+            
+        
+        end
+    end
+        
+    %Data Selection ===========================================
+    methods
+        function calibrateData(obj)
+            if ~isempty(obj.selected_data)
+                if length(obj.selected_line) ~= 1
+                    error('Only able to calibrate for 1 line per plot')
+                end
+                c = interactive_plot.calibration.createCalibration(...
+                    obj.selected_data,obj.selected_line);
+                notify(obj.eventz,'calibration',c);
+            else
+                error('Unable to calibrate without selected data') 
+            end
             
         end
-        function initHZoom(obj)
-            % initiates the horizontal zoom function 
-            % 1) change the callbacks on the mouse manager
-            %   -motion , up (this class needs to own these)
-            % 2) need to get the initial position
-            % 3) create the line at the proper x0,y0
+        function clearDataSelection(obj)
             
-            
-            x = obj.x_start_position;
-            y = obj.y_start_position;
-            
-            %obj.x_start_position = x;
-            
-            obj.h_line = annotation('line', 'X', [x,x], 'Y' ,[y,y]); 
-            
-            %obj.mouse_man.initHZoom();
-
-            % get the current x position of the mouse, register what this
-            % position corresponds to in the data
-            % as the mouse moves, draw a horizontal line
-            % register the final position and what it corresponds to in
-            % the data
-            % adjust the xlimits to show this
-            % delete the line
-
+            obj.selected_data = [];
+            if ~isempty(obj.h_axes_rect)
+                delete(obj.h_axes_rect);
+                obj.h_axes_rect = [];
+            end
+         
         end
         function initDataSelect(obj)
             obj.mouse_man.setMouseMotionFunction(@obj.dataSelectMove);
             obj.mouse_man.setMouseUpFunction(@obj.dataSelectMouseUp);
-            %left
-            %bottom
-            %width
-            %height
+
             x = obj.x_start_position;
             y = obj.y_start_position;
+            
+            %TODO: Do we want this to look different?
             obj.h_fig_rect = annotation('rectangle',[x y 0.001 0.001],'Color','red');
         end
         function dataSelectMove(obj)
-            cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
-            y1 = cur_mouse_coords(2);
-            x1 = cur_mouse_coords(1);
-            y2 = obj.y_start_position;
-            x2 = obj.x_start_position;
-            
-            
-            %TODO: This currently isn't limited to the channel
-            %- we need to limit x and y ...
-            
-            p = h__getRectanglePosition(x1,y1,x2,y2);
-            
-            set(obj.h_fig_rect,'Position',p);
             %
-            %
+            %   Update the rectangle drawing ...
+            
+            h__redrawRectangle(obj)
         end
         function dataSelectMouseUp(obj)
             %Translate figure based animation to actual data
@@ -177,11 +185,11 @@ classdef axes_action_manager < handle
             %- which axes is active?
             
             %rectangle('Position')
-                        
+            
             
             %h_fig_rect
             
-            %TODO: Move this to somewhere common 
+            %TODO: Move this to somewhere common
             ylim = get(obj.selected_axes,'YLim');
             xlim = get(obj.selected_axes,'XLim');
             x_range = xlim(2)-xlim(1);
@@ -194,18 +202,60 @@ classdef axes_action_manager < handle
             
             x_ax_per_norm = x_range/width;
             y_ax_per_norm = y_range/height;
-                        
+            
             p_fig_rect = get(obj.h_fig_rect,'Position');
-                        
+            
             new_left = xlim(1) + (p_fig_rect(1)-p_axes(1))*x_ax_per_norm;
             new_bottom = ylim(1) + (p_fig_rect(2)-p_axes(2))*y_ax_per_norm;
             new_height = (p_fig_rect(4))*y_ax_per_norm;
             new_width = (p_fig_rect(3))*x_ax_per_norm;
             
-            obj.h_axes_rect = rectangle('Position',[new_left new_bottom new_width new_height]);
+            position = [new_left new_bottom new_width new_height];
+            %Note that the 4th element is an alpha value (transparency)
+            obj.h_axes_rect = rectangle(...
+                'Position',position,...
+                'EdgeColor',[0 0 0 0],'FaceColor',[0.1 0.1 0.1 0.1]);
             
+            %TODO: Pass the adding into the constructor ...
+            %data_selection.fromPosition
+            obj.selected_data = interactive_plot.data_selection(...
+                new_left,new_left+new_width,new_bottom,new_bottom+new_height);
+            
+            %Delete the figure based rectangle, keeping the axes
+            %based rectangle
             delete(obj.h_fig_rect);
             obj.mouse_man.initDefaultState();
+        end
+    end
+    
+    %Zoom
+    %======================================================================
+    methods
+        function initHZoom(obj)
+            % initiates the horizontal zoom function
+            % 1) change the callbacks on the mouse manager
+            %   -motion , up (this class needs to own these)
+            % 2) need to get the initial position
+            % 3) create the line at the proper x0,y0
+            
+            
+            x = obj.x_start_position;
+            y = obj.y_start_position;
+            
+            %obj.x_start_position = x;
+            
+            obj.h_line = annotation('line', 'X', [x,x], 'Y' ,[y,y]);
+            
+            %obj.mouse_man.initHZoom();
+            
+            % get the current x position of the mouse, register what this
+            % position corresponds to in the data
+            % as the mouse moves, draw a horizontal line
+            % register the final position and what it corresponds to in
+            % the data
+            % adjust the xlimits to show this
+            % delete the line
+            
         end
         function runHZoom(obj)
             cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
@@ -214,11 +264,11 @@ classdef axes_action_manager < handle
         end
         function endHzoom(obj)
             
-        delete(obj.h_line);
+            delete(obj.h_line);
         end
         function YZoom(obj)
-           % initiates the y zoom function on a given axes
-           %NYI!
+            % initiates the y zoom function on a given axes
+            %NYI!
         end
         function UZoom(obj)
             % initiates the unconstrained zoom function
@@ -229,25 +279,29 @@ classdef axes_action_manager < handle
     
 end
 
+function h__redrawRectangle(obj)
+cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
+y1 = cur_mouse_coords(2);
+x1 = cur_mouse_coords(1);
+y2 = obj.y_start_position;
+x2 = obj.x_start_position;
+
+
+%TODO: This currently isn't limited to the channel
+%- we need to limit x and y ...
+
+p = h__getRectanglePosition(x1,y1,x2,y2);
+
+set(obj.h_fig_rect,'Position',p);
+end
+
 function p = h__getRectanglePosition(x1,y1,x2,y2)
 
+%   x1,y1 - start point
+%   x2,y2 - current point
 %
-%   A
-%     \
-%       B
-%
-%       B
-%     /
-%   A
-%
-%      A
-%    /
-%   B
-%
-%   
-%   B
-%    \
-%      A
+%   From these two points create a position output
+
 
 height = abs(y2 - y1);
 width = abs(x2 - x1);
@@ -269,94 +323,6 @@ p = [left bottom width height];
 
 end
 
-
-%This is only a scratch section
-%------------------------------------------------
-function h__setPtr(obj,ptr)
-%16x16
-%hotspot: 9 8
-
-% SCALE_PTR = 1;
-% PAN_PTR = 2;
-% STD_PTR = 3;
-
-obj.cur_ptr = ptr;
-
-switch ptr
-    case 1
-        %1  2   3   4   5   6   7   8   9   10  11  12  13  14  15  16
-        cdata=[...
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN       
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN 1   NaN NaN NaN NaN 1   NaN NaN NaN NaN 1   NaN NaN NaN
-            NaN 1   1   NaN NaN NaN NaN 1   NaN NaN NaN NaN 1   1   NaN NaN
-            1   1   1   NaN 1   1   1   1   1   1   1   NaN 1   1   1   NaN
-            NaN 1   1   NaN NaN NaN NaN 1   NaN NaN NaN NaN 1   1   NaN NaN
-            NaN NaN 1   NaN NaN NaN NaN 1   NaN NaN NaN NaN 1   NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            ];
-        hotspot = [8 8];
-    case 2
-        %1  2   3   4   5   6   7   8   9   10  11  12  13  14  15  16
-        cdata=[...
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN 1   1   1   1   1   1   1   1   1   1   1   1   1   NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN 1   1   1   1   1   1   1   1   1   NaN NaN NaN NaN
-            NaN NaN NaN NaN 1   1   1   1   1   1   1   NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN 1   1   1   1   1   NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN 1   1   1   NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            ];
-        hotspot = [8 8];
-    case 3
-        %1  2   3   4   5   6   7   8   9   10  11  12  13  14  15  16
-        cdata=[...
-            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN 1   1   1   NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN 1   1   1   1   1   NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN 1 NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN 1 NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN 1 NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN 1 NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN 1 NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN 1 NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN 1 NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN 1 NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN 1 NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN 1 NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN 1   1   1   1   1   NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN 1   1   1   NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
-            ];
-        hotspot = [8 8];
-    case 4
-    case 5
-end
-
-Data = {...
-    'Pointer'            ,'custom' , ...
-    'PointerShapeCData'  ,cdata    , ...
-    'PointerShapeHotSpot',hotspot    ...
-    };
-set(obj.fig_handle,Data{:});
-end
 
 %{
   	cdata=[...

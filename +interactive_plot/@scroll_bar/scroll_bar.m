@@ -175,6 +175,7 @@ classdef scroll_bar <handle
                 
                 % just check axes 1 for proof of concept...
                 ax = obj.parent.axes_handles{1};
+                
                 x_min = ax.XLim(1);
                 x_max = ax.XLim(2);
                 
@@ -186,6 +187,8 @@ classdef scroll_bar <handle
                 set(obj.slider, 'Position', [obj.slider_left_x, obj.base_y, obj.bar_width, obj.bar_height]);
             catch ME %#ok<NASGU>
 
+                %keyboard
+                assignin('base','ME',ME) 
                 %GHG: This seems to be fixed now. Still remains in the code
                 %in case it is actually not...
                 %   - most likely we need to verify handles are valid or
