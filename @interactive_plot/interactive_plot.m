@@ -30,6 +30,7 @@ classdef interactive_plot < handle
         y_tick_display
         right_panel
         axes_action_manager
+        xy_positions
         
         options  %interactive_plot.options
 
@@ -122,6 +123,9 @@ classdef interactive_plot < handle
             %Video card info incorrect
             %- opengl info
             
+            %TODO: Verify correct setup of the axes handles since these 
+            %come from the user, not internally ...
+            
             obj.fig_handle = fig_handle;
             obj.axes_handles = axes;
             obj.linkXAxes();
@@ -155,15 +159,15 @@ classdef interactive_plot < handle
             %TODO: Move to options ...
             TOP_POSITION = 0.98;
             BOTTOM_POSITION = 0.08;
-            
+                        
             obj.removeVerticalGap(rows,TOP_POSITION,BOTTOM_POSITION,'gap_size',obj.line_thickness);
             
-            %Lines
-            %------------------------------------------------
-            if obj.options.lines
-                obj.line_moving_processor = interactive_plot.line_moving_processor(obj);
-            end
             
+            obj.xy_positions = interactive_plot.xy_positions(obj.axes_handles);
+
+            obj.line_moving_processor = ...
+                interactive_plot.line_moving_processor(obj,obj.xy_positions,obj.options);
+
             %Scrollbar
             %----------------------------------------
             if obj.options.scroll
@@ -178,16 +182,20 @@ classdef interactive_plot < handle
             
             obj.axis_resizer = interactive_plot.axis_resizer(obj);
             
+            
             %TODO: This order is getting messy ...
             %We need to have code that explicitly sets all these links ...
             obj.mouse_manager = interactive_plot.mouse_motion_callback_manager(obj);
-            obj.axes_action_manager = interactive_plot.axes_action_manager(obj.fig_handle,obj.axes_handles,obj.mouse_manager);
             
+            obj.axes_action_manager = interactive_plot.axes_action_manager(...
+                obj.fig_handle,obj.axes_handles,obj.xy_positions,obj.mouse_manager);
             
             obj.fig_size_change = interactive_plot.fig_size_change(obj);
+            
             obj.y_zoom_buttons = interactive_plot.y_zoom_buttons(obj);
             
-            obj.streaming = interactive_plot.streaming(obj.options,obj.axes_handles,obj.scroll_bar);
+            obj.streaming = interactive_plot.streaming(...
+                obj.options,obj.axes_handles,obj.scroll_bar);
             obj.y_tick_display = interactive_plot.y_tick_display(obj.axes_handles);
             
             obj.right_panel = interactive_plot.right_panel_layout_manager(...

@@ -2,6 +2,8 @@ classdef fig_size_change
     %
     %   Class:
     %   interactive_plot.fig_size_change
+    %
+    %   JAH: This might not be necessary with xy_positions
     
     properties
         parent

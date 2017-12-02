@@ -13,6 +13,7 @@ classdef axes_action_manager < handle
         mouse_man
         h_fig
         axes_handles
+        xy_positions
         cur_action = 1
         %- 1) h_zoom - horizontal zoom
         %- 2) v_zoom - vertical zoom
@@ -24,36 +25,26 @@ classdef axes_action_manager < handle
         %- 6) measure_y - draw vertical line and show how tall the line is
         %- 7) y average - this would be a horizontal select
         ptr_map
-        all_actions
         
         %Hzoom 
         x_start_position
         y_start_position
+        h_fig_rect
         h_rect
         h_line
         
     end
     
     methods
-        function obj = axes_action_manager(h_fig,axes_handles,mouse_man)
+        function obj = axes_action_manager(h_fig,axes_handles,xy_positions,mouse_man)
             %
             %   obj = interactive_plot.axes_action_manager()
-
-            %JAH: This is a work in progress
-            
-            %p = containers.Map;
-            %p('h
             
             obj.h_fig = h_fig;
             obj.mouse_man = mouse_man;
+            obj.xy_positions = xy_positions;
             mouse_man.axes_action_manager = obj;
-            
-            obj.all_actions = {};
-%             obj.all_actions = {...
-%                 obj.HZoom, ...
-%                 obj.YZoom, ...
-%                 obj.UZoom};
-                        
+                                    
             c = uicontextmenu;
 
             % Create child menu items for the uicontextmenu
@@ -65,7 +56,6 @@ classdef axes_action_manager < handle
             uimenu(c,'Label','measure x','Callback',@(~,~)obj.setActiveAction(5));
             uimenu(c,'Label','measure y','Callback',@(~,~)obj.setActiveAction(6));
             uimenu(c,'Label','y average','Callback',@(~,~)obj.setActiveAction(7));
-
             
             n_axes = length(axes_handles);
             for i = 1:n_axes
@@ -79,7 +69,7 @@ classdef axes_action_manager < handle
         function setActiveAction(obj,selected_value)
             obj.cur_action = selected_value;
         end
-        function [ptr,action] = getMousePointerAndAction(obj,x,y,is_action)
+        function ptr = getMousePointerAndAction(obj,x,y,is_action)
            %Should be called by the mouse_motion_callback_manager
            %
            %    - cursor update ...
@@ -87,7 +77,15 @@ classdef axes_action_manager < handle
            
            %https://undocumentedmatlab.com/blog/undocumented-mouse-pointer-functions
            
-            ptr = obj.cur_action + 20;
+            
+            
+            [I,is_line] = obj.xy_positions.getActiveAxes(x,y);
+            
+            if is_line
+                ptr = obj.cur_action + 20;
+            else
+                ptr = 20;
+            end
             %ptr = 4;
             
             %TODO: Are we over the lines
@@ -110,7 +108,6 @@ classdef axes_action_manager < handle
                 end
                 
             end
-            action = [];
             
             %When ready use this!
            % action = obj.all_actions{obj.cur_action};
@@ -151,7 +148,7 @@ classdef axes_action_manager < handle
             %height
             x = obj.x_start_position;
             y = obj.y_start_position;
-            obj.h_rect = annotation('rectangle',[x y 0.001 0.001],'Color','red');
+            obj.h_fig_rect = annotation('rectangle',[x y 0.001 0.001],'Color','red');
         end
         function dataSelectMove(obj)
             cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
@@ -161,15 +158,23 @@ classdef axes_action_manager < handle
             x2 = obj.x_start_position;
             
             
+            %TODO: This currently isn't limited to the channel
+            %- we need to limit x and y ...
+            
             p = h__getRectanglePosition(x1,y1,x2,y2);
             
-            set(obj.h_rect,'Position',p);
+            set(obj.h_fig_rect,'Position',p);
             %
             %
         end
         function dataSelectMouseUp(obj)
             %Translate figure based animation to actual data
-            delete(obj.h_rect);
+            
+            %- which axes is active?
+            
+            %rectangle('Position')
+            
+            delete(obj.h_fig_rect);
             obj.mouse_man.initDefaultState();
         end
         function runHZoom(obj)

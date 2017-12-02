@@ -6,7 +6,7 @@ function moveLine(obj, id)
 % split this function up into lots of smaller functions!
 %
 %
-cur_line_y_pos = obj.y_positions(id);
+cur_line_y_pos = obj.line_y_positions(id);
 cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
 cur_mouse_y_pos = cur_mouse_coords(2);
 
@@ -55,7 +55,7 @@ if cur_mouse_y_pos > cur_line_y_pos
             break
         end
         
-        next_bottom_edge = obj.y_positions(next_line_id) - half_line_thickness;
+        next_bottom_edge = obj.line_y_positions(next_line_id) - half_line_thickness;
         
         if clump_top_edge >= next_bottom_edge
             % -lines at the top have lower ids
@@ -75,11 +75,11 @@ if cur_mouse_y_pos > cur_line_y_pos
     
     if clump_top_edge >= boundary
         % calculate line positions downward from boundary
-        new_y_positions = boundary - (1:n_lines_in_clump)*(top_to_top_thickness);
+        new_line_y_positions = boundary - (1:n_lines_in_clump)*(top_to_top_thickness);
     else
         % calculate line positions upward from mouse position
         temp =  cur_mouse_y_pos + (0:(n_lines_in_clump-1))*(top_to_top_thickness);
-        new_y_positions = temp(end:-1:1);
+        new_line_y_positions = temp(end:-1:1);
     end
 elseif cur_mouse_y_pos < cur_line_y_pos
     % then we are moving downward
@@ -104,7 +104,7 @@ elseif cur_mouse_y_pos < cur_line_y_pos
             break
         end
         
-        next_top_edge = obj.y_positions(next_line_id) + half_line_thickness;
+        next_top_edge = obj.line_y_positions(next_line_id) + half_line_thickness;
         
         if clump_bottom_edge <= next_top_edge
             %-lines at the bottom have higher ids
@@ -124,20 +124,20 @@ elseif cur_mouse_y_pos < cur_line_y_pos
     
     if clump_bottom_edge < boundary
         % calculate the line positions upward from the boundary
-        new_y_positions = boundary + (n_lines_in_clump:-1:1)*(top_to_top_thickness) - half_line_thickness;
+        new_line_y_positions = boundary + (n_lines_in_clump:-1:1)*(top_to_top_thickness) - half_line_thickness;
     else
         % calculate the line positions downward from the mouse position
-        new_y_positions = cur_mouse_y_pos - (0:(n_lines_in_clump-1))*(top_to_top_thickness);
+        new_line_y_positions = cur_mouse_y_pos - (0:(n_lines_in_clump-1))*(top_to_top_thickness);
     end
 else % case where the new position and the old position are identical (rare but happens)
     %JAH: Fixed bug, this would collapse all lines to a single point
     return;
-    %new_y_positions = cur_mouse_y_pos;
+    %new_line_y_positions = cur_mouse_y_pos;
 end
 
 % log new y positions and render
 %-----------------------------------------------------------
-obj.y_positions(obj.clump_ids) = new_y_positions;
+obj.line_y_positions(obj.clump_ids) = new_line_y_positions;
 % render the new line positions
 obj.renderLines();
 end
