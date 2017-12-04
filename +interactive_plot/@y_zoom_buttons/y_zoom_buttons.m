@@ -1,4 +1,6 @@
 classdef y_zoom_buttons < handle
+    %
+    %   Class:
     %   interactive_plot.y_zoom_buttons
     %
     %   Creates zoom in/zoom out buttons next to each plot

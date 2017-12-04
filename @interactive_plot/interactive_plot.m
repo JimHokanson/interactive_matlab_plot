@@ -69,7 +69,7 @@ classdef interactive_plot < handle
                     set(gca,'ylim',[-4 4]);
                 end
             else
-                n = 5e7;
+                n = 5e6;
                 t = linspace(0,100,n);
                 y = [(sin(0.10 * t) + 0.05 * randn(1, n))', ...
                     (cos(0.43 * t) + 0.001 * t .* randn(1, n))', ...
@@ -83,7 +83,7 @@ classdef interactive_plot < handle
                 end
             end
             
-            obj = interactive_plot(f,ax_ca,varargin{:});
+            obj = interactive_plot(f,ax_ca,varargin{:},'axes_names',{'sin','cos','step'});
         end
     end
     
@@ -105,6 +105,8 @@ classdef interactive_plot < handle
             %   
             %   Optional Inputs
             %   ---------------
+            %   See interactive_plot.options for all options.
+            %
             %   update_on_drag : default true
             %       If true plots will be updated as scrolling happens.
             %   scroll : default true
