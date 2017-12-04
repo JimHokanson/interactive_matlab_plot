@@ -129,7 +129,17 @@ classdef mouse_motion_callback_manager < handle
             set(obj.fig_handle,'WindowButtonDownFcn',@(~,~) obj.defaultMouseDownCallback());
             set(obj.fig_handle,'WindowButtonUpFcn','');
         end
-        function defaultMouseDownCallback(obj)
+        function defaultMouseDownCallback(obj)           
+            % need to behave differently if the click is left or right. If
+            % right click, do nothing so that the UI conext menu can act
+            % normally. Otherwise we run into odd bugs of running both the
+            % left click function and opening the UIcontext menu no matter
+            % which side is clicked
+            
+            if (~isequal(obj.fig_handle.SelectionType, 'normal'))
+                return
+            end
+            
             cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
             y = cur_mouse_coords(2);
             x = cur_mouse_coords(1);
