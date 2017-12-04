@@ -41,9 +41,9 @@ classdef calibration_gui < handle
             obj.h = guihandles(h_fig);
             
             obj.x_data = s.x;
-            obj.y_data = s.y;
+            obj.y_data = s.y_raw;
             
-            plot(obj.h.axes1,s.x,s.y)
+            plot(obj.h.axes1,s.x,s.y_raw)
             
             set(obj.h.axes1,'Units','normalized')
             p = get(obj.h.axes1,'Position');
@@ -159,7 +159,7 @@ classdef calibration_gui < handle
             
             y_data_local = obj.y_data(obj.x_data >= obj.sel_x_start & obj.x_data <= obj.sel_x_end);
             
-            avg_data = mean(y_data_local);
+            avg_data = mean(double(y_data_local));
             
             if I == 1
                 h_x = obj.h.x1;

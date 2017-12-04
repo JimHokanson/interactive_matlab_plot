@@ -20,6 +20,7 @@ classdef scroll_bar <handle
     properties
         parent
         fig_handle %interactive_plot class
+        options
         
         left_button
         right_button
@@ -53,24 +54,30 @@ classdef scroll_bar <handle
     end
     
     methods
-        function obj = scroll_bar(parent)
+        function obj = scroll_bar(parent,fig_handle,axes_handles,options)
             
             %JAH: Design decision
             %- should the limits be determined based on the axes or the
             %underlying data, we could default to one and provide an option
             %for the other
             
+            
+            p = get(axes_handles{1},'Position');
+                
+            bar_left_limit = p(1) + options.button_width;
+            bar_right_limit = p(1) + p(3) - 4*options.button_width;
+                        
             obj.parent = parent;
-            obj.fig_handle = parent.fig_handle;
+            obj.fig_handle = fig_handle;
+            obj.options = options;
             
             % assume that at this point all figure units are normalized
             
             %Create scrollbar
             %----------------------------------------
             %- limits
-            options = obj.parent.options;
-            obj.left_limit =options.bar_left_limit;
-            obj.right_limit = options.bar_right_limit;
+            obj.left_limit = bar_left_limit;
+            obj.right_limit = bar_right_limit;
             obj.base_y = options.bar_base_y;
             obj.bar_height = options.bar_height;
             obj.button_width = options.button_width;
@@ -108,7 +115,7 @@ classdef scroll_bar <handle
                 'units', 'normalized', 'Position',[x2, y, L, H],...
                 'Visible', 'on', 'callback', @(~,~) obj.cb_scrollRight());
             
-            ax1 = obj.parent.axes_handles{1};
+            ax1 = axes_handles{1};
             xlim = get(ax1,'xlim');
             obj.total_time_limits = xlim;
             obj.total_time_range = xlim(2) - xlim(1);
@@ -123,7 +130,7 @@ classdef scroll_bar <handle
             obj.slider_right_x = obj.right_limit;
             
             
-            ax = obj.parent.axes_handles{1};
+            ax = axes_handles{1};
             
             % add an action listener which updates the size of the scroll
             % bar when the zoom is changed
@@ -185,18 +192,6 @@ classdef scroll_bar <handle
                 obj.time_range_in_view = ax.XLim;
                 
                 set(obj.slider, 'Position', [obj.slider_left_x, obj.base_y, obj.bar_width, obj.bar_height]);
-            catch ME %#ok<NASGU>
-
-                %keyboard
-                assignin('base','ME',ME) 
-                %GHG: This seems to be fixed now. Still remains in the code
-                %in case it is actually not...
-                %   - most likely we need to verify handles are valid or
-                %   destory the listener earlier than we currently are
-                %
-               % keyboard
-                fprintf(2,'Caught error on on time range change\n')
-
             end
         end
         function scroll(obj)

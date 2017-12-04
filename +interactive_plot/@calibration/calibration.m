@@ -21,18 +21,17 @@ classdef calibration < handle
     %   3) expose placing these calibration values in at plotBig
     
     
-    %TODO: Split 
     properties
-        raw_x
-        raw_y
         x1
         x2
         y1
         y2
+        m
+        b
     end
     
     methods (Static)
-        function c = createCalibration(selected_data,line_handle)
+        function obj = createCalibration(selected_data,line_handle)
             %
             %   c = interactive_plot.calibration.createCalibration(selected_data,line_handle)
             
@@ -46,23 +45,27 @@ classdef calibration < handle
             x_max = selected_data.x_max;
             xlim = [x_min x_max];
             
-            %TODO: Ask for raw, not calibrated ...
-            s = interactive_plot.getRawLineData(line_handle,'xlim',xlim);
+            %s : big_plot.raw_line_data
+            s = interactive_plot.data_interface.getRawLineData(line_handle,'xlim',xlim,...
+                'get_raw',true);
 
             %This blocks until it is filled out or closed
             g = interactive_plot.calibration_gui(s);
             
             if ~g.is_ok
-                c = [];
+                obj = [];
                 return;
             end
             
-            c = interactive_plot.calibration();
-            c.x1 = g.x1;
-            c.x2 = g.x2;
-            c.y1 = g.y1;
-            c.y2 = g.y2;
-
+            obj = interactive_plot.calibration();
+            obj.x1 = g.x1;
+            obj.x2 = g.x2;
+            obj.y1 = g.y1;
+            obj.y2 = g.y2;
+            
+            obj.m = (obj.y2 - obj.y1)/(obj.x2-obj.x1);
+            obj.b = obj.y2 - obj.m*obj.x2;
+            
         end
     end
     
