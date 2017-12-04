@@ -82,6 +82,7 @@ classdef axis_resizer < handle
             obj.start_y_click_position = y_position;
             
             %TODO: This could be faster ...
+            %- should use xy_positions
             %Determining which axes object is "active"
             %---------------------------------------------
             ax = obj.axes_handles;

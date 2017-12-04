@@ -10,7 +10,6 @@ classdef y_tick_display < handle
     properties
         axes_handles
         L1
-        L2
         last_rendered_ylims
     end
     
@@ -21,15 +20,19 @@ classdef y_tick_display < handle
                 error('Assumption violated')
             end
             L1 = cell(1,length(axes_handles));
-            L2 = cell(1,length(axes_handles));
+            %L2 = cell(1,length(axes_handles));
             
             for i = 1:length(axes_handles)
                 cur_axes = axes_handles{i};
                 %We also need a listener on
                 %TODO: This needs to use MarkedClean  
-                L1{i} = addlistener(cur_axes,'YLim','PostSet',@(src,ev)obj.drawYTicks(i,cur_axes));
-                L2{i} = addlistener(cur_axes,'SizeChanged',@(src,ev)obj.drawYTicks(i,cur_axes));
+                %L1{i} = addlistener(cur_axes,'YLim','PostSet',@(src,ev)obj.drawYTicks(i,cur_axes));
+                %L2{i} = addlistener(cur_axes,'SizeChanged',@(src,ev)obj.drawYTicks(i,cur_axes));
             	
+                %obj.L3 = addlistener(axes_handle.XRuler,'MarkedClean',@(~,~) obj.cleanListen);
+
+                L1{i} = addlistener(cur_axes.YRuler,'MarkedClean',@(~,~) obj.drawYTicks(i,cur_axes));
+                
                 %No exponents, things are too tight
                 yruler = get(cur_axes,'YRuler');
                 yruler.Exponent = 0;
@@ -37,7 +40,6 @@ classdef y_tick_display < handle
                 obj.drawYTicks(i,cur_axes);
             end
             obj.L1 = L1;
-            obj.L2 = L2;
         end
         function drawYTicks(obj,axes_I,h_axes)
             %

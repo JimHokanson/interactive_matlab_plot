@@ -37,11 +37,11 @@ classdef mouse_motion_callback_manager < handle
     end
     
     methods
-        function obj = mouse_motion_callback_manager(parent)
+        function obj = mouse_motion_callback_manager(parent,fig_handle,axes_handles,axis_resizer)
             obj.parent = parent;
-            obj.fig_handle = parent.fig_handle;
-            obj.axes_handles = parent.axes_handles;
-            obj.axis_resizer = parent.axis_resizer;
+            obj.fig_handle = fig_handle;
+            obj.axes_handles = axes_handles;
+            obj.axis_resizer = axis_resizer;
             
             %Determine limits for axis resizer
             %-------------------------------------------------
@@ -66,6 +66,8 @@ classdef mouse_motion_callback_manager < handle
         function setMouseUpFunction(obj,fcn)
             set(obj.fig_handle, 'WindowButtonUpFcn',@(~,~)feval(fcn));
         end
+        
+        
         %Line moving
         %------------------------------------------------------------------
         function initializeLineMoving(obj, id)
@@ -196,8 +198,6 @@ STD_PTR = 0;
 SCALE1_PTR = 1;
 SCALE2_PTR = 2;
 PAN_PTR = 3;
-
-action = [];
 
 if y > obj.y_min_axes && y < obj.y_max_axes
     

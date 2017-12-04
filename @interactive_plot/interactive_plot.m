@@ -23,10 +23,10 @@ classdef interactive_plot < handle
         line_handles
         mouse_manager
         line_moving_processor
-        axis_resizer %interactive_plot.axis_resizer
-        scroll_bar   %interactive_plot.scroll_bar
+        axis_resizer    %interactive_plot.axis_resizer
+        scroll_bar      %interactive_plot.scroll_bar
         fig_size_change  %interactive_plot.fig_size_change
-        y_zoom_buttons %interactive_plot.y_zoom_buttons
+        y_zoom_buttons  %interactive_plot.y_zoom_buttons
         streaming
         y_tick_display
         right_panel
@@ -69,7 +69,7 @@ classdef interactive_plot < handle
                     set(gca,'ylim',[-4 4]);
                 end
             else
-                n = 50000;
+                n = 5e7;
                 t = linspace(0,100,n);
                 y = [(sin(0.10 * t) + 0.05 * randn(1, n))', ...
                     (cos(0.43 * t) + 0.001 * t .* randn(1, n))', ...
@@ -79,7 +79,7 @@ classdef interactive_plot < handle
                 ax_ca = cell(1,3);
                 for i = 1:3
                     ax_ca{i} = subplot(3,1,i);
-                    plot(t,y(:,i));
+                    plotBig(t,y(:,i));
                 end
             end
             
@@ -169,7 +169,7 @@ classdef interactive_plot < handle
             %}
             
             %Current limitation of the sotftware
-            set(fig_handle, 'Units', 'normalized');
+            set(obj.fig_handle, 'Units', 'normalized');
             
             %Initial axes rendering
             %------------------------------------------------
@@ -180,6 +180,8 @@ classdef interactive_plot < handle
             obj.removeVerticalGap(rows,TOP_POSITION,BOTTOM_POSITION,'gap_size',obj.line_thickness);
             
             
+            %Object construction
+            %-------------------------------------------------
             obj.xy_positions = interactive_plot.xy_positions(obj.axes_handles);
             
             obj.eventz = interactive_plot.eventz();
@@ -187,24 +189,29 @@ classdef interactive_plot < handle
             obj.line_moving_processor = ...
                 interactive_plot.line_moving_processor(obj,obj.xy_positions,obj.options);
 
-            %Scrollbar
-            %----------------------------------------
-            if obj.options.scroll
-                p = obj.axes_handles{1}.Position;
-                %JAH: These aren't options if used this way ...
-                %- In general I don't know if we want to provide these
-                %as options ...
-                obj.options.bar_left_limit = p(1) + obj.options.button_width;
-                obj.options.bar_right_limit = p(1) + p(3) - 4*obj.options.button_width;
-                obj.scroll_bar = interactive_plot.scroll_bar(obj);
-            end
-            
+            %Left Panel
+            %--------------------------------------------------------------
             obj.axis_resizer = interactive_plot.axis_resizer(obj);
+            
+            %Global
+            %--------------------------------------------------------------
+            obj.mouse_manager = interactive_plot.mouse_motion_callback_manager(...
+                obj,obj.fig_handle,obj.axes_handles,obj.axis_resizer);
+            
+            
+            
+            %Bottom Panel
+            %--------------------------------------------------------------
+            obj.scroll_bar = interactive_plot.scroll_bar(obj,obj.fig_handle,...
+                    obj.axes_handles,obj.options);
+            
+            
+            
             
             
             %TODO: This order is getting messy ...
             %We need to have code that explicitly sets all these links ...
-            obj.mouse_manager = interactive_plot.mouse_motion_callback_manager(obj);
+            
             
             obj.axes_action_manager = interactive_plot.axes_action_manager(...
                 obj.fig_handle,obj.axes_handles,obj.line_handles, ...

@@ -121,8 +121,13 @@ classdef axes_action_manager < handle
                     case 1
                         obj.initHZoom();
                     case 2
+<<<<<<< HEAD
                         obj.initYZoom();
+=======
+                        %v_zoom
+>>>>>>> 7625b901f886687de5b1142186d0a49aed1bede7
                     case 3
+                        %u_zoom
                     case 4
                         %data select
                         obj.initDataSelect();
@@ -143,13 +148,23 @@ classdef axes_action_manager < handle
     %Data Selection ===========================================
     methods
         function calibrateData(obj)
+            %
+            %   This is currently exposed via a toolbar button. It requires
+            %   that data has been selected.
+            
             if ~isempty(obj.selected_data)
                 if length(obj.selected_line) ~= 1
+                    %We could prompt which line we want ...
                     error('Only able to calibrate for 1 line per plot')
                 end
-                c = interactive_plot.calibration.createCalibration(...
+                calibration = interactive_plot.calibration.createCalibration(...
                     obj.selected_data,obj.selected_line);
-                notify(obj.eventz,'calibration',c);
+                if isempty(calibration)
+                    return
+                end
+                interactive_plot.data_interface.setCalibration(obj.selected_line,calibration);
+                
+                notify(obj.eventz,'calibration',interactive_plot.event_data(calibration));
             else
                 error('Unable to calibrate without selected data') 
             end
