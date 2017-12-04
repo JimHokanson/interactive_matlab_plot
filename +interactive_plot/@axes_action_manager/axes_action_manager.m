@@ -121,11 +121,12 @@ classdef axes_action_manager < handle
                     case 1
                         obj.initHZoom();
                     case 2
-<<<<<<< HEAD
+
+%<<<<<<< HEAD
                         obj.initYZoom();
-=======
+%=======
                         %v_zoom
->>>>>>> 7625b901f886687de5b1142186d0a49aed1bede7
+%>>>>>>> 7625b901f886687de5b1142186d0a49aed1bede7
                     case 3
                         %u_zoom
                     case 4
@@ -336,7 +337,6 @@ classdef axes_action_manager < handle
             y = cur_mouse_coords(2);
             % for some reason the y position is given as [top, bottom]
             set(obj.y_line, 'Y', [y, obj.y_start_position]);
-            disp(obj.y_line.Y);
         end
         function endYzoom(obj)
             % This needs to more accessible for more classes
