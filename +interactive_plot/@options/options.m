@@ -18,10 +18,12 @@ classdef options < handle
     end
     
     properties (Hidden)
+        %JAH: I'd prefer to remove all options related to rendering
+        %and only keep options related to behavior
+        
         % properties used for sizes of different elements of the
         % interactive plot like button width or scroll bar height and
         % position
-        button_width = 0.02;
         bar_height = 0.04;
         bar_base_y = 0.01;
         

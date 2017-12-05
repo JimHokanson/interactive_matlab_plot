@@ -55,7 +55,7 @@ classdef scroll_bar <handle
     
     methods
         function obj = scroll_bar(parent,fig_handle,axes_handles,options)
-            
+            BUTTON_WIDTH = 0.03;
             %JAH: Design decision
             %- should the limits be determined based on the axes or the
             %underlying data, we could default to one and provide an option
@@ -64,8 +64,8 @@ classdef scroll_bar <handle
             
             p = get(axes_handles{1},'Position');
                 
-            bar_left_limit = p(1) + options.button_width;
-            bar_right_limit = p(1) + p(3) - 4*options.button_width;
+            bar_left_limit = p(1) + BUTTON_WIDTH;
+            bar_right_limit = p(1) + p(3) - 4*BUTTON_WIDTH;
                         
             obj.parent = parent;
             obj.fig_handle = fig_handle;
@@ -80,7 +80,7 @@ classdef scroll_bar <handle
             obj.right_limit = bar_right_limit;
             obj.base_y = options.bar_base_y;
             obj.bar_height = options.bar_height;
-            obj.button_width = options.button_width;
+            obj.button_width = 0.03;
             
             %Background - doesn't move
             obj.bar_width = obj.right_limit - obj.left_limit;

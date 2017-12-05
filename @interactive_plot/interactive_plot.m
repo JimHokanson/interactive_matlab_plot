@@ -68,6 +68,7 @@ classdef interactive_plot < handle
                     plot(round(y))
                     set(gca,'ylim',[-4 4]);
                 end
+                axes_names = [];
             else
                 n = 5e6;
                 t = linspace(0,100,n);
@@ -81,9 +82,10 @@ classdef interactive_plot < handle
                     ax_ca{i} = subplot(3,1,i);
                     plotBig(t,y(:,i));
                 end
+                axes_names = {'sin','cos','step'};
             end
             
-            obj = interactive_plot(f,ax_ca,varargin{:},'axes_names',{'sin','cos','step'});
+            obj = interactive_plot(f,ax_ca,varargin{:},'axes_names',axes_names);
         end
     end
     
@@ -156,19 +158,6 @@ classdef interactive_plot < handle
             % need a gap size between the axes of a few pixels.
             % removeVerticalGap works in normalized units. need to find a
             % conversion factor.
-            
-            
-            % figure out how to ste the gap size in normalized units when
-            % given a desired gap size in pixels
-            set(obj.fig_handle, 'Units','normalized');
-            
-            %JAH TODO: Specify top position of top fig and bottom position
-            %of the bottom fig ...
-            %{
-            obj.sp = sl.plot.subplotter.fromFigure(obj.fig_handle, shape);
-            obj.sp.removeVerticalGap(rows, cols,...
-                'gap_size',obj.line_thickness);
-            %}
             
             %Current limitation of the sotftware
             set(obj.fig_handle, 'Units', 'normalized');

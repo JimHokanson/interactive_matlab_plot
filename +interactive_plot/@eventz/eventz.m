@@ -2,15 +2,16 @@ classdef eventz < handle
     %
     %   Class:
     %   interative_plot.eventz
+    %
+    %   This class holds events that we can listen for.
+    %
+    %
     
     events
-        calibration
+        calibration %Sent out whenever a calibration occurs
     end
     
     methods
-        function obj = eventz()
-            
-        end
     end
     
 end

@@ -43,7 +43,7 @@ classdef names
                     'Units', 'normalized', 'Position', p, ...
                     'String',axes_names{i},'FontSize',10);
                 %h__getExtent(names_handles{i});
-                addlistener(ax, 'Position', 'PostSet', @(~,~) obj.yLimChanged(k));
+                addlistener(ax, 'Position', 'PostSet', @(~,~) obj.yLimChanged(i));
                 
                 end
             end

@@ -33,13 +33,14 @@ classdef y_zoom_buttons < handle
     methods
         function obj = y_zoom_buttons(parent)
             BUTTON_HEIGHT = 0.03;
+            BUTTON_WIDTH = 0.03;
             
             obj.parent = parent; % interactive_plot class
             obj.fig_handle = obj.parent.fig_handle;
             obj.axes_handles = obj.parent.axes_handles;
             
             obj.button_height = BUTTON_HEIGHT;
-            obj.button_width = obj.parent.options.button_width;
+            obj.button_width = BUTTON_WIDTH;
             %ghg: this is a hidden property in the options class...
             %...why did I do that?
             %
