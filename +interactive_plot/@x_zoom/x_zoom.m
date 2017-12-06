@@ -9,42 +9,41 @@ classdef x_zoom < handle
         
         zoom_in_button
         zoom_out_button
+        
+        zoom_in_scale
+        zoom_out_scale
     end
     
     methods
-        function obj = x_zoom(parent)
+        function obj = x_zoom(parent,handles,render_params,options,scroll_right_limit,scroll_base_y)
             %
             %   obj = interactive_plot.x_zoom(parent)
             %
             %   Inputs
             %   ------
             %   parent :
-            obj.parent = parent;
-            obj.axes_handles = parent.parent.axes_handles;
             
-            H = obj.parent.bar_height;
-            L = obj.parent.button_width;
+            obj.zoom_in_scale = options.xzoom_out_scale;
+            obj.zoom_out_scale = options.xzoom_in_scale;
+            
+            obj.parent = parent;
+            obj.axes_handles = handles.axes_handles;
+            
+            H = render_params.small_button_height;
+            L = render_params.small_button_width;
             
             % numbering (x3,x4) is based on the buttons which already exist
             % (created in the scroll_bar class which is the parent of this
             % class)
-            x3 = obj.parent.right_limit + 2*L; % position of x zoom out button
-            x4 = obj.parent.right_limit + 3*L; % position of x zoom in button
-            y = obj.parent.base_y; % y position of the bottom of the scroll bar
+            x3 = scroll_right_limit + 2*L; % position of x zoom out button
+            x4 = scroll_right_limit + 3*L; % position of x zoom in button
+            y = scroll_base_y; % y position of the bottom of the scroll bar
             
-%             obj.zoom_out_button = uicontrol(obj.parent.fig_handle,...
-%                 'Style', 'pushbutton', 'String', '-',...
-%                 'units', 'normalized', 'Position',[x3, y, L, H],...
-%                 'Visible', 'on', 'callback', @(~,~) obj.cb_zoomOut);
-              obj.zoom_out_button = interactive_plot.ip_button(obj.parent.fig_handle,[x3,y,L,H],'-');
-              set(obj.zoom_out_button.button, 'Callback',  @(~,~) obj.cb_zoomOut);
-
+            obj.zoom_out_button = interactive_plot.ip_button(obj.parent.fig_handle,[x3,y,L,H],'-');
+            set(obj.zoom_out_button.button, 'Callback',  @(~,~) obj.cb_zoomOut);
+            
             obj.zoom_in_button = interactive_plot.ip_button(obj.parent.fig_handle, [x4, y, L, H], '+');
             set(obj.zoom_in_button.button, 'Callback', @(~,~)obj.cb_zoomIn)
-%             obj.zoom_in_button = uicontrol(obj.parent.fig_handle,...
-%                 'Style', 'pushbutton', 'String', '+',...
-%                 'units', 'normalized', 'Position',[x4, y, L, H],...
-%                 'Visible', 'on', 'callback', @(~,~)obj.cb_zoomIn);
         end
     end
     methods (Hidden)% callbacks
@@ -65,7 +64,7 @@ classdef x_zoom < handle
             limits_in_view = obj.parent.time_range_in_view;
             range_in_view = limits_in_view(2) - limits_in_view(1);
             center = mean(limits_in_view);
-                        
+            
             fraction_to_zoom =1.1; %move to options class
             new_time_range = range_in_view*fraction_to_zoom;
             
@@ -75,7 +74,7 @@ classdef x_zoom < handle
             max_lims = obj.parent.total_time_limits;
             
             if new_time_range >= obj.parent.total_time_range
-               new_limits = max_lims; 
+                new_limits = max_lims;
             elseif lower_lim < max_lims(1)
                 % if we are at the left edge, maintain the left position
                 % and add the zoomed-in width
@@ -88,7 +87,7 @@ classdef x_zoom < handle
                 %the normal case
                 new_limits = [lower_lim, upper_lim];
             end
-              obj.axes_handles{1}.XLim = new_limits;
+            obj.axes_handles{1}.XLim = new_limits;
         end
     end
 end

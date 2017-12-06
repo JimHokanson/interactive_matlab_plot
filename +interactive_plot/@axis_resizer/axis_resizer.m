@@ -31,15 +31,16 @@ classdef axis_resizer < handle
     %   - center - pan
     %   - top - shrink or expand keeping bottom fixed
     %   - bottom - shrink or expand keeping bottom fixed
-    %   
+    %
     
     properties
         parent %interactive.plot
+        mouse_man
         fig_h
         
         %For axis resizing
         axes_handles
-        start_y_click_position %figure based, normalized 
+        start_y_click_position %figure based, normalized
         clicked_ax
         
         
@@ -59,16 +60,10 @@ classdef axis_resizer < handle
     end
     
     methods
-        function obj = axis_resizer(parent)
-             obj.parent = parent;
-             obj.axes_handles = parent.axes_handles;
-             obj.fig_h = parent.fig_handle;
-             
-%             obj.fig_h = fig_handle;
-%             obj.ax = axes;
-%             obj.y_position = y_position;
-            
-            %TODO: Register mouse moving to this class
+        function obj = axis_resizer(mouse_man,handles)
+            obj.mouse_man = mouse_man;
+            obj.axes_handles = handles.axes_handles;
+            obj.fig_h = handles.fig_handle;
         end
         function registerResizeCall(obj,y_position,type)
             %
@@ -100,7 +95,7 @@ classdef axis_resizer < handle
             %Custom code depending upon action type
             %-------------------------------------------
             obj.top_y_start = y_top;
-            obj.bottom_y_start = y_bottom; 
+            obj.bottom_y_start = y_bottom;
             ylim = get(cur_ax,'ylim');
             obj.ylim_start = ylim;
             obj.bottom_ylim_start = ylim(1);
@@ -109,7 +104,7 @@ classdef axis_resizer < handle
             
             if type == 2
                 obj.y_diff_fig_start = obj.top_y_start - obj.start_y_click_position;
-                obj.parent.mouse_manager.initializeScaleTopFixed();
+                obj.initScaleTopFixed();
                 
                 %- what % of original
                 %
@@ -131,27 +126,42 @@ classdef axis_resizer < handle
                 
                 
             elseif type == 1
-              	obj.y_diff_fig_start = obj.start_y_click_position - obj.bottom_y_start;
-                obj.parent.mouse_manager.initializeScaleBottomFixed();
+                obj.y_diff_fig_start = obj.start_y_click_position - obj.bottom_y_start;
+                obj.initScaleBottomFixed();
             else
                 
-                                
+                
                 
                 %how much mouse movement to ylim movement?
                 %y = m*x + b
                 %ylim(2) = m*y_top + b
                 %ylim(1) = m*y_bottom + b
                 
-                %As we move the mouse, we need to shift the 
+                %As we move the mouse, we need to shift the
                 %current axes by a given amount ...
                 
                 obj.m = obj.y_range_axes_start/(y_top - y_bottom);
                 %obj.b = ylim(2) - obj.m*y_top;
                 
                 
-                obj.parent.mouse_manager.initializeAxisPan();
+                obj.initAxisPan();
             end
             
+        end
+        function initScaleBottomFixed(obj)
+           	obj.mouse_man.setMouseMotionFunction(@obj.processScaleBottomFixed);
+            obj.mouse_man.setMouseUpFunction(@obj.releaseResizeCallbacks);
+        end
+        function initScaleTopFixed(obj)
+            obj.mouse_man.setMouseMotionFunction(@obj.processScaleTopFixed);
+            obj.mouse_man.setMouseUpFunction(@obj.releaseResizeCallbacks);
+        end
+        function initAxisPan(obj)
+            obj.mouse_man.setMouseMotionFunction(@obj.processPan);
+            obj.mouse_man.setMouseUpFunction(@obj.releaseResizeCallbacks);
+        end
+        function releaseResizeCallbacks(obj)
+            obj.mouse_man.initDefaultState();
         end
         function processPan(obj)
             cur_mouse_coords = get(obj.fig_h, 'CurrentPoint');
@@ -194,11 +204,11 @@ classdef axis_resizer < handle
             
             y2 = obj.top_ylim_start - y_ratio*obj.y_range_axes_start;
             ylim_new1 = [y2 obj.top_ylim_start];
-                        
+            
             set(obj.clicked_ax,'ylim',ylim_new1);
             
         end
-     	function processScaleBottomFixed(obj)
+        function processScaleBottomFixed(obj)
             MAX_SCALE = 5;
             
             cur_mouse_coords = get(obj.fig_h, 'CurrentPoint');

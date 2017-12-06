@@ -26,31 +26,23 @@ classdef y_zoom_buttons < handle
         
         options %expose at this level?
         
-        ZOOM_FACTOR = 0.1;
-        SPACE_FROM_AXES = 0.01;
-        % best way to store buttons? multidimensional cell array?
+        zoom_in_factor
+        zoom_out_factor
     end
     methods
-        function obj = y_zoom_buttons(parent)
-            BUTTON_HEIGHT = 0.03;
-            BUTTON_WIDTH = 0.03;
+        function obj = y_zoom_buttons(handles,render_params,options)
+            obj.zoom_in_factor = options.yzoom_in_scale;
+            obj.zoom_out_factor = options.yzoom_out_scale;
             
-            obj.parent = parent; % interactive_plot class
-            obj.fig_handle = obj.parent.fig_handle;
-            obj.axes_handles = obj.parent.axes_handles;
+            obj.fig_handle = handles.fig_handle;
+            obj.axes_handles = handles.axes_handles;
+
+            obj.button_height = render_params.small_button_height;
+            obj.button_width = render_params.small_button_width;
             
-            obj.button_height = BUTTON_HEIGHT;
-            obj.button_width = BUTTON_WIDTH;
-            %ghg: this is a hidden property in the options class...
-            %...why did I do that?
-            %
-            %JAH: got me ... I would not have it hidden
-            %
-            
-            s = length(obj.axes_handles);
-            obj.zoom_in_buttons = cell(1,s);
-            obj.zoom_out_buttons = cell(1,s);
-            
+            n_axes = length(obj.axes_handles);
+            obj.zoom_in_buttons = cell(1,n_axes);
+            obj.zoom_out_buttons = cell(1,n_axes);
             
             for k = 1:length(obj.axes_handles)
                 ax = obj.axes_handles{k};
@@ -71,8 +63,6 @@ classdef y_zoom_buttons < handle
             end
         end
         function yLimChanged(obj, idx)
-            
-            %JAH: This conflicts with the behavior above ...
             % idx is the index of both the axes and the zoom buttons for
             % that axes
             
@@ -94,7 +84,7 @@ classdef y_zoom_buttons < handle
             ylims = ax.YLim;
             y_range = ylims(2) - ylims(1);
             center = mean(ylims);
-            new_y_range = y_range*(1-obj.ZOOM_FACTOR);
+            new_y_range = y_range*(1-obj.zoom_in_factor);
             
             y_min = center - new_y_range/2;
             y_max = center + new_y_range/2;
@@ -106,7 +96,7 @@ classdef y_zoom_buttons < handle
             ylims = ax.YLim;
             y_range = ylims(2) - ylims(1);
             center = mean(ylims);
-            new_y_range = y_range*(1+obj.ZOOM_FACTOR);
+            new_y_range = y_range*(1+obj.zoom_out_factor);
             
             y_min = center - new_y_range/2;
             y_max = center + new_y_range/2;
@@ -120,13 +110,10 @@ function [v1,v2] = h__getSizeVectors(obj,h_axes,button_width,button_height)
 bottom = h_axes.Position(2);
 axes_height = h_axes.Position(4);
 
-%JAH: I moved this to the left hand side
-
 %h = axes_height/2;
 if axes_height < 2*button_height
     button_height = axes_height/2;
 end
-%x = axes_right_edge + obj.SPACE_FROM_AXES;
 x = 0;
 y1 = bottom; % lower position of zoom-out button
 y2 = bottom + button_height; % lower position of zoom-in button

@@ -21,24 +21,27 @@ classdef toolbar < handle
     end
     
     methods
-        function obj = toolbar(h_fig,axes_handles,axes_action_manager)
+        function obj = toolbar(handles)
             %
             %   obj = interactive_plot.toolbar(h_fig,axes_handles)
             
-            obj.h_fig = h_fig;
-            set(h_fig,'ToolBar','none');
-            obj.axes_handles = axes_handles;
-            h_toolbar = uitoolbar(h_fig);
+            obj.h_fig = handles.fig_handle;
+            set(obj.h_fig,'ToolBar','none');
+            obj.axes_handles = handles.axes_handles;
+            obj.h_toolbar = uitoolbar(obj.h_fig);
             
+            
+            
+        end
+        function linkComponents(obj,axes_action_manager)
             root = fileparts(fileparts(which('interactive_plot')));
             
             icon_root = fullfile(root,'icons');
             ff = @(x) fullfile(icon_root,['icon_' x '.mat']);
             h = load(ff('cal'));
-            h2 = uipushtool(h_toolbar,'CData',h.cdata,...
+            h2 = uipushtool(obj.h_toolbar,'CData',h.cdata,...
                 'TooltipString','Calibrate',...
                 'ClickedCallback',@(~,~) axes_action_manager.calibrateData);
-            
         end
     end
     

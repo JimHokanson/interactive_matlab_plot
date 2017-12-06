@@ -18,15 +18,15 @@ classdef right_panel_layout_manager
     end
     
     methods
-        function obj = right_panel_layout_manager(fig_handle,axes_handles,options)
+        function obj = right_panel_layout_manager(handles,options)
             %
             %   obj =
             %   interactive_plot.right_panel_layout_manager(fig_handle,axes_handles,options)
             
-            obj.fig_handle = fig_handle;
-            obj.axes_handles = axes_handles;
+            obj.fig_handle = handles.fig_handle;
+            obj.axes_handles = handles.axes_handles;
             obj.options = options;
-            obj.names = interactive_plot.names(fig_handle,axes_handles,options);
+            obj.names = interactive_plot.names(obj.fig_handle,obj.axes_handles,options);
         end
     end
 end

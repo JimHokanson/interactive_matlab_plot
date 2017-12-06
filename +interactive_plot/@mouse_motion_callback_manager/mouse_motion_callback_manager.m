@@ -18,11 +18,13 @@ classdef mouse_motion_callback_manager < handle
     
     properties
         fig_handle
-        axes_action_manager
-        parent %interactive plot class
         axes_handles
-        axis_resizer
         
+        axes_action_manager
+        y_axis_resizer
+        
+        parent %interactive plot class
+                
         %Resize limits
         %------------
         x1
@@ -37,11 +39,9 @@ classdef mouse_motion_callback_manager < handle
     end
     
     methods
-        function obj = mouse_motion_callback_manager(parent,fig_handle,axes_handles,axis_resizer)
-            obj.parent = parent;
-            obj.fig_handle = fig_handle;
-            obj.axes_handles = axes_handles;
-            obj.axis_resizer = axis_resizer;
+        function obj = mouse_motion_callback_manager(handles)
+            obj.fig_handle = handles.fig_handle;
+            obj.axes_handles = handles.axes_handles;
             
             %Determine limits for axis resizer
             %-------------------------------------------------
@@ -53,12 +53,15 @@ classdef mouse_motion_callback_manager < handle
             obj.x_min_axes = temp(1);
             obj.x_max_axes = temp(1)+temp(3);
             
-            obj.initDefaultState();
-            
             obj.y_max_axes = temp(2) + temp(4);
             temp = get(obj.axes_handles{end},'position');
             obj.y_min_axes = temp(2);
                         
+        end
+        function linkObjects(obj, axes_action_manager, y_axis_resizer)
+            obj.axes_action_manager = axes_action_manager;
+            obj.y_axis_resizer = y_axis_resizer;
+            obj.initDefaultState();
         end
         function setMouseMotionFunction(obj,fcn)
             set(obj.fig_handle, 'WindowButtonMotionFcn',@(~,~)feval(fcn));
@@ -70,60 +73,61 @@ classdef mouse_motion_callback_manager < handle
         
         %Line moving
         %------------------------------------------------------------------
-        function initializeLineMoving(obj, id)
-            set(obj.fig_handle, 'WindowButtonMotionFcn',@(~,~) obj.parent.line_moving_processor.moveLine(id));
-            set(obj.fig_handle, 'WindowButtonUpFcn',  @(~,~) obj.releaseLineMoving());
-        end
-        function releaseLineMoving(obj)
-            set(obj.fig_handle,'WindowButtonMotionFcn','');
-            obj.parent.line_moving_processor.resizePlots();
-            obj.initDefaultState();
-        end
+%         function initializeLineMoving(obj, id)
+%             set(obj.fig_handle, 'WindowButtonMotionFcn',@(~,~) obj.parent.line_moving_processor.moveLine(id));
+%             set(obj.fig_handle, 'WindowButtonUpFcn',  @(~,~) obj.releaseLineMoving());
+%         end
+%         function releaseLineMoving(obj)
+%             set(obj.fig_handle,'WindowButtonMotionFcn','');
+%             obj.parent.line_moving_processor.resizePlots();
+%             obj.initDefaultState();
+%         end
+
         %Axis resizing
         %------------------------------------------------------------------
-        function initializeScaleTopFixed(obj)
-            set(obj.fig_handle, 'WindowButtonMotionFcn',...
-                @(~,~) obj.axis_resizer.processScaleTopFixed());
-            set(obj.fig_handle, 'WindowButtonUpFcn',  ...
-                @(~,~) obj.releaseAxisResize());
-        end
-        function initializeScaleBottomFixed(obj)
-            set(obj.fig_handle, 'WindowButtonMotionFcn',...
-                @(~,~) obj.axis_resizer.processScaleBottomFixed());
-            set(obj.fig_handle, 'WindowButtonUpFcn',  ...
-                @(~,~) obj.releaseAxisResize());
-        end
-        function initializeAxisPan(obj)
-            set(obj.fig_handle, 'WindowButtonMotionFcn',...
-                @(~,~) obj.axis_resizer.processPan());
-            set(obj.fig_handle, 'WindowButtonUpFcn',  ...
-                @(~,~) obj.releaseAxisResize());
-        end
-        function releaseAxisResize(obj)
-            obj.initDefaultState();
-        end
+%         function initializeScaleTopFixed(obj)
+%             set(obj.fig_handle, 'WindowButtonMotionFcn',...
+%                 @(~,~) obj.axis_resizer.processScaleTopFixed());
+%             set(obj.fig_handle, 'WindowButtonUpFcn',  ...
+%                 @(~,~) obj.releaseAxisResize());
+%         end
+%         function initializeScaleBottomFixed(obj)
+%             set(obj.fig_handle, 'WindowButtonMotionFcn',...
+%                 @(~,~) obj.axis_resizer.processScaleBottomFixed());
+%             set(obj.fig_handle, 'WindowButtonUpFcn',  ...
+%                 @(~,~) obj.releaseAxisResize());
+%         end
+%         function initializeAxisPan(obj)
+%             set(obj.fig_handle, 'WindowButtonMotionFcn',...
+%                 @(~,~) obj.axis_resizer.processPan());
+%             set(obj.fig_handle, 'WindowButtonUpFcn',  ...
+%                 @(~,~) obj.releaseAxisResize());
+%         end
+%         function releaseAxisResize(obj)
+%             obj.initDefaultState();
+%         end
         
         
         %Scrolling
         %------------------------------------------------------------------
-        function initializeScrolling(obj)
-            % temporary hack. this is not efficient
-            %--
-            %JAH: This looks fine but I'm not clear why this code is here
-            %and not in the scroll bar class
-            cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
-            cur_mouse_x = cur_mouse_coords(1);
-            obj.parent.scroll_bar.prev_mouse_x = cur_mouse_x;
-            %--
-            set(obj.fig_handle, 'WindowButtonMotionFcn', @(~,~) obj.parent.scroll_bar.scroll());
-            set(obj.fig_handle, 'WindowButtonUpFcn', @(~,~) obj.releaseScrollBar());
-        end
-        function releaseScrollBar(obj)
-            set(obj.fig_handle, 'WindowButtonMotionFcn', '');
-            if ~obj.parent.options.update_on_drag
-                obj.parent.scroll_bar.updateAxes();
-            end
-        end
+%         function initializeScrolling(obj)
+%             % temporary hack. this is not efficient
+%             %--
+%             %JAH: This looks fine but I'm not clear why this code is here
+%             %and not in the scroll bar class
+%             cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
+%             cur_mouse_x = cur_mouse_coords(1);
+%             obj.parent.scroll_bar.prev_mouse_x = cur_mouse_x;
+%             %--
+%             set(obj.fig_handle, 'WindowButtonMotionFcn', @(~,~) obj.parent.scroll_bar.scroll());
+%             set(obj.fig_handle, 'WindowButtonUpFcn', @(~,~) obj.releaseScrollBar());
+%         end
+%         function releaseScrollBar(obj)
+%             set(obj.fig_handle, 'WindowButtonMotionFcn', '');
+%             if ~obj.parent.options.update_on_drag
+%                 obj.parent.scroll_bar.updateAxes();
+%             end
+%         end
         %Defaults
         %------------------------------------------------------------------
         function initDefaultState(obj)
@@ -206,17 +210,17 @@ if y > obj.y_min_axes && y < obj.y_max_axes
     elseif x > obj.x1 && x < obj.x2
         ptr = SCALE1_PTR;
         if is_action
-            obj.axis_resizer.registerResizeCall(y,1);
+            obj.y_axis_resizer.registerResizeCall(y,1);
         end
     elseif x > obj.x2 && x < obj.x3
         ptr = SCALE2_PTR;
         if is_action
-            obj.axis_resizer.registerResizeCall(y,2);
+            obj.y_axis_resizer.registerResizeCall(y,2);
         end
     elseif x > obj.x3 && x < obj.x4
         ptr = PAN_PTR;
         if is_action
-            obj.axis_resizer.registerResizeCall(y,2);
+            obj.y_axis_resizer.registerResizeCall(y,2);
         end
     else
         

@@ -14,7 +14,7 @@ classdef auto_scroll < handle
     methods
         function obj = auto_scroll(parent)
             
-
+            %TODO: Fix links back to the parent like the other classes
             obj.parent = parent;
             
             H = obj.parent.bar_height;
