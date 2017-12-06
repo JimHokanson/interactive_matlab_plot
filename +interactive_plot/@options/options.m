@@ -13,17 +13,20 @@ classdef options < handle
         streaming
         axes_names
         
-        % NYI-------
-        display_channel_names
+        yzoom_in_scale = 0.3
+        yzoom_out_scale = 0.3
+        xzoom_in_scale = 0.2;
+        xzoom_out_scale = 0.2;
     end
     
     properties (Hidden)
+        %JAH: I'd prefer to remove all options related to rendering
+        %and only keep options related to behavior
+        
         % properties used for sizes of different elements of the
         % interactive plot like button width or scroll bar height and
         % position
-        button_width = 0.02;
-        bar_height = 0.04;
-        bar_base_y = 0.01;
+        
         
         % set by the interactive plot class itself
         bar_right_limit
@@ -32,11 +35,7 @@ classdef options < handle
         % TODO: include line sizing options
         
         % NYI------------
-        yzoom_in_scale
-        yzoom_out_scale
         
-        xzoom_in_scale
-        xzoom_out_scale
     end
     methods
         function obj = options(varargin)  
@@ -47,12 +46,14 @@ classdef options < handle
             in.scroll = true;
             in.lines = true;
             in.streaming = false;
+            in.axes_names = [];
 
             in = interactive_plot.sl.in.processVarargin(in, varargin);
             obj.update_on_drag = in.update_on_drag;
             obj.scroll = in.scroll;
             obj.lines = in.lines;
             obj.streaming = in.streaming;
+            obj.axes_names = in.axes_names;
         end
     end
 end

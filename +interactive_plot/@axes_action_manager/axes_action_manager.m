@@ -46,14 +46,14 @@ classdef axes_action_manager < handle
     end
     
     methods
-        function obj = axes_action_manager(h_fig,axes_handles,line_handles,...
+        function obj = axes_action_manager(handles,...
                 xy_positions,mouse_man,eventz)
             %
             %   obj = interactive_plot.axes_action_manager()
             
-            obj.h_fig = h_fig;
-            obj.axes_handles = axes_handles;
-            obj.line_handles = line_handles;
+            obj.h_fig = handles.fig_handle;
+            obj.axes_handles = handles.axes_handles;
+            obj.line_handles = handles.line_handles;
             obj.mouse_man = mouse_man;
             obj.eventz = eventz;
             obj.xy_positions = xy_positions;
@@ -71,9 +71,9 @@ classdef axes_action_manager < handle
             uimenu(c,'Label','measure y','Callback',@(~,~)obj.setActiveAction(6));
             uimenu(c,'Label','y average','Callback',@(~,~)obj.setActiveAction(7));
             
-            n_axes = length(axes_handles);
+            n_axes = length(obj.axes_handles);
             for i = 1:n_axes
-                cur_axes = axes_handles{i};
+                cur_axes = obj.axes_handles{i};
                 cur_axes.UIContextMenu = c;
             end
         end

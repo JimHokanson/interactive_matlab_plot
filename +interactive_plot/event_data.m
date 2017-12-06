@@ -1,12 +1,21 @@
 classdef (ConstructOnLoad) event_data < event.EventData
     %
-    %   ??? Why ??? - apparently so that you know what the original value
-    %   was ...
+    %   Class:
+    %   interactive_plot.event_data
+    %
+    %   ???? ... 
+    %
+    %   This class is a valid input for a notify call. Apparently the data
+    %   sent out for a notify call must inherit from the listed superclass
+    %   and must be ConstructOnLoad. 
     %
     %   https://www.mathworks.com/help/matlab/matlab_oop/class-with-custom-event-data.html
     %
-    %   Class:
-    %   interactive_plot.event_data
+    %   See Also
+    %   --------
+    %   notify
+    %   interative_plot.eventz
+
     
    properties
       value

@@ -44,7 +44,7 @@ classdef names
                     'String',axes_names{i},'FontSize',10,...
                     'HorizontalAlignment','left');
                 %h__getExtent(names_handles{i});
-                addlistener(ax, 'Position', 'PostSet', @(~,~) obj.yLimChanged(k));
+                addlistener(ax, 'Position', 'PostSet', @(~,~) obj.yLimChanged(i));
                 
                 end
             end

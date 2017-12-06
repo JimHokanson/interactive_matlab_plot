@@ -15,7 +15,8 @@ classdef line_moving_processor < handle
     
     
     properties
-        parent
+        
+        mouse_man
         fig_handle
         xy_positions %interactive_plot.xy_positions
         options
@@ -42,23 +43,23 @@ classdef line_moving_processor < handle
     end
     
     methods
-        function obj = line_moving_processor(parent,xy_positions,options)
+        function obj = line_moving_processor(mouse_man,handles,render_params,xy_positions,options)
             %
             %   Inputs:
             %   ------
             %   -axes_handles: cell array of the handles to the axes in the
             %   figure (must be in order from top to bottom!)
             
-            obj.parent = parent;
+            obj.mouse_man = mouse_man;
             obj.xy_positions = xy_positions;
             obj.options = options;
             
-            obj.line_thickness = parent.line_thickness;
-            obj.gap_thickness = parent.gap_thickness;
+            obj.line_thickness = render_params.line_thickness;
+            obj.gap_thickness = render_params.gap_thickness;
             
-            obj.fig_handle = parent.fig_handle;
+            obj.fig_handle = handles.fig_handle;
             
-            obj.axes_handles = parent.axes_handles;
+            obj.axes_handles = handles.axes_handles;
             
             axes_tops = xy_positions.axes_tops;
             axes_bottoms = xy_positions.axes_bottoms;
@@ -102,7 +103,12 @@ classdef line_moving_processor < handle
             
             % When you first click a line, the clump is only that line
             obj.clump_ids = id;
-            obj.parent.mouse_manager.initializeLineMoving(id);
+            obj.mouse_man.setMouseMotionFunction(@()obj.moveLine(id));
+            obj.mouse_man.setMouseUpFunction(@obj.releaseLineMoving);
+        end
+        function releaseLineMoving(obj)
+            obj.resizePlots();
+            obj.mouse_man.initDefaultState();
         end
         function cb_outerLineClicked(obj)
             %Use different logic for an outer line versus an inner line
@@ -150,7 +156,7 @@ end
 
 function h = h__createLine(obj, y_pos, id)
 n_line_handles = length(obj.line_handles);
-colors = sl.plot.color.getEvenlySpacedColors(n_line_handles);
+colors = interactive_plot.sl.plot.color.getEvenlySpacedColors(n_line_handles);
 h = annotation(...
     'rectangle', [0, y_pos - obj.line_thickness/2, 1, obj.line_thickness],...
     'FaceColor', colors(id,:),...
