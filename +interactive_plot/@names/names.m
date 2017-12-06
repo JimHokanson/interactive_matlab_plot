@@ -41,7 +41,8 @@ classdef names
                     p = h__getPosition(ax);
                 names_handles{i} = uicontrol(fig_handle,'Style','text',...
                     'Units', 'normalized', 'Position', p, ...
-                    'String',axes_names{i},'FontSize',10);
+                    'String',axes_names{i},'FontSize',10,...
+                    'HorizontalAlignment','left');
                 %h__getExtent(names_handles{i});
                 addlistener(ax, 'Position', 'PostSet', @(~,~) obj.yLimChanged(k));
                 
@@ -76,7 +77,9 @@ function p2 = h__getPosition(h_axes)
 %- adjust position
 %
 %although we will know the extent, so 
-MIN_AXES_HEIGHT = 20;
+
+X_OFFSET = 10; %pixels
+MIN_AXES_HEIGHT = 20; %pixels
 
 HEIGHT = 0.04;
 
@@ -86,22 +89,27 @@ top = p(2)+p(4);
 
 p_pixel = getpixelposition(h_axes);
 
+norm_per_pixels_x = p(3)./p_pixel(3);
+
 if p_pixel < MIN_AXES_HEIGHT
     height = 0;
+    bottom = top - 0.01;
 else
     height = HEIGHT;
+    bottom = top - height;
 end
 
 %TODO: Make this in terms of pixels ...
-x = axes_right_edge + 0.001;
+x = axes_right_edge + X_OFFSET*norm_per_pixels_x;
                 
 %JAH: This needs to be fixed, ideally we want a certain
 %amount down from the top ...
-y = top - 0.05;
+
                 
 width = 1 - x;
 
-p2 = [x y height width];
+p2 = [x bottom width height];
+
 end
 
 %

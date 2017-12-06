@@ -296,6 +296,11 @@ classdef axes_action_manager < handle
             start_x = obj.x_start_position;
             x_positions = sort([cur_x, start_x]);
             
+            %This is to make Matlab happy
+            if x_positions(2) == x_positions(1)
+                x_positions(2) = x_positions(1)+0.0001;
+            end
+            
             % need to convert the start and end x positions to the
             % corresponding coordinates in the data
             
@@ -303,7 +308,19 @@ classdef axes_action_manager < handle
             data_left_edge = xlim(1) + (x_positions(1) - axes_left_edge)*x_ax_per_norm;
             data_right_edge = xlim(1) + (x_positions(2) - axes_left_edge)*x_ax_per_norm;
             
-            set(obj.selected_axes, 'XLim', [data_left_edge, data_right_edge]);      
+            %JAH: In order to hzoom we need to manually set the ylim so
+            %that it stays the same
+            %
+            %This however changes the YLimMode to manual. Unfortuantely if
+            %we change it back to auto then the YLim will change,
+            %invalidaing our h zoom
+            %
+            %JAH: Do we want the other axes to be fixed as well for YLim?
+            %- no, the user can always set the axes to manual - this should
+            %be exposed via the ylim options
+            ylim = get(obj.selected_axes,'YLim');
+            set(obj.selected_axes, 'XLim', [data_left_edge, data_right_edge],...
+                'YLim',ylim); 
         end
         function initYZoom(obj)
             % TODO: 
