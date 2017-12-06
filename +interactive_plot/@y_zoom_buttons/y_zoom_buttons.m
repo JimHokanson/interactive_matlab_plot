@@ -111,8 +111,8 @@ bottom = h_axes.Position(2);
 axes_height = h_axes.Position(4);
 
 %h = axes_height/2;
-if axes_height < 2*button_height
-    button_height = axes_height/2;
+if axes_height < 3*button_height
+    button_height = axes_height/3;
 end
 x = 0;
 y1 = bottom; % lower position of zoom-out button

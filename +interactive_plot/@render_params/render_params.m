@@ -15,7 +15,7 @@ classdef render_params
         line_thickness = 0.003 %norm
         gap_thickness = 0.002 %norm
         scroll_bar_bottom = 0.01
-        scroll_bar_height = 0.04
+        scroll_bar_height = 0.03
     end
     
     methods

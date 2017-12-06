@@ -22,6 +22,8 @@ classdef interactive_plot < handle
         axes_handles
         handles
         
+        left_panel
+        
         render_params
         mouse_manager
         line_moving_processor
@@ -166,11 +168,8 @@ classdef interactive_plot < handle
             
             %Left Side Components
             %--------------------------------------------------------------
-            obj.y_axis_resizer = interactive_plot.axis_resizer(...
-                obj.mouse_manager,obj.handles);
-            obj.y_zoom_buttons = interactive_plot.y_zoom_buttons(...
-                obj.handles,obj.render_params,obj.options);
-            obj.y_tick_display = interactive_plot.y_tick_display(obj.axes_handles);
+            obj.left_panel = interactive_plot.left_side_panel(...
+                obj.mouse_manager,obj.handles,obj.render_params,obj.options);
             
             %Right Side Components
             %--------------------------------------------------------------
@@ -202,7 +201,7 @@ classdef interactive_plot < handle
             obj.fig_size_change = interactive_plot.fig_size_change(obj);
             
             obj.toolbar.linkComponents(obj.axes_action_manager)
-            obj.mouse_manager.linkObjects(obj.axes_action_manager,obj.y_axis_resizer);
+            obj.mouse_manager.linkObjects(obj.axes_action_manager,obj.left_panel.y_axis_resizer);
         end
     end
     

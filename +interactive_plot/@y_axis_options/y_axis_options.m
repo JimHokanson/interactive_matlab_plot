@@ -30,16 +30,20 @@ classdef y_axis_options
     end
     
     methods
-        function obj = y_axis_options()
+        function obj = y_axis_options(handles,render_params,options)
+            %
+            %   obj = interactive_plot.y_axis_options(handles,options)
            BUTTON_HEIGHT = 0.03;
             BUTTON_WIDTH = 0.03;
-            
+            small_button_width = 0.03 %20 %pixels ...
+        small_button_height = 0.03 %20 %pixels
+        
             obj.parent = parent; % interactive_plot class
-            obj.fig_handle = obj.parent.fig_handle;
-            obj.axes_handles = obj.parent.axes_handles;
+            obj.fig_handle = handles.fig_handle;
+            obj.axes_handles = handles.axes_handles;
             
-            obj.button_height = BUTTON_HEIGHT;
-            obj.button_width = BUTTON_WIDTH;
+            obj.button_height = render_params.small_button_height;
+            obj.button_width = render_params.small_button_width;
             %ghg: this is a hidden property in the options class...
             %...why did I do that?
             %
