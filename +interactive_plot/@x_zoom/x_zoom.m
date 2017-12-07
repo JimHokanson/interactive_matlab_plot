@@ -40,10 +40,10 @@ classdef x_zoom < handle
             y = scroll_base_y; % y position of the bottom of the scroll bar
             
             obj.zoom_out_button = interactive_plot.ip_button(obj.parent.fig_handle,[x3,y,L,H],'-');
-            set(obj.zoom_out_button.button, 'Callback',  @(~,~) obj.cb_zoomOut);
+            obj.zoom_out_button.setCallback(@(~,~) obj.cb_zoomOut);
             
             obj.zoom_in_button = interactive_plot.ip_button(obj.parent.fig_handle, [x4, y, L, H], '+');
-            set(obj.zoom_in_button.button, 'Callback', @(~,~)obj.cb_zoomIn)
+            obj.zoom_in_button.setCallback(@(~,~) obj.cb_zoomIn);
         end
     end
     methods (Hidden)% callbacks

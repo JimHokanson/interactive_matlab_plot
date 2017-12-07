@@ -1,4 +1,4 @@
-classdef y_axis_options
+classdef y_axis_options < handle
     %
     %   Class:
     %   interactive_plot.y_axis_options
@@ -8,72 +8,92 @@ classdef y_axis_options
     %   1) Autoscale
     %   2) YLimMode - manual
     %   3) YLimMode - auto
+    %   4) Set y-axis manually
+    
     
     properties
-        button_height
-        button_width
-    end
-    
-    properties
-        parent
         fig_handle %necessary?
         axes_handles
+        line_handles
+        options
+        context_menu
+        current_I
         
-        zoom_in_buttons
-        zoom_out_buttons
-        
-        options %expose at this level?
-        
-        ZOOM_FACTOR = 0.1;
-        SPACE_FROM_AXES = 0.01;
+        buttons
         % best way to store buttons? multidimensional cell array?
     end
     
     methods
-        function obj = y_axis_options(handles,render_params,options)
+        function obj = y_axis_options(handles,options,buttons)
             %
-            %   obj = interactive_plot.y_axis_options(handles,options)
-           BUTTON_HEIGHT = 0.03;
-            BUTTON_WIDTH = 0.03;
-            small_button_width = 0.03 %20 %pixels ...
-        small_button_height = 0.03 %20 %pixels
-        
-            obj.parent = parent; % interactive_plot class
+            %   obj = interactive_plot.y_axis_options(handles,options,buttons)
+         
             obj.fig_handle = handles.fig_handle;
             obj.axes_handles = handles.axes_handles;
+            obj.line_handles = handles.line_handles;
+            obj.buttons = buttons;
+            obj.options = options;
             
-            obj.button_height = render_params.small_button_height;
-            obj.button_width = render_params.small_button_width;
-            %ghg: this is a hidden property in the options class...
-            %...why did I do that?
-            %
-            %JAH: got me ... I would not have it hidden
-            %
+            c = uicontextmenu('Parent',obj.fig_handle);
             
-            s = length(obj.axes_handles);
-            obj.zoom_in_buttons = cell(1,s);
-            obj.zoom_out_buttons = cell(1,s);
+            % Create child menu items for the uicontextmenu
+            % JAH: Nest menu's?????
+            uimenu(c,'Label','autoscale','Callback',@(~,~)obj.autoscale());
+            uimenu(c,'Label','ylim manual','Callback',@(~,~)obj.setYLimMode('manual'));
+         	uimenu(c,'Label','ylim auto','Callback',@(~,~)obj.setYLimMode('auto'));
+            %uimenu(c,'Label','set ylim','Callback',@(~,~)obj.autoscale());
             
+            obj.context_menu = c;
             
-            for k = 1:length(obj.axes_handles)
-                ax = obj.axes_handles{k};
-                
-                [v1,v2] = h__getSizeVectors(obj,ax,obj.button_width,obj.button_height);
-                
-                obj.zoom_out_buttons{k} = interactive_plot.ip_button(obj.fig_handle, v1,'-');
-                set(obj.zoom_out_buttons{k}.button, 'Callback', @(~,~)obj.cb_yZoomOut(k));
-                
-                obj.zoom_in_buttons{k} = interactive_plot.ip_button(obj.fig_handle, v2,'+');
-                set(obj.zoom_in_buttons{k}.button, 'Callback', @(~,~)obj.cb_yZoomIn(k));
-                
-                % add an action listener to the size of the axes so that
-                % whenever they get taller/shorter we can adjust the size of
-                % the buttons
-                
-                addlistener(ax, 'Position', 'PostSet', @(~,~) obj.yLimChanged(k));
-            end 
+            n_buttons = length(buttons);
+            
+            for i = 1:n_buttons
+                cur_button = buttons{i};
+                cur_button.setCallback(@(~,~)obj.buttonClicked(i));
+            end
+         
+        end
+        function buttonClicked(obj,I)
+            disp('button clicked')
+            obj.current_I = I;
+            current_button = obj.buttons{I}.h;
+            p = getpixelposition(current_button)
+            %Position must be in pixel units for context menu
+            %The context menu only takes in a xy of the upper left corner
+            set(obj.context_menu,'Visible','on','Position',p(1:2))
+        end
+        function autoscale(obj)
+            h_line = obj.line_handles{obj.current_I};
+            h_axes = obj.axes_handles{obj.current_I};
+            y_min = min(get(h_line,'YData'));
+            y_max = max(get(h_line,'YData'));
+            set(h_axes,'YLim',[y_min y_max]);
+        end
+        function setYLimMode(obj,mode)
+            set(obj.current_axes,'YLimMode',mode);
+        end
+        function delete(obj)
+            delete(obj.context_menu);
         end
     end
     
-end
+end 
+
+%{
+clf
+wtf = uicontrol('Style','pushbutton','Position', [20 340 70 70])
+c = uicontextmenu('Parent',gcf);
+uimenu(c,'Label','testing')
+p = get(wtf,'Position')
+set(c,'Position',p(1:2),'Visible','on')
+
+clf
+set(gcf,'Units','Normalized')
+wtf = uicontrol('Style','pushbutton','Units','normalized','Position',[0.2 0.2 0.3 0.3])
+c = uicontextmenu('Parent',gcf);
+uimenu(c,'Label','testing')
+p = get(wtf,'Position')
+set(c,'Position',[20 340],'Visible','on')
+
+%}
 

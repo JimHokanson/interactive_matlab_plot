@@ -5,12 +5,15 @@ classdef ip_button < handle
     %
     % TODO: change the name of this class?
     properties
+        h   %The underlying handle ...
+        
        fig_handle 
        position %[x, y, w, h]
        text % what is dispalyed on the face of the button
       % type %String ('scroll', 'xzoom', 'yzoom')
        %change this to number system?
-       button
+       
+       
        
     end
     methods
@@ -29,13 +32,16 @@ classdef ip_button < handle
             
            
            % TODO: this is bad formatting 
-            obj.button = uicontrol(obj.fig_handle,...
+            obj.h = uicontrol(obj.fig_handle,...
                 'Style', 'pushbutton', 'String', obj.text,...
                 'units', 'normalized', 'Position',obj.position,...
                 'Visible', 'on');
         end
         function setPosition(obj, position_vector)
-            set(obj.button, 'Position', position_vector);
+            set(obj.h, 'Position', position_vector);
+        end
+        function setCallback(obj,callback_handle)
+            set(obj.h,'callback',callback_handle);
         end
     end
 end

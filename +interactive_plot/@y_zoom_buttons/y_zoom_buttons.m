@@ -30,7 +30,7 @@ classdef y_zoom_buttons < handle
         zoom_out_factor
     end
     methods
-        function obj = y_zoom_buttons(handles,render_params,options)
+        function obj = y_zoom_buttons(handles,render_params,options,zoom_in_buttons,zoom_out_buttons)
             obj.zoom_in_factor = options.yzoom_in_scale;
             obj.zoom_out_factor = options.yzoom_out_scale;
             
@@ -41,37 +41,16 @@ classdef y_zoom_buttons < handle
             obj.button_width = render_params.small_button_width;
             
             n_axes = length(obj.axes_handles);
-            obj.zoom_in_buttons = cell(1,n_axes);
-            obj.zoom_out_buttons = cell(1,n_axes);
+            obj.zoom_in_buttons = zoom_in_buttons;
+            obj.zoom_out_buttons = zoom_out_buttons;
             
-            for k = 1:length(obj.axes_handles)
-                ax = obj.axes_handles{k};
+            for k = 1:n_axes
+                z1 = obj.zoom_out_buttons{k};
+                z1.setCallback(@(~,~)obj.cb_yZoomOut(k));
                 
-                [v1,v2] = h__getSizeVectors(obj,ax,obj.button_width,obj.button_height);
-                
-                obj.zoom_out_buttons{k} = interactive_plot.ip_button(obj.fig_handle, v1,'-');
-                set(obj.zoom_out_buttons{k}.button, 'Callback', @(~,~)obj.cb_yZoomOut(k));
-                
-                obj.zoom_in_buttons{k} = interactive_plot.ip_button(obj.fig_handle, v2,'+');
-                set(obj.zoom_in_buttons{k}.button, 'Callback', @(~,~)obj.cb_yZoomIn(k));
-                
-                % add an action listener to the size of the axes so that
-                % whenever they get taller/shorter we can adjust the size of
-                % the buttons
-                
-                addlistener(ax, 'Position', 'PostSet', @(~,~) obj.yLimChanged(k));
+                z2 = obj.zoom_in_buttons{k};
+                z2.setCallback(@(~,~)obj.cb_yZoomIn(k));             
             end
-        end
-        function yLimChanged(obj, idx)
-            % idx is the index of both the axes and the zoom buttons for
-            % that axes
-            
-            ax = obj.axes_handles{idx};
-            
-            [v1,v2] = h__getSizeVectors(obj,ax,obj.button_width,obj.button_height);
-
-            obj.zoom_out_buttons{idx}.setPosition(v1);
-            obj.zoom_in_buttons{idx}.setPosition(v2);
         end
     end
     methods %callbacks
@@ -103,21 +82,4 @@ classdef y_zoom_buttons < handle
             ax.YLim = [y_min, y_max];
         end
     end
-end
-
-function [v1,v2] = h__getSizeVectors(obj,h_axes,button_width,button_height)
-%axes_right_edge = h_axes.Position(1) + h_axes.Position(3);
-bottom = h_axes.Position(2);
-axes_height = h_axes.Position(4);
-
-%h = axes_height/2;
-if axes_height < 3*button_height
-    button_height = axes_height/3;
-end
-x = 0;
-y1 = bottom; % lower position of zoom-out button
-y2 = bottom + button_height; % lower position of zoom-in button
-
-v1 = [x,y1,button_width, button_height];
-v2 = [x,y2,button_width, button_height];
 end
