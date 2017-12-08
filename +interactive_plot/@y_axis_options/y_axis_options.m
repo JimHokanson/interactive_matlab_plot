@@ -20,7 +20,6 @@ classdef y_axis_options < handle
         current_I
         
         buttons
-        % best way to store buttons? multidimensional cell array?
     end
     
     methods
@@ -54,20 +53,30 @@ classdef y_axis_options < handle
          
         end
         function buttonClicked(obj,I)
-            disp('button clicked')
+            drawnow
+            %disp('button clicked')
             obj.current_I = I;
             current_button = obj.buttons{I}.h;
-            p = getpixelposition(current_button)
+            p = getpixelposition(current_button);
             %Position must be in pixel units for context menu
             %The context menu only takes in a xy of the upper left corner
             set(obj.context_menu,'Visible','on','Position',p(1:2))
+            
+            %This seems to help with reliability of the context menu
+            %showing up ...
+            
         end
         function autoscale(obj)
             h_line = obj.line_handles{obj.current_I};
             h_axes = obj.axes_handles{obj.current_I};
             y_min = min(get(h_line,'YData'));
             y_max = max(get(h_line,'YData'));
+            y_range = y_max - y_min;
+            extra = y_range*obj.options.auto_scale_padding;
+            y_max = y_max + extra;
+            y_min = y_min - extra;
             set(h_axes,'YLim',[y_min y_max]);
+            
         end
         function setYLimMode(obj,mode)
             set(obj.current_axes,'YLimMode',mode);
