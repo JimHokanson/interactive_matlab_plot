@@ -10,6 +10,7 @@ classdef left_side_panel
         button_width
         
         %Logic processors ...
+        %-----------------------------
         y_axis_resizer
         y_zoom_buttons
         y_tick_display
@@ -27,7 +28,7 @@ classdef left_side_panel
             %
             %   obj = interactive_plot.left_side_panel(mouse_manager,handles,render_params,options)
             
-            %JAH: Moving the button layout code into this class and keeping
+            %The button layout code is in this class and 
             %the logic processing in the sub-classes.
             
             obj.fig_handle = handles.fig_handle;

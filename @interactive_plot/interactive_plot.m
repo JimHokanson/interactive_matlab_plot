@@ -49,6 +49,13 @@ classdef interactive_plot < handle
         function obj = runTest(type,varargin)
             %
             %   interactive_plot.runTest(*type)
+            %
+            %   Optional Inputs
+            %   ---------------
+            %   type : 
+            %       - 1 - 8 simple plots
+            %       - 2 - 3 longer more interesting plots with names
+            %       - 3 - 
             
             %{
                 interactive_plot.runTest(2)
@@ -72,7 +79,7 @@ classdef interactive_plot < handle
                     set(gca,'ylim',[-4 4]);
                 end
                 axes_names = [];
-            else
+            elseif type == 2
                 n = 5e6;
                 t = linspace(0,100,n);
                 y = [(sin(0.10 * t) + 0.05 * randn(1, n))', ...
@@ -86,6 +93,17 @@ classdef interactive_plot < handle
                     plotBig(t,y(:,i));
                 end
                 axes_names = {'sin','cos','step'};
+            elseif type == 3
+                %Streaming
+                
+                %1) sin modulated by a sin
+                %2) frequency changing by sin
+                
+                %1/10 Hz
+                %
+                
+                %
+               
             end
             
             obj = interactive_plot(f,ax_ca,varargin{:},'axes_names',axes_names);
