@@ -13,6 +13,7 @@ classdef options < handle
         streaming
         axes_names
         
+        streaming_window_size = 20
         auto_scale_padding = 0.05
         yzoom_in_scale = 0.3
         yzoom_out_scale = 0.3

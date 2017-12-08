@@ -90,6 +90,11 @@ classdef scroll_bar <handle
             p1 = [obj.left_limit, obj.base_y, obj.bar_width, obj.bar_height];
             obj.background_bar = annotation('rectangle', p1, 'FaceColor', 'w');
             
+            p2 = [obj.left_limit, obj.base_y, obj.bar_width, obj.bar_height];
+            obj.slider = annotation('rectangle', p2, 'FaceColor', 'k');
+            obj.slider_left_x = obj.left_limit;
+            obj.slider_right_x = obj.right_limit;
+            
             %Buttons
             %-----------------------------------------
             bar_height = obj.bar_height;
@@ -117,12 +122,7 @@ classdef scroll_bar <handle
             obj.total_time_range = xlim(2) - xlim(1);
             
             
-            %create the slider
-            %---------------------------------------
-            p2 = [obj.left_limit, obj.base_y, obj.bar_width, obj.bar_height];
-            obj.slider = annotation('rectangle', p2, 'FaceColor', 'k');
-            obj.slider_left_x = obj.left_limit;
-            obj.slider_right_x = obj.right_limit;
+            
             
             
             ax = handles.axes_handles{1};
@@ -159,7 +159,8 @@ classdef scroll_bar <handle
             obj.mouse_man.initDefaultState();
         end
         function updateXMax(obj,new_x_max)
-            %TODO: position of the scroll bar needs to rerender ...
+            %
+            %This is called when ...
             
             %See streaming class
              obj.total_time_limits(2) = new_x_max;
@@ -176,13 +177,14 @@ classdef scroll_bar <handle
             
             try
                 %convert from units of space to proportion of time
-                obj.width_per_time = (obj.right_limit - obj.left_limit)/obj.total_time_range;
-                
-                % just check axes 1 for proof of concept...
                 ax = obj.axes_handles{1};
-                
                 x_min = ax.XLim(1);
                 x_max = ax.XLim(2);
+                
+                obj.width_per_time = (obj.right_limit - obj.left_limit)/obj.total_time_range;
+                                
+                
+                
                 
                 obj.slider_left_x = obj.left_limit + x_min*obj.width_per_time;
                 obj.slider_right_x = obj.left_limit + x_max*obj.width_per_time;

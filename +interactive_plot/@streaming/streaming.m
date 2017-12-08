@@ -7,6 +7,7 @@ classdef streaming
     %   things related to streaming.
     
     properties
+        streaming_window_size
         options
         axes_handles
         class_enabled = true
@@ -18,6 +19,7 @@ classdef streaming
             %
             %   obj = interactive_plot.streaming(axes_handles)
             
+            obj.streaming_window_size = options.streaming_window_size;
             obj.axes_handles = axes_handles;
             obj.scroll_bar = scroll_bar;
             
@@ -32,7 +34,8 @@ classdef streaming
             %Update scroll bar ...
             
             obj.scroll_bar.updateXMax(new_max_time);
-            TIME_WINDOW = 20;
+            TIME_WINDOW = obj.streaming_window_size;
+            
             %TODO: This assumes we start at 0 ...
             %----------------------------------------------
             if obj.scroll_bar.auto_scroll.scroll_enabled
