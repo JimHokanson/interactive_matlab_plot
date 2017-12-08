@@ -43,6 +43,20 @@ classdef axes_action_manager < handle
         h_axes_rect
         h_line %horizontal zoom
         y_line %vertical zoom
+        
+        % keep track of this for resetting the zoom on double click
+        % this gets updated the first time the horizontal zoom is used
+        % before zoom changes.
+        initial_x_ranges = [] %[xmin, xmax]
+        x_zoom_axes_idx = [];
+        % this will be a bit more complicated for the yzoom case because we
+        % will have to keep track of which plot was zoomed on 
+        % initial_y_range is a matrix where each row corresponds to an axes
+        % in order and each column corresponds to the initial y ranges
+
+        initial_y_ranges = [];
+        y_zoom_axes_idx = [];
+
     end
     
     methods
@@ -76,11 +90,32 @@ classdef axes_action_manager < handle
                 cur_axes = obj.axes_handles{i};
                 cur_axes.UIContextMenu = c;
             end
+            
+            % for initializing the double click zoom reset 
+            obj.cur_action = -1;
+            obj.setActiveAction(1);
         end
         %TODO: Add mouse down action listener ...
         %- this should allow us to clear the current drawing for data
         %select
         function setActiveAction(obj, selected_value)
+           
+            % update this for the double click zoom reset
+            if ~isequal(obj.cur_action, selected_value)
+                
+                obj.x_zoom_axes_idx = [];
+                obj.y_zoom_axes_idx = [];
+                
+                obj.initial_x_ranges = zeros(length(obj.axes_handles), 2);
+                % [left1, right1 ...
+                %  left2, right2]
+                
+                %[bottom1, top1
+                % bottom2, top2
+                % etc...       ]
+                obj.initial_y_ranges = zeros(length(obj.axes_handles), 2);
+            end
+            
             obj.cur_action = selected_value;
         end
         function ptr = getMousePointerAndAction(obj,x,y,is_action)
@@ -117,14 +152,21 @@ classdef axes_action_manager < handle
                 obj.x_start_position = x;
                 obj.y_start_position = y;
                 
+                
+                % reset this range so that we define a new basis for the
+                % double-click zoom out
+                % this is probably not the best place for the reset--some
+                % testing will be needed
+                
                 switch obj.cur_action
                     case 1
                         obj.initHZoom();
                     case 2
-
+                        
                         obj.initYZoom();
                         %v_zoom
                     case 3
+                        obj.initUZoom();
                         %u_zoom
                     case 4
                         %data select
@@ -139,10 +181,10 @@ classdef axes_action_manager < handle
             %When ready use this!
             % action = obj.all_actions{obj.cur_action};
             
-        
+            
         end
     end
-        
+    
     %Data Selection ===========================================
     methods
         function calibrateData(obj)
@@ -164,7 +206,7 @@ classdef axes_action_manager < handle
                 
                 notify(obj.eventz,'calibration',interactive_plot.event_data(calibration));
             else
-                error('Unable to calibrate without selected data') 
+                error('Unable to calibrate without selected data')
             end
             
         end
@@ -175,12 +217,12 @@ classdef axes_action_manager < handle
                 delete(obj.h_axes_rect);
                 obj.h_axes_rect = [];
             end
-         
+            
         end
         function initDataSelect(obj)
             obj.mouse_man.setMouseMotionFunction(@obj.dataSelectMove);
             obj.mouse_man.setMouseUpFunction(@obj.dataSelectMouseUp);
-
+            
             x = obj.x_start_position;
             y = obj.y_start_position;
             
@@ -245,6 +287,38 @@ classdef axes_action_manager < handle
     %Zoom
     %======================================================================
     methods
+        function resetZoom(obj)
+            % called on the double click to reset the zoom to what it was
+            % before the current click-and-drag zoom option was selected
+            % TODO: document this better
+            
+            switch obj.cur_action
+                case 1
+                    % hzoom
+                    x_lims = obj.initial_x_ranges(obj.selected_axes_I,:);
+                    if ~isequal(x_lims, [0,0])
+                    set(obj.selected_axes, 'XLim', x_lims);
+                    end
+                case 2
+                    %yzoom
+                    y_lims = obj.initial_y_ranges(obj.selected_axes_I,:);
+                    if ~isequal(y_lims, [0,0])
+                    set(obj.selected_axes, 'YLim', y_lims);
+                    end
+                case 3
+                    %uzoom
+                    x_lims = obj.initial_x_ranges(obj.selected_axes_I,:);
+                    if ~isequal(x_lims, [0,0])
+                        set(obj.selected_axes, 'XLim', x_lims);
+                    end
+                    y_lims = obj.initial_y_ranges(obj.selected_axes_I,:);
+                    if ~isequal(y_lims, [0,0])
+                        set(obj.selected_axes, 'YLim', y_lims);
+                    end
+                otherwise
+                    
+            end
+        end
         function initHZoom(obj)
             % TODO: need to limit behavior to stay inside the axes
             %   allow esc press to cancel
@@ -254,8 +328,12 @@ classdef axes_action_manager < handle
             % 1) change the callbacks on the mouse manager
             %   -motion , up (this class needs to own these)
             % 2) need to get the initial position
-            % 3) create the line at the proper x0,y0   
+            % 3) create the line at the proper x0,y0
             
+            if isequal(obj.initial_x_ranges(obj.selected_axes_I, :), [0,0])
+               obj.initial_x_ranges(obj.selected_axes_I,:) = obj.selected_axes.XLim; 
+            end
+
             cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
             y = cur_mouse_coords(2);
             x = cur_mouse_coords(1);
@@ -264,47 +342,35 @@ classdef axes_action_manager < handle
             obj.y_start_position = y;
             
             obj.h_line = annotation('line', 'X', [x,x], 'Y' ,[y,y], 'Color', 'k');
-
-           obj.mouse_man.setMouseMotionFunction(@obj.runHZoom);
-           obj.mouse_man.setMouseUpFunction(@obj.endHzoom);
+            
+            obj.mouse_man.setMouseMotionFunction(@obj.runHZoom);
+            obj.mouse_man.setMouseUpFunction(@obj.endHzoom);
             
         end
         function runHZoom(obj)
             cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
+            
             x = cur_mouse_coords(1);
+
+            p_axes = obj.selected_axes.Position;
+            left_boundary = p_axes(1);
+            right_boundary = p_axes(1) + p_axes(3);
+
+            if x > right_boundary 
+                x = right_boundary;
+            elseif x <left_boundary
+                x = left_boundary;
+            end
             set(obj.h_line, 'X', [obj.x_start_position, x]);
         end
         function endHzoom(obj)
-           
+            
             % This needs to more accessible for more classes
             delete(obj.h_line);
             obj.mouse_man.initDefaultState;
             
-            %TODO: Move this to somewhere common
-            xlim = get(obj.selected_axes,'XLim');
-            x_range = xlim(2)-xlim(1);
-            
-            p_axes = get(obj.selected_axes,'position'); 
-            width  = p_axes(3);
-            x_ax_per_norm = x_range/width;
-            
             cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
-            cur_x = cur_mouse_coords(1); 
-            start_x = obj.x_start_position;
-            x_positions = sort([cur_x, start_x]);
-            
-            %This is to make Matlab happy
-            if x_positions(2) == x_positions(1)
-                x_positions(2) = x_positions(1)+0.0001;
-            end
-            
-            % need to convert the start and end x positions to the
-            % corresponding coordinates in the data
-            
-            axes_left_edge = p_axes(1);
-            data_left_edge = xlim(1) + (x_positions(1) - axes_left_edge)*x_ax_per_norm;
-            data_right_edge = xlim(1) + (x_positions(2) - axes_left_edge)*x_ax_per_norm;
-            
+            [data_left_edge, data_right_edge] = h__HZoom(obj, cur_mouse_coords);
             %JAH: In order to hzoom we need to manually set the ylim so
             %that it stays the same
             %
@@ -316,11 +382,14 @@ classdef axes_action_manager < handle
             %- no, the user can always set the axes to manual - this should
             %be exposed via the ylim options
             ylim = get(obj.selected_axes,'YLim');
+            if data_right_edge <= data_left_edge
+               return; 
+            end
             set(obj.selected_axes, 'XLim', [data_left_edge, data_right_edge],...
-                'YLim',ylim); 
+                'YLim',ylim);
         end
         function initYZoom(obj)
-            % TODO: 
+            % TODO:
             %   Need to restrict behavior of line to stay inside of 1 axes.
             %   Otherwise very strange errors occur!
             %
@@ -328,12 +397,18 @@ classdef axes_action_manager < handle
             % initiates the y zoom function on a given axes
             %copies heavily from Hzoom
             
-             % initiates the horizontal zoom function
             % 1) change the callbacks on the mouse manager
             %   -motion , up (this class needs to own these)
             % 2) need to get the initial position
-            % 3) create the line at the proper x0,y0   
+            % 3) create the line at the proper x0,y0
             
+             axes_idx = obj.selected_axes_I;
+             initial_y_range = obj.initial_y_ranges(axes_idx, :);
+             
+             if isequal(initial_y_range, [0,0])
+                 obj.initial_y_ranges(axes_idx, :) = obj.selected_axes.YLim;
+             end
+
             cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
             y = cur_mouse_coords(2);
             x = cur_mouse_coords(1);
@@ -342,50 +417,137 @@ classdef axes_action_manager < handle
             obj.y_start_position = y;
             
             obj.y_line = annotation('line', 'X', [x,x], 'Y' ,[y,y], 'Color', 'k');
-
-           obj.mouse_man.setMouseMotionFunction(@obj.runYZoom);
-           obj.mouse_man.setMouseUpFunction(@obj.endYzoom);
+            
+            obj.mouse_man.setMouseMotionFunction(@obj.runYZoom);
+            obj.mouse_man.setMouseUpFunction(@obj.endYzoom);
         end
         function runYZoom(obj)
             cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
-            y = cur_mouse_coords(2);
+            cur_y = cur_mouse_coords(2);
+            
+            p_axes = obj.selected_axes.Position;
+            bottom_boundary = p_axes(2);
+            top_boundary = p_axes(2) + p_axes(4);
+
+            if cur_y > top_boundary 
+                cur_y = top_boundary;
+            elseif cur_y <bottom_boundary
+                cur_y = bottom_boundary;
+            end
+
             % for some reason the y position is given as [top, bottom]
-            set(obj.y_line, 'Y', [y, obj.y_start_position]);
+            set(obj.y_line, 'Y', [cur_y, obj.y_start_position]);
         end
         function endYzoom(obj)
             % This needs to more accessible for more classes
             delete(obj.y_line);
             obj.mouse_man.initDefaultState;
             
-            %TODO: Move this to somewhere common
-            ylim = get(obj.selected_axes,'YLim');
-            y_range = ylim(2)-ylim(1);
+            cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
+
+            [data_bottom_edge, data_top_edge] =  h__YZoom(obj, cur_mouse_coords);
+            if data_bottom_edge == data_top_edge
+                return;
+            end
+            set(obj.selected_axes, 'YLim', [data_bottom_edge, data_top_edge]);
+        end
+        function initUZoom(obj)
+            % initiates the unconstrained zoom function
+            %
+            % This causes a change in all of the axes x limits in addition
+            % to changing the y limit of just the figure we are looking at.
+            % That major change can be a bit disorienting
+            %
+            % Current functionality is to draw two lines as has been done
+            % for the x and y zoom. Should it be changed to a rectangle?
+            % (probably should be...)
+            %
+            % TODO: limit the position so that we can't go outside of the
+            % current axes while dragging!
+            %
+            % TODO: document this!
             
-            p_axes = get(obj.selected_axes,'position'); 
-            hieght  = p_axes(4);
-            y_ax_per_norm = y_range/hieght;
+
+            % TODO: these should be formatted the same way!
+           
+            % for resetting the y lims:
+            axes_idx = obj.selected_axes_I;
+            initial_y_range = obj.initial_y_ranges(axes_idx, :);
+            if isequal(initial_y_range, [0,0])
+                obj.initial_y_ranges(axes_idx, :) = obj.selected_axes.YLim;
+            end
+            % for resetting the xlims:
+            if isequal(obj.initial_x_ranges(obj.selected_axes_I, :), [0,0])
+               obj.initial_x_ranges(obj.selected_axes_I,:) = obj.selected_axes.XLim; 
+            end
             
             cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
-            cur_y = cur_mouse_coords(2); 
-            start_y = obj.y_start_position;
-            y_positions = sort([cur_y, start_y]);
+            y = cur_mouse_coords(2);
+            x = cur_mouse_coords(1);
             
-            % need to convert the start and end x positions to the
-            % corresponding coordinates in the data
+            obj.x_start_position = x;
+            obj.y_start_position = y;
             
-            axes_bottom_edge = p_axes(2);
-            data_bottom_edge = ylim(1) + (y_positions(1) - axes_bottom_edge)*y_ax_per_norm;
-            data_top_edge = ylim(1) + (y_positions(2) - axes_bottom_edge)*y_ax_per_norm;
+            % [x, y, length, width]
             
-            set(obj.selected_axes, 'YLim', [data_bottom_edge, data_top_edge]);  
+            obj.h_fig_rect = annotation('rectangle', 'Position', [x,y , 0, 0], 'FaceColor', 'none');
+                       
+            obj.mouse_man.setMouseMotionFunction(@obj.runUZoom);
+            obj.mouse_man.setMouseUpFunction(@obj.endUZoom);
+            
         end
-        function UZoom(obj)
-            % initiates the unconstrained zoom function
-            % NYI!
+        function runUZoom(obj)
+            cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
+            cur_x = cur_mouse_coords(1);
+            cur_y = cur_mouse_coords(2);
             
+            p_axes = obj.selected_axes.Position;
+            bottom_boundary = p_axes(2);
+            top_boundary = p_axes(2) + p_axes(4);
+            
+             left_boundary = p_axes(1);
+            right_boundary = p_axes(1) + p_axes(3);
+
+            if cur_x > right_boundary 
+                cur_x = right_boundary;
+            elseif cur_x <left_boundary
+                cur_x = left_boundary;
+            end
+            
+            if cur_y > top_boundary 
+                cur_y = top_boundary;
+            elseif cur_y <bottom_boundary
+                cur_y = bottom_boundary;
+            end
+
+            x0 = obj.x_start_position;
+            y0 = obj.y_start_position;
+            w = cur_x - x0;
+            h = cur_y - y0;
+            
+            set(obj.h_fig_rect, 'Position', [x0,y0,w,h]);
+        end
+        function endUZoom(obj)
+            % This needs to more accessible for more classes
+            %
+            % TODO: split this up into helper classes which can be shared
+            % with the vertical and horizontal zoom functions!!
+            
+
+            obj.mouse_man.initDefaultState;
+            delete(obj.h_fig_rect);
+
+            cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
+            [data_left_edge, data_right_edge] = h__HZoom(obj, cur_mouse_coords);
+            [data_bottom_edge, data_top_edge] =  h__YZoom(obj, cur_mouse_coords);
+
+            if data_left_edge >= data_right_edge || data_top_edge<=data_bottom_edge
+                return;
+            end
+            set(obj.selected_axes, 'XLim', [data_left_edge, data_right_edge]);
+            set(obj.selected_axes, 'YLim', [data_bottom_edge, data_top_edge]);
         end
     end
-    
 end
 
 function h__redrawRectangle(obj)
@@ -455,4 +617,65 @@ end
 
 %}
 
+function [data_left_edge, data_right_edge] = h__HZoom(obj, cur_mouse_coords)
+            xlim = get(obj.selected_axes,'XLim');
+            x_range = xlim(2)-xlim(1);
+            
+            p_axes = get(obj.selected_axes,'position');
+            
+            left_boundary = p_axes(1);
+            right_boundary = p_axes(1) + p_axes(3);
 
+            width  = p_axes(3);
+            x_ax_per_norm = x_range/width;
+            
+            cur_x = cur_mouse_coords(1);
+            if cur_x > right_boundary 
+                cur_x = right_boundary;
+            elseif cur_x <left_boundary
+                cur_x = left_boundary;
+            end
+            start_x = obj.x_start_position;
+            x_positions = sort([cur_x, start_x]);
+            
+            %This is to make Matlab happy
+            if x_positions(2) == x_positions(1)
+                x_positions(2) = x_positions(1)+0.0001;
+            end
+            
+            % need to convert the start and end x positions to the
+            % corresponding coordinates in the data
+            axes_left_edge = p_axes(1);
+            data_left_edge = xlim(1) + (x_positions(1) - axes_left_edge)*x_ax_per_norm;
+            data_right_edge = xlim(1) + (x_positions(2) - axes_left_edge)*x_ax_per_norm;
+end
+function [data_bottom_edge, data_top_edge] =  h__YZoom(obj, cur_mouse_coords)
+            
+            ylim = get(obj.selected_axes,'YLim');
+            y_range = ylim(2)-ylim(1);
+            
+            p_axes = get(obj.selected_axes,'position');
+            hieght  = p_axes(4);
+            y_ax_per_norm = y_range/hieght;
+            
+            cur_y = cur_mouse_coords(2);
+            
+            bottom_boundary = p_axes(2);
+            top_boundary = p_axes(2) + p_axes(4);
+
+            if cur_y > top_boundary 
+                cur_y = top_boundary;
+            elseif cur_y <bottom_boundary
+                cur_y = bottom_boundary;
+            end
+            
+            start_y = obj.y_start_position;
+            y_positions = sort([cur_y, start_y]);
+            
+            % need to convert the start and end x positions to the
+            % corresponding coordinates in the data
+            
+            axes_bottom_edge = p_axes(2);
+            data_bottom_edge = ylim(1) + (y_positions(1) - axes_bottom_edge)*y_ax_per_norm;
+            data_top_edge = ylim(1) + (y_positions(2) - axes_bottom_edge)*y_ax_per_norm;
+end

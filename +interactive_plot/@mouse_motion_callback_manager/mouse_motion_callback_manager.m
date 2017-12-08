@@ -148,13 +148,23 @@ classdef mouse_motion_callback_manager < handle
                 return;
             end
             
+            % this has the potential to cause bugs if tic/toc is used in
+            % the code elsewhere or another program is using it...
+            time_since_last_click = toc;
+            if time_since_last_click < 0.5
+                % double click. Have to undo the last zoom
+                obj.axes_action_manager.resetZoom();
+                tic;
+                return;
+            end
+            tic;
+            
+            
             cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
             y = cur_mouse_coords(2);
             x = cur_mouse_coords(1);
             h__getInfoByMousePosition(obj,x,y,true);
 
-            
-            
             %{
             dealing with the double click... difficult to do without
             messing with normal behavior

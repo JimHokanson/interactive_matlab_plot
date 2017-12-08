@@ -149,7 +149,7 @@ classdef scroll_bar <handle
             cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
             cur_mouse_x = cur_mouse_coords(1);
             obj.prev_mouse_x = cur_mouse_x;
-          	obj.mouse_man.setMouseMotionFunction(@scroll_bar.scroll);
+          	obj.mouse_man.setMouseMotionFunction(@obj.scroll);
             obj.mouse_man.setMouseUpFunction(@obj.releaseScrollBar);
         end
         function releaseScrollBar(obj)
@@ -157,6 +157,8 @@ classdef scroll_bar <handle
                 obj.updateAxes();
             end
             obj.mouse_man.initDefaultState();
+            
+           % obj.mouse_man.parent
         end
         function updateXMax(obj,new_x_max)
             %
