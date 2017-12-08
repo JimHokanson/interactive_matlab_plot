@@ -322,6 +322,8 @@ classdef interactive_plot < handle
             end
             
           	top_position = obj.render_params.top_axes_top_position;
+            %GHG TODO: this needs to be based on the outer position of the
+            %axes so that the x-ticks are not covered
             bottom_position = obj.render_params.bottom_axes_bottom_position;
                         
             if in.keep_relative_size

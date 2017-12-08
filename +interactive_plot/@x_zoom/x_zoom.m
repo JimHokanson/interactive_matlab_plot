@@ -65,7 +65,7 @@ classdef x_zoom < handle
             range_in_view = limits_in_view(2) - limits_in_view(1);
             center = mean(limits_in_view);
             
-            fraction_to_zoom =1.1; %move to options class
+            fraction_to_zoom =1.5; %move to options class
             new_time_range = range_in_view*fraction_to_zoom;
             
             lower_lim = center - new_time_range/2;

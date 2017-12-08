@@ -142,15 +142,46 @@ classdef mouse_motion_callback_manager < handle
             % left click function and opening the UIcontext menu no matter
             % which side is clicked
             
-            if (~isequal(obj.fig_handle.SelectionType, 'normal'))
-                return
+            
+            if isequal(obj.fig_handle.SelectionType, 'alt')
+                % right click
+                return;
             end
             
             cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
             y = cur_mouse_coords(2);
             x = cur_mouse_coords(1);
-            
             h__getInfoByMousePosition(obj,x,y,true);
+
+            
+            
+            %{
+            dealing with the double click... difficult to do without
+            messing with normal behavior
+            
+            %https://www.mathworks.com/matlabcentral/answers/96424-how-can-i-execute-a-double-click-callback-without-executing-the-single-click-callback-in-my-matlab-g
+            persistent chk
+            if isempty(chk)
+                chk = 1;
+                pause(0.5); %Add a delay to distinguish single click from a double click
+                if chk == 1
+                    % doing a single click
+                    chk = [];
+                    h__getInfoByMousePosition(obj,x,y,true);
+                end
+            else
+                chk = [];
+                % doing a double click
+                    % Reset the zoom
+                    % GHG: Should we move this to the axes_action_manager?
+                    %       It might be better to feed the type of
+                    %       click to the current action                    
+                    
+                    % 
+                    [I,is_line] = obj.axes_action_manager.xy_positions.getActiveAxes(x,y);
+                    % I is the index of the axes we are hovering over
+            end
+            %}
         end
         function defaultMouseMovingCallback(obj)
             %
