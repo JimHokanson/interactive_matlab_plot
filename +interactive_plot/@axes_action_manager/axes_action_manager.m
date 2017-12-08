@@ -122,11 +122,8 @@ classdef axes_action_manager < handle
                         obj.initHZoom();
                     case 2
 
-%<<<<<<< HEAD
                         obj.initYZoom();
-%=======
                         %v_zoom
-%>>>>>>> 7625b901f886687de5b1142186d0a49aed1bede7
                     case 3
                         %u_zoom
                     case 4
