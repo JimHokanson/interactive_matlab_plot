@@ -58,7 +58,10 @@ classdef mouse_motion_callback_manager < handle
             obj.y_max_axes = temp(2) + temp(4);
             temp = get(obj.axes_handles{end},'position');
             obj.y_min_axes = temp(2);
-                        
+            
+            
+            % Related to double-click behavior
+            tic;
         end
         function linkObjects(obj, axes_action_manager, y_axis_resizer)
             obj.axes_action_manager = axes_action_manager;
