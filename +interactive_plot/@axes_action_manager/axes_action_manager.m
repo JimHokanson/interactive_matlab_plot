@@ -172,7 +172,9 @@ classdef axes_action_manager < handle
                         %data select
                         obj.initDataSelect();
                     case 5
+                        obj.initMeasureX();
                     case 6
+                        obj.initMeasureY();
                     case 7
                 end
                 
@@ -547,6 +549,86 @@ classdef axes_action_manager < handle
             set(obj.selected_axes, 'XLim', [data_left_edge, data_right_edge]);
             set(obj.selected_axes, 'YLim', [data_bottom_edge, data_top_edge]);
         end
+        function initMeasureX(obj)
+           % measures the distance in the data between mouse down and mouse
+           % up on a given plot
+
+            cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
+            y = cur_mouse_coords(2);
+            x = cur_mouse_coords(1);
+            
+            obj.x_start_position = x;
+            obj.y_start_position = y;
+            
+            obj.h_line = annotation('line', 'X', [x,x], 'Y' ,[y,y], 'Color', 'k');
+            
+            obj.mouse_man.setMouseMotionFunction(@obj.runMeasureX);
+            obj.mouse_man.setMouseUpFunction(@obj.endMeasureX);
+        end
+        function runMeasureX(obj)
+            cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
+            
+            x = cur_mouse_coords(1);
+
+            p_axes = obj.selected_axes.Position;
+            left_boundary = p_axes(1);
+            right_boundary = p_axes(1) + p_axes(3);
+
+            if x > right_boundary 
+                x = right_boundary;
+            elseif x <left_boundary
+                x = left_boundary;
+            end
+            set(obj.h_line, 'X', [obj.x_start_position, x]);
+        end
+        function endMeasureX(obj)
+            obj.mouse_man.initDefaultState();
+            cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
+            [data_left_edge, data_right_edge] = h__HZoom(obj, cur_mouse_coords);
+            delete(obj.h_line);
+            measurement = data_right_edge - data_left_edge;
+            % TODO: where should this be displayed?
+            disp(measurement);
+        end
+        function initMeasureY(obj)
+            cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
+            y = cur_mouse_coords(2);
+            x = cur_mouse_coords(1);
+            
+            obj.x_start_position = x;
+            obj.y_start_position = y;
+            
+            obj.y_line = annotation('line', 'X', [x,x], 'Y' ,[y,y], 'Color', 'k');
+            
+            obj.mouse_man.setMouseMotionFunction(@obj.runMeasureY);
+            obj.mouse_man.setMouseUpFunction(@obj.endMeasureY);
+        end
+        function runMeasureY(obj)
+            % this code is identical to runYZoom. Combine them! (GHG)
+             cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
+            cur_y = cur_mouse_coords(2);
+            
+            p_axes = obj.selected_axes.Position;
+            bottom_boundary = p_axes(2);
+            top_boundary = p_axes(2) + p_axes(4);
+
+            if cur_y > top_boundary 
+                cur_y = top_boundary;
+            elseif cur_y <bottom_boundary
+                cur_y = bottom_boundary;
+            end
+            % for some reason the y position is given as [top, bottom]
+            set(obj.y_line, 'Y', [cur_y, obj.y_start_position]);
+        end
+        function endMeasureY(obj)
+            obj.mouse_man.initDefaultState();
+            cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
+            [data_bottom_edge, data_top_edge] =  h__YZoom(obj, cur_mouse_coords);   
+            delete(obj.y_line);
+            measurement = data_top_edge - data_bottom_edge;
+            % TODO: where should this be displayed?
+            disp(measurement);
+        end
     end
 end
 
@@ -633,6 +715,8 @@ end
 %}
 
 function [data_left_edge, data_right_edge] = h__HZoom(obj, cur_mouse_coords)
+        % TODO: change the name of this function because it is also used
+        % for the function to measure x
             xlim = get(obj.selected_axes,'XLim');
             x_range = xlim(2)-xlim(1);
             
