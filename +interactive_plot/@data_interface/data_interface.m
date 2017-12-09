@@ -9,7 +9,7 @@ classdef data_interface < handle
     methods (Static)
         function s = getRawLineData(h_plot,varargin)
             %
-            %   s = interactive_plot.getRawLineData(h_plot,varargin)
+            %   s = interactive_plot.data_interface.getRawLineData(h_plot,varargin)
             %
             %   Inputs
             %   ------
@@ -17,10 +17,10 @@ classdef data_interface < handle
             %
             %   Optional Inputs
             %   ---------------
-            % in.get_x_data = true;
-            % in.xlim = [];
-            % in.get_calibrated = true;
-            % in.get_raw = false;
+            %   get_x_data = true;
+            %   xlim = [];
+            %   get_calibrated = true;
+            %   get_raw = false;
             %
             %   Outputs
             %   -------

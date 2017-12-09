@@ -36,7 +36,8 @@ classdef y_axis_options < handle
             
             c = uicontextmenu('Parent',obj.fig_handle);
             
-            uimenu(c,'Label','autoscale','Callback',@(~,~)obj.autoscale());
+            uimenu(c,'Label','autoscale view','Callback',@(~,~)obj.autoscale(1));
+            uimenu(c,'Label','autoscale global','Callback',@(~,~)obj.autoscale(0));
             uimenu(c,'Label','ylim manual','Callback',@(~,~)obj.setYLimMode('manual'));
          	uimenu(c,'Label','ylim auto','Callback',@(~,~)obj.setYLimMode('auto'));
             %uimenu(c,'Label','set ylim','Callback',@(~,~)obj.autoscale());
@@ -52,7 +53,7 @@ classdef y_axis_options < handle
          
         end
         function buttonClicked(obj,I)
-            drawnow
+            drawnow()
             %disp('button clicked')
             obj.current_I = I;
             current_button = obj.buttons{I}.h;
@@ -60,22 +61,40 @@ classdef y_axis_options < handle
             %Position must be in pixel units for context menu
             %The context menu only takes in a xy of the upper left corner
             set(obj.context_menu,'Visible','on','Position',p(1:2))
-            
+            drawnow()
             %This seems to help with reliability of the context menu
             %showing up ...
             
         end
-        function autoscale(obj)
+        function autoscale(obj,view_only)
             h_line = obj.line_handles{obj.current_I};
             h_axes = obj.axes_handles{obj.current_I};
-            y_min = min(get(h_line,'YData'));
-            y_max = max(get(h_line,'YData'));
+            y_data = get(h_line,'YData');
+            if view_only
+                xlim = get(h_axes,'XLim');
+                x_data = get(h_line,'XData');
+                I1 = find(x_data >= xlim(1),1);
+                I2 = find(x_data <= xlim(2),1,'last');
+                if isempty(I1) || isempty(I2)
+                    y_min = 0;
+                    y_max = 1;
+                else
+                    y_min = min(y_data(I1:I2));
+                    y_max = max(y_data(I1:I2));
+                end
+            else
+                %For a global view we need to be looking at all the data
+                s = interactive_plot.data_interface.getRawLineData(h_line);
+                y_data = s.y_final;
+                y_min = min(y_data);
+                y_max = max(y_data);
+            end
+            
             y_range = y_max - y_min;
             extra = y_range*obj.options.auto_scale_padding;
             y_max = y_max + extra;
             y_min = y_min - extra;
             set(h_axes,'YLim',[y_min y_max]);
-            
         end
         function setYLimMode(obj,mode)
             current_axes = obj.axes_handles{obj.current_I};
