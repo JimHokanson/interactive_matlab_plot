@@ -153,7 +153,7 @@ classdef interactive_plot < handle
             
             %Right Side Components
             %--------------------------------------------------------------
-            obj.right_panel = interactive_plot.right_panel_layout_manager(...
+            obj.right_panel = interactive_plot.right_panel(...
                 obj.handles,obj.options);
             
             %Center Components
