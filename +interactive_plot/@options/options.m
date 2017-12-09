@@ -12,6 +12,7 @@ classdef options < handle
         lines
         streaming
         axes_names
+        xlim
         
         streaming_window_size = 20
         auto_scale_padding = 0.05
@@ -19,6 +20,7 @@ classdef options < handle
         yzoom_out_scale = 0.3
         xzoom_in_scale = 0.2;
         xzoom_out_scale = 0.2;
+        scroll_button_factor = 0.05;
     end
     
     properties (Hidden)

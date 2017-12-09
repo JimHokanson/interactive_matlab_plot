@@ -5,6 +5,10 @@ classdef streaming
     %
     %   The goal of this class is to have a central place to focus on 
     %   things related to streaming.
+    %
+    %   See Also
+    %   --------
+    %   
     
     properties
         streaming_window_size

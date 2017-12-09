@@ -23,6 +23,7 @@ classdef interactive_plot < handle
         handles
         
         left_panel
+        bottom_panel
         
         render_params
         mouse_manager
@@ -205,9 +206,9 @@ classdef interactive_plot < handle
 
             %Bottom Components
             %--------------------------------------------------------------
-            obj.scroll_bar = interactive_plot.scroll_bar(obj.mouse_manager,...
-                obj.handles,obj.options,obj.render_params);
-
+            obj.bottom_panel = interactive_plot.bottom_panel(...
+                obj.handles,obj.mouse_manager,obj.options,obj.render_params);
+            
             %TODO: Look over it ...
             obj.streaming = interactive_plot.streaming(...
                 obj.options,obj.axes_handles,obj.scroll_bar);
@@ -373,7 +374,6 @@ classdef interactive_plot < handle
             %TODO: Verify same axes if removing x labels ...
         end
         function cb_close(obj)
-            delete(obj.scroll_bar.ax_listener);
             delete(obj.fig_handle);
         end
     end
