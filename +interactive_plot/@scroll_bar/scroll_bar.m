@@ -243,7 +243,7 @@ classdef scroll_bar <handle
             % TODO: allow continuous scrolling with this method by looping
             %until mouse up
             fraction_shift = obj.options.scroll_button_factor;
-            range_in_view = obj.time_range_in_view(2) - obj.time_range_in_view(1);
+            range_in_view = obj.view_xlim(2) - obj.view_xlim(1);
             amt_to_shift = fraction_shift*range_in_view;
             ax = obj.h_axes;
             xlim = get(ax,'XLim');
@@ -260,9 +260,9 @@ classdef scroll_bar <handle
         function cb_scrollRight(obj)
             % see comments on cb_scrollRight
             fraction_shift = obj.options.scroll_button_factor;
-            range_in_view = obj.time_range_in_view(2) - obj.time_range_in_view(1);
+            range_in_view = obj.view_xlim(2) - obj.view_xlim(1);
             amt_to_shift = fraction_shift*range_in_view;
-            ax = obj.axes_handles{1};
+            ax = obj.h_axes;
             xlim = get(ax,'XLim');
             
             new_xmax = xlim(2) + amt_to_shift;

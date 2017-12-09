@@ -32,6 +32,11 @@ classdef streaming
                   cur_axes = axes_handles{i};
                   set(cur_axes,'YLimMode','manual');
                end
+               
+               xlim = get(axes_handles{1},'xlim');
+               if xlim(2) < obj.streaming_window_size
+                   obj.changeMaxTime(obj.streaming_window_size);
+               end
             end
         end
         function changeMaxTime(obj,new_max_time)
@@ -43,16 +48,19 @@ classdef streaming
             %TODO: This assumes we start at 0 ...
             %----------------------------------------------
             if obj.bottom_panel.auto_scroll_enabled
-                if new_max_time > TIME_WINDOW
+                if new_max_time >= TIME_WINDOW
                     new_xlim = [(new_max_time - TIME_WINDOW) new_max_time];
                     set(obj.axes_handles{1},'XLim',new_xlim)
-                else
-                    cur_xlim = get(obj.axes_handles{1},'XLim');
-                    if cur_xlim(2) < new_max_time
-                        %TODO: This might not be right ...
-                        new_xlim = [0 new_max_time];
-                        set(obj.axes_handles{1},'XLim',new_xlim)
-                    end
+                    
+                    %We don't need the else because we expand to the window
+                    %size on start now (see constructor)
+%                 else
+%                     cur_xlim = get(obj.axes_handles{1},'XLim');
+%                     if cur_xlim(2) < new_max_time
+%                         %TODO: This might not be right ...
+%                         new_xlim = [0 new_max_time];
+%                         set(obj.axes_handles{1},'XLim',new_xlim)
+%                     end
                 end
             end
             
