@@ -1,7 +1,7 @@
-classdef left_side_panel
+classdef left_panel
     %
     %   Class:
-    %   interactive_plot.left_side_panel
+    %   interactive_plot.left_panel
     
     properties
         fig_handle
@@ -24,9 +24,9 @@ classdef left_side_panel
     end
     
     methods
-        function obj = left_side_panel(mouse_manager,handles,render_params,options)
+        function obj = left_panel(mouse_manager,handles,render_params,options)
             %
-            %   obj = interactive_plot.left_side_panel(mouse_manager,handles,render_params,options)
+            %   obj = interactive_plot.left_panel(mouse_manager,handles,render_params,options)
             
             %The button layout code is in this class and 
             %the logic processing in the sub-classes.
@@ -59,12 +59,12 @@ classdef left_side_panel
                 addlistener(ax, 'Position', 'PostSet', @(~,~) obj.yLimChanged(k));
             end
             
-            obj.y_axis_resizer = interactive_plot.axis_resizer(...
+            obj.y_axis_resizer = interactive_plot.left.y_axis_resizer(...
                 mouse_manager,handles);
-            obj.y_zoom_buttons = interactive_plot.y_zoom_buttons(...
+            obj.y_zoom_buttons = interactive_plot.left.y_zoom_buttons(...
                 handles,render_params,options,obj.zoom_in_buttons,obj.zoom_out_buttons);
-            obj.y_tick_display = interactive_plot.y_tick_display(handles.axes_handles);
-            obj.y_axis_options = interactive_plot.y_axis_options(...
+            obj.y_tick_display = interactive_plot.left.y_tick_display(handles.axes_handles);
+            obj.y_axis_options = interactive_plot.left.y_axis_options(...
                 handles,options,obj.axis_option_buttons);
         end
      	function yLimChanged(obj, idx)

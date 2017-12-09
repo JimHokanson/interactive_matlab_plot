@@ -37,7 +37,8 @@ classdef bottom_panel < handle
         zoom_in_button
         
         %State
-        auto_scroll_enabled
+        %----------------------------
+        auto_scroll_enabled = false
     end
     
     properties (Dependent)

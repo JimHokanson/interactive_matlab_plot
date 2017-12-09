@@ -1,10 +1,7 @@
-classdef axis_resizer < handle
+classdef y_axis_resizer < handle
     %
     %   Class:
-    %   interactive_plot.axis_resizer
-    %
-    %   JAH: ???? - new name???
-    %   mouse_vertical_zoom_and_pan
+    %   interactive_plot.left.y_axis_resizer
     %
     %   This class allows the user to vertically pan and zoom on an axes
     %   by clicking and dragging the mouse. The distinction of using the
@@ -60,7 +57,7 @@ classdef axis_resizer < handle
     end
     
     methods
-        function obj = axis_resizer(mouse_man,handles)
+        function obj = y_axis_resizer(mouse_man,handles)
             obj.mouse_man = mouse_man;
             obj.axes_handles = handles.axes_handles;
             obj.fig_h = handles.fig_handle;

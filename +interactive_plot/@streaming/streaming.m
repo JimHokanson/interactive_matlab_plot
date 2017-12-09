@@ -10,12 +10,21 @@ classdef streaming
     %   --------
     %   
     
-    properties
-        streaming_window_size
+    properties 
         options
         axes_handles
         class_enabled = true
         bottom_panel
+    end
+    
+    properties (Dependent)
+        streaming_window_size
+    end
+    
+    methods
+        function value = get.streaming_window_size(obj)
+            value = obj.options.streaming_window_size;
+        end
     end
     
     methods
@@ -23,9 +32,9 @@ classdef streaming
             %
             %   obj = interactive_plot.streaming(axes_handles)
             
-            obj.streaming_window_size = options.streaming_window_size;
             obj.axes_handles = axes_handles;
             obj.bottom_panel = bottom_panel;
+            obj.options = options;
             
             if options.streaming
                for i = 1:length(axes_handles)
@@ -40,27 +49,20 @@ classdef streaming
             end
         end
         function changeMaxTime(obj,new_max_time)
-            %Update scroll bar ...
+            %
+            %   Update scroll bar ...
             
             obj.bottom_panel.scroll_bar.updateXMax(new_max_time);
             TIME_WINDOW = obj.streaming_window_size;
             
-            %TODO: This assumes we start at 0 ...
-            %----------------------------------------------
+            %TODO: This assumes we start at 0 ... - low priority
+            %---------------------------------------------------------
             if obj.bottom_panel.auto_scroll_enabled
                 if new_max_time >= TIME_WINDOW
                     new_xlim = [(new_max_time - TIME_WINDOW) new_max_time];
                     set(obj.axes_handles{1},'XLim',new_xlim)
-                    
-                    %We don't need the else because we expand to the window
-                    %size on start now (see constructor)
-%                 else
-%                     cur_xlim = get(obj.axes_handles{1},'XLim');
-%                     if cur_xlim(2) < new_max_time
-%                         %TODO: This might not be right ...
-%                         new_xlim = [0 new_max_time];
-%                         set(obj.axes_handles{1},'XLim',new_xlim)
-%                     end
+                else
+                    set(obj.axes_handles{1},'XLim',[0 TIME_WINDOW])
                 end
             end
             

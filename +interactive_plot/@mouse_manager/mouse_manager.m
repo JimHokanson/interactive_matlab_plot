@@ -1,20 +1,14 @@
-classdef mouse_motion_callback_manager < handle
+classdef mouse_manager < handle
     %
     %   Class:
-    %   interactive_plot.mouse_motion_callback_manager
+    %   interactive_plot.mouse_manager
     %
     %   Processors should call this function.
     %
     %   The idea is to place any mouse related logic that interacts with
     %   the figure here. Anything that can be tied specifically into a
     %   component should go there instead.
-    %
-    %   JAH: this class got named a bit too specifically. Ideally this
-    %   would be mouse_callback_manager
-    %
-    %   We might also want 2+ classes
-    %   - mouse movement
-    %   - mouse clicking (specifically on the figure)
+    
     
     properties
         fig_handle
@@ -41,7 +35,7 @@ classdef mouse_motion_callback_manager < handle
     end
     
     methods
-        function obj = mouse_motion_callback_manager(handles)
+        function obj = mouse_manager(handles)
             obj.fig_handle = handles.fig_handle;
             obj.axes_handles = handles.axes_handles;
             

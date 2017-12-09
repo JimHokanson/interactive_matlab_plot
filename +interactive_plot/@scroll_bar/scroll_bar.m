@@ -150,6 +150,7 @@ classdef scroll_bar <handle
             % scroll bar width based on the limits relative to the total time
             % range in the data
             
+            %We get errors from this on closing
             try
                 %convert from units of space to proportion of time
                 
@@ -177,8 +178,8 @@ classdef scroll_bar <handle
                 p = [obj.slider_left, obj.slider_bottom, obj.bar_width, obj.slider_height];
                 set(obj.slider, 'Position', p);
             catch ME
-                disp(ME)
-                disp(ME.stack(1));
+                %disp(ME)
+                %disp(ME.stack(1));
             end
         end
         function scroll(obj)

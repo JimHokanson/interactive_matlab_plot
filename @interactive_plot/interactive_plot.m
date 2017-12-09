@@ -28,11 +28,8 @@ classdef interactive_plot < handle
         render_params
         mouse_manager
         line_moving_processor
-        y_axis_resizer    %interactive_plot.axis_resizer
         fig_size_change  %interactive_plot.fig_size_change
-        y_zoom_buttons  %interactive_plot.y_zoom_buttons
         streaming
-        y_tick_display
         right_panel
         axes_action_manager
         xy_positions
@@ -55,7 +52,7 @@ classdef interactive_plot < handle
             %   type : 
             %       - 1 - 8 simple plots
             %       - 2 - 3 longer more interesting plots with names
-            %       - 3 - 
+            %       - 3 - streaming
             
             %{
                 interactive_plot.runTest(2)
@@ -64,49 +61,14 @@ classdef interactive_plot < handle
             if nargin == 0
                 type = 1;
             end
-            
-            f = figure;
-            
+
             if type == 1
-                N_PLOTS = 8;
-                
-                n_points = 1000;
-                ax_ca = cell(1,N_PLOTS);
-                for i = 1:N_PLOTS
-                    ax_ca{i} = subplot(N_PLOTS,1,i);
-                    y = linspace(0,i,n_points);
-                    plot(round(y))
-                    set(gca,'ylim',[-4 4]);
-                end
-                axes_names = [];
+                obj = interactive_plot.examples.standard1(varargin{:});
             elseif type == 2
-                n = 5e6;
-                t = linspace(0,100,n);
-                y = [(sin(0.10 * t) + 0.05 * randn(1, n))', ...
-                    (cos(0.43 * t) + 0.001 * t .* randn(1, n))', ...
-                    round(mod(t/10, 5))'];
-                y(t > 40 & t < 50,:) = 0;                      % Drop a section of data.
-                y(randi(numel(y), 1, 20)) = randn(1, 20);       % Emulate spikes.
-                ax_ca = cell(1,3);
-                for i = 1:3
-                    ax_ca{i} = subplot(3,1,i);
-                    plotBig(t,y(:,i));
-                end
-                axes_names = {'sin','cos','step'};
+                obj = interactive_plot.examples.standard2(varargin{:});
             elseif type == 3
-                %Streaming
-                
-                %1) sin modulated by a sin
-                %2) frequency changing by sin
-                
-                %1/10 Hz
-                %
-                
-                %
-               
+                obj = interactive_plot.examples.streaming_example();
             end
-            
-            obj = interactive_plot(f,ax_ca,varargin{:},'axes_names',axes_names);
         end
     end
     
@@ -175,7 +137,7 @@ classdef interactive_plot < handle
             
             %Non-rendered components
             %--------------------------------------------------------------
-            obj.mouse_manager = interactive_plot.mouse_motion_callback_manager(...
+            obj.mouse_manager = interactive_plot.mouse_manager(...
                 obj.handles);
             obj.xy_positions = interactive_plot.xy_positions(obj.axes_handles);
             obj.eventz = interactive_plot.eventz();
@@ -186,7 +148,7 @@ classdef interactive_plot < handle
             
             %Left Side Components
             %--------------------------------------------------------------
-            obj.left_panel = interactive_plot.left_side_panel(...
+            obj.left_panel = interactive_plot.left_panel(...
                 obj.mouse_manager,obj.handles,obj.render_params,obj.options);
             
             %Right Side Components
@@ -208,7 +170,6 @@ classdef interactive_plot < handle
             obj.bottom_panel = interactive_plot.bottom_panel(...
                 obj.handles,obj.mouse_manager,obj.options,obj.render_params);
             
-            %TODO: Look over it ...
             obj.streaming = interactive_plot.streaming(...
                 obj.options,obj.axes_handles,obj.bottom_panel);
 

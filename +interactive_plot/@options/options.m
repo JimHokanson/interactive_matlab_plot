@@ -14,7 +14,11 @@ classdef options < handle
         axes_names
         xlim
         
+        %How 
         streaming_window_size = 20
+        x_stream_in_scale = 0.333
+        x_stream_out_scale = 0.5;
+        
         auto_scale_padding = 0.05
         yzoom_in_scale = 0.3
         yzoom_out_scale = 0.3
