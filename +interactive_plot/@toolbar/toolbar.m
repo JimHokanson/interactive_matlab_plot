@@ -3,16 +3,12 @@ classdef toolbar < handle
     %   Class:
     %   interactive_plot.toolbar
     
-    %f = figure('ToolBar','none');
-    %tb = uitoolbar(f);
-    %img = zeros(16,16,3);
-    %t = uitoggletool(tb,'CData',img,'TooltipString','Hello');
-    %
-%   https://undocumentedmatlab.com/blog/modifying-default-toolbar-menubar-actions
-
-%   addpath(fullfile(matlabroot,'toolbox/matlab/guide/guitools'))
-
-    %   h_pan = findall(gcf,'tag','Exploration.Pan');
+    %Toolbar options
+    %---------------
+    %1) Calibrate ...
+    %2) Autoscale y all
+    %3) 
+    
     
     properties
         h_toolbar

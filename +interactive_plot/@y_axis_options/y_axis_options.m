@@ -5,7 +5,8 @@ classdef y_axis_options < handle
     
     %   Options
     %   -------
-    %   1) Autoscale
+    %   1) Autoscale local
+    %   2) Autoscale global
     %   2) YLimMode - manual
     %   3) YLimMode - auto
     %   4) Set y-axis manually
@@ -35,8 +36,6 @@ classdef y_axis_options < handle
             
             c = uicontextmenu('Parent',obj.fig_handle);
             
-            % Create child menu items for the uicontextmenu
-            % JAH: Nest menu's?????
             uimenu(c,'Label','autoscale','Callback',@(~,~)obj.autoscale());
             uimenu(c,'Label','ylim manual','Callback',@(~,~)obj.setYLimMode('manual'));
          	uimenu(c,'Label','ylim auto','Callback',@(~,~)obj.setYLimMode('auto'));
@@ -79,7 +78,8 @@ classdef y_axis_options < handle
             
         end
         function setYLimMode(obj,mode)
-            set(obj.current_axes,'YLimMode',mode);
+            current_axes = obj.axes_handles{obj.current_I};
+            set(current_axes,'YLimMode',mode);
         end
         function delete(obj)
             delete(obj.context_menu);
