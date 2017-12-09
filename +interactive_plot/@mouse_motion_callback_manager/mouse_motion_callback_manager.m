@@ -36,6 +36,8 @@ classdef mouse_motion_callback_manager < handle
         x_min_axes
         x_max_axes
         cur_ptr = 0
+        
+        h_tic_mouse_down
     end
     
     methods
@@ -148,16 +150,13 @@ classdef mouse_motion_callback_manager < handle
                 return;
             end
             
-            % this has the potential to cause bugs if tic/toc is used in
-            % the code elsewhere or another program is using it...
-            time_since_last_click = toc;
-            if time_since_last_click < 0.5
+            if isempty(obj.h_tic_mouse_down) || toc(obj.h_tic_mouse_down) < 0.5
                 % double click. Have to undo the last zoom
                 obj.axes_action_manager.resetZoom();
-                tic;
+                obj.h_tic_mouse_down = tic;
                 return;
             end
-            tic;
+            obj.h_tic_mouse_down = tic;
             
             
             cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
