@@ -29,7 +29,6 @@ classdef interactive_plot < handle
         mouse_manager
         line_moving_processor
         y_axis_resizer    %interactive_plot.axis_resizer
-        scroll_bar      %interactive_plot.scroll_bar
         fig_size_change  %interactive_plot.fig_size_change
         y_zoom_buttons  %interactive_plot.y_zoom_buttons
         streaming
@@ -211,7 +210,7 @@ classdef interactive_plot < handle
             
             %TODO: Look over it ...
             obj.streaming = interactive_plot.streaming(...
-                obj.options,obj.axes_handles,obj.scroll_bar);
+                obj.options,obj.axes_handles,obj.bottom_panel);
 
             %Some final parts ...
             %------------------------

@@ -18,6 +18,7 @@ classdef scroll_bar <handle
     %   get rid of the action listener on close so no warning gets thrown
     
     properties
+        parent
         mouse_man
         options
         fig_handle
@@ -50,11 +51,22 @@ classdef scroll_bar <handle
         bar_width
     end
     
+    properties (Dependent)
+        auto_scroll_enabled
+    end
+    
+    methods
+        function value = get.auto_scroll_enabled(obj)
+            value = obj.parent.auto_scroll_enabled;
+        end
+    end
+    
     methods
         function obj = scroll_bar(mouse_man,handles,options,parent)
             %
             %   obj = interactive_plot.scroll_bar(mouse_man,handles,options,parent)
             
+            obj.parent = parent;
             obj.options = options;
             obj.fig_handle = handles.fig_handle;
             obj.h_axes = handles.axes_handles{1};
@@ -106,6 +118,7 @@ classdef scroll_bar <handle
             cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
             cur_mouse_x = cur_mouse_coords(1);
             obj.prev_mouse_x = cur_mouse_x;
+            obj.parent.disableAutoScroll();
           	obj.mouse_man.setMouseMotionFunction(@obj.scroll);
             obj.mouse_man.setMouseUpFunction(@obj.releaseScrollBar);
         end
@@ -122,6 +135,11 @@ classdef scroll_bar <handle
             %See streaming class
              %obj.total_time_limits(2) = new_x_max;
              %obj.total_time_range = obj.total_time_limits(2) - obj.total_time_limits(1);
+             
+             %This is needed because our xlim might not change if we don't
+             %have auto-scroll enabled. This hwoever forces the scroll bar
+             %to resize ...
+             obj.x_max = new_x_max;
              obj.xLimChanged();
         end
         function xLimChanged(obj)
@@ -159,8 +177,8 @@ classdef scroll_bar <handle
                 p = [obj.slider_left, obj.slider_bottom, obj.bar_width, obj.slider_height];
                 set(obj.slider, 'Position', p);
             catch ME
-                %disp(ME)
-                %disp(ME.stack(1));
+                disp(ME)
+                disp(ME.stack(1));
             end
         end
         function scroll(obj)

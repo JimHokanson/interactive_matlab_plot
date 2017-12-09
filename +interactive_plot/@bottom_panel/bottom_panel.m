@@ -125,13 +125,12 @@ classdef bottom_panel < handle
                 x = obj.scroll_right_limit + L; % position of x zoom out button
                 y = obj.scroll_bottom; % y position of the bottom of the scroll bar
                 
-                obj.auto_scroll_button = uicontrol(obj.parent.fig_handle,...
+                obj.auto_scroll_button = uicontrol(obj.fig_handle,...
                     'Style', 'togglebutton', 'String', '~',...
                     'units', 'normalized', 'Position',[x, y, L, H],...
-                    'Visible', 'on');
-                %'callback', @(~,~) obj.cb_scrollStatusChanged
+                    'Visible','on','callback', @(~,~) obj.cb_scrollStatusChanged);
                 
-                obj.auto_scroll_enabled = false;
+                obj.auto_scroll_enabled = true;
             end
             
             %X Zoom Button
@@ -159,15 +158,25 @@ classdef bottom_panel < handle
         end
     end
     methods
-       	function cb_scrollStatusChanged(obj)
-            obj.auto_scroll_enabled = ~get(obj.scroll_button,'Value');
-            if obj.auto_scroll_enabled
-                set(obj.auto_scroll_button,'String','~'); 
-            else
-                set(obj.auto_scroll_button,'String','`');
+        function disableAutoScroll(obj)
+            obj.auto_scroll_enabled = false;
+            if ~isempty(obj.auto_scroll_button)
+                set(obj.auto_scroll_button,'Value',1);
+                h__setAutoScrollString(obj);
             end
+        end
+       	function cb_scrollStatusChanged(obj)
+            obj.auto_scroll_enabled = ~get(obj.auto_scroll_button,'Value');
+            h__setAutoScrollString(obj);
         end
     end
     
 end
 
+function h__setAutoScrollString(obj)
+if obj.auto_scroll_enabled
+    set(obj.auto_scroll_button,'String','~'); 
+else
+    set(obj.auto_scroll_button,'String','`');
+end
+end
