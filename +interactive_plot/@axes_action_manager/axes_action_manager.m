@@ -557,9 +557,24 @@ x1 = cur_mouse_coords(1);
 y2 = obj.y_start_position;
 x2 = obj.x_start_position;
 
+% get the bounds of the current axes
+p_axes = obj.selected_axes.Position;
+left_limit = p_axes(1);
+right_limit = p_axes(1) + p_axes(3);
+lower_limit = p_axes(2);
+upper_limit = p_axes(2) + p_axes(4);
 
-%TODO: This currently isn't limited to the channel
-%- we need to limit x and y ...
+if x1 > right_limit
+    x1 = right_limit;
+elseif x1<left_limit
+    x1 = left_limit;
+end
+if y1 > upper_limit
+    y1 = upper_limit;
+elseif y1 < lower_limit
+    y1 = lower_limit;
+end
+
 
 p = h__getRectanglePosition(x1,y1,x2,y2);
 
