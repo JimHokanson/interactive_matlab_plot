@@ -21,16 +21,20 @@ classdef interactive_plot < handle
         fig_handle
         axes_handles
         handles
+        shared_props
         
+        
+        axes_panel
         left_panel
         bottom_panel
+        right_panel
         
         render_params
         mouse_manager
         line_moving_processor
         fig_size_change  %interactive_plot.fig_size_change
         streaming
-        right_panel
+        
         axes_action_manager
         xy_positions
         toolbar
@@ -127,47 +131,36 @@ classdef interactive_plot < handle
             obj.axes_handles = axes_handles;
             obj.handles = interactive_plot.handles(fig_handle,axes_handles);
             
-            obj.linkXAxes();
-                        
-            %Removal of vertical gap between axes          
-            obj.removeVerticalGap();
-            
-            %--------------------------------------------------------------
-            
+            all_axes = [obj.axes_handles{:}];
+            linkaxes(all_axes,'x');
             
             %Non-rendered components
             %--------------------------------------------------------------
-            obj.mouse_manager = interactive_plot.mouse_manager(...
-                obj.handles);
-            obj.xy_positions = interactive_plot.xy_positions(obj.axes_handles);
+            obj.mouse_manager = interactive_plot.mouse_manager(obj.handles);
             obj.eventz = interactive_plot.eventz();
+            
+            obj.shared_props = interactive_plot.shared_props(...
+                obj.handles,...
+                obj.options,...
+                obj.render_params,...
+                obj.mouse_manager,...
+                obj.eventz);
             
             %Top Components
             %--------------------------------------------------------------
             obj.toolbar = interactive_plot.toolbar(obj.handles);
             
-            %Left Side Components
-            %--------------------------------------------------------------
-            obj.left_panel = interactive_plot.left_panel(...
-                obj.mouse_manager,obj.handles,obj.render_params,obj.options);
+            %Center
+            obj.axes_panel = interactive_plot.axes.axes_panel(obj.shared_props);
             
-            %Right Side Components
-            %--------------------------------------------------------------
-            obj.right_panel = interactive_plot.right_panel(...
-                obj.handles,obj.options);
+            %Left
+            obj.left_panel = interactive_plot.left.left_panel(obj.shared_props);
             
-            %Center Components
-            %--------------------------------------------------------------
-            obj.line_moving_processor = ...
-                interactive_plot.line_moving_processor(obj.mouse_manager,...
-                    obj.handles,obj.render_params,obj.xy_positions,obj.options);
-                
-          	obj.axes_action_manager = interactive_plot.axes_action_manager(...
-                obj.handles,obj.xy_positions,obj.mouse_manager,obj.eventz);
-
-            %Bottom Components
-            %--------------------------------------------------------------
-            obj.bottom_panel = interactive_plot.bottom_panel(...
+            %Right
+            obj.right_panel = interactive_plot.right.right_panel(obj.shared_props);
+            
+            %Bottom
+            obj.bottom_panel = interactive_plot.bottom.bottom_panel(...
                 obj.handles,obj.mouse_manager,obj.options,obj.render_params);
             
             obj.streaming = interactive_plot.streaming(...
@@ -179,160 +172,22 @@ classdef interactive_plot < handle
             
             obj.fig_size_change = interactive_plot.fig_size_change(obj);
             
-            obj.toolbar.linkComponents(obj.axes_action_manager)
-            obj.mouse_manager.linkObjects(obj.axes_action_manager,obj.left_panel.y_axis_resizer);
+            obj.toolbar.linkComponents(obj.axes_panel.axes_action_manager)
+            obj.mouse_manager.linkObjects(...
+                obj.axes_panel.axes_action_manager,...
+                obj.left_panel.y_axis_resizer);
         end
     end
     
-    methods (Hidden)
-        function linkXAxes(obj,varargin)
-            %
-            %
-            % obj.linkXAxes
-            % Links all of the x-axes
-            % Optional Inputs:
-            % ----------------
-            %   'by_column': this is for later work when we allow multiple
-            %   columns. Don't do this for now
-            
-            in.by_column = false;
-            in = interactive_plot.sl.in.processVarargin(in,varargin);
-            
-            h = obj.axes_handles;
-            if in.by_column
-                for i = 1:obj.n_columns
-                    column_h = [h{:,i}];
-                    linkaxes(column_h,'x');
-                end
-            else
-                all_handles = [h{:}];
-                linkaxes(all_handles,'x');
-            end
-            
-        end
+    methods
         function dataAdded(obj,new_max_time)
-            %Temporary hack
-            %Let's view 20 seconds for now ...
+            %Notify the code that new data has been added ...
             if isvalid(obj.fig_handle)
                 obj.streaming.changeMaxTime(new_max_time);
             end
         end
-        function removeVerticalGap(obj)
-            %x Removes vertical gaps from subplots
-            %
-            %    removeVerticalGap(obj,rows,columns,varargin)
-            %
-            %    Code modified from Jim Hokanson Matlab Standard Library
-            %      -- sl.plot.subplotter
-            %
-            %    TODO:
-            %    -----------
-            %    re-implement the code for multiple columns
-            %    Remove dependency on standard library
-            %
-            %    Inputs:
-            %    -------
-            %    rows : array
-            %        Must be more than 1, should be continuous, starts at
-            %        the top
-            %        The value -1 indicates that all rows should be
-            %        compressed.
-            %    columns :
-            %        NYI!
-            %
-            %    Optional Inputs:
-            %    ----------------
-            %    gap_size: default 0.02
-            %        The normalized figure space that should be placed
-            %        between figures.
-            %    remove_x_labels : logical (default true)
-            %
-            %   TODO: top_input and bottom_input are poor names
-            
-            
-
-            
-            rows = 1:length(obj.axes_handles);
-            gap_size = obj.render_params.line_thickness;
-            
-                        
-            %JAH: This could be exposed to the user
-            in.keep_relative_size = true;
-            
-            %These will always be true (I think) - could be named as
-            %constants at the top of the function (with upper casing)
-            in.remove_x_labels = true;
-            in.remove_x_ticks = true;
-            
-            % currently only applies to the case for 1 column of data. We
-            % would need to update this if we plan to support more columns
-            n_axes = length(obj.axes_handles);
-            all_heights = zeros(1,n_axes);
-            for i = 1:n_axes
-               p = get(obj.axes_handles{i},'Position');
-               all_heights(i) = p(4);
-            end
-            
-            pct_all_heights = all_heights./sum(all_heights);
-            
-            for iRow = 1:length(rows)-1
-                cur_row_I = rows(iRow);
-                cur_ax = obj.axes_handles{cur_row_I};
-                set(cur_ax,'XTick',[]);
-                xlabel(cur_ax,'')
-            end
-            
-          	top_position = obj.render_params.top_axes_top_position;
-            %GHG TODO: this needs to be based on the outer position of the
-            %axes so that the x-ticks are not covered
-            bottom_position = obj.render_params.bottom_axes_bottom_position;
-                        
-            if in.keep_relative_size
-                total_height = top_position - bottom_position;
-                gap_height   = (length(rows)-1)*gap_size;
-                available_height = total_height - gap_height;
-                new_heights = available_height*pct_all_heights;
-                
-                temp_start_heights = [0 cumsum(new_heights(1:end-1)+gap_size)];
-                new_tops = top_position - temp_start_heights;
-                new_bottoms = new_tops - new_heights;
-            else
-                %Add 1 due to edges
-                %
-                %        top     row 1   TOP OF TOP AXES
-                %
-                %        bottom  row 1  & top row 2
-                %
-                %        bottom  row 2  & top row 3
-                %
-                %        bottom  row 3   BOTTOM OF BOTTOM AXES
-                %
-                %    fill in so that each axes has the same height and so that
-                %    all axes span from the top of the top axes to the bottom of
-                %    the bottom axes
-                temp = linspace(bottom_position,top_position,length(rows)+1);
-                new_bottoms = temp(end-1:-1:1);
-                new_tops = temp(end:-1:2);
-            end
-            
-            for iRow = 1:length(rows)
-                cur_row_I = rows(iRow);
-                cur_new_top = new_tops(iRow);
-                cur_new_bottom = new_bottoms(iRow);
-                
-                cur_ax = obj.axes_handles{cur_row_I};
-                temp = get(cur_ax,'Position');
-                %LBWH
-                temp(2) = cur_new_bottom;
-                temp(4) = cur_new_top-cur_new_bottom;
-                set(cur_ax,'Position',temp);
-                
-                % TODO: removed code for multiple columns. Eventually
-                % re-implement this
-            end
-            %TODO: Verify continuity of rows
-            %TODO: Verify same axes if removing x labels ...
-        end
+        
+        %TODOO: Move to axes_panel ...
         function cb_close(obj)
             delete(obj.fig_handle);
         end

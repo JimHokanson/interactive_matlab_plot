@@ -43,16 +43,19 @@ classdef line_moving_processor < handle
     end
     
     methods
-        function obj = line_moving_processor(mouse_man,handles,render_params,xy_positions,options)
+        function obj = line_moving_processor(shared,xy_positions)
             %
             %   Inputs:
             %   ------
             %   -axes_handles: cell array of the handles to the axes in the
             %   figure (must be in order from top to bottom!)
             
-            obj.mouse_man = mouse_man;
+            handles = shared.handles;
+            render_params = shared.render_params;
+            
+            obj.mouse_man = shared.mouse_manager;
             obj.xy_positions = xy_positions;
-            obj.options = options;
+            obj.options = shared.options;
             
             obj.line_thickness = render_params.line_thickness;
             obj.gap_thickness = render_params.gap_thickness;

@@ -24,12 +24,17 @@ classdef left_panel
     end
     
     methods
-        function obj = left_panel(mouse_manager,handles,render_params,options)
+        function obj = left_panel(shared)
             %
             %   obj = interactive_plot.left_panel(mouse_manager,handles,render_params,options)
             
             %The button layout code is in this class and 
             %the logic processing in the sub-classes.
+            
+            handles = shared.handles;
+            mouse_manager = shared.mouse_manager;
+            render_params = shared.render_params;
+            options = shared.options;
             
             obj.fig_handle = handles.fig_handle;
             obj.axes_handles = handles.axes_handles;

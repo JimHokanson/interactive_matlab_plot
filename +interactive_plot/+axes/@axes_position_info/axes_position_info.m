@@ -1,7 +1,7 @@
-classdef xy_positions < handle
+classdef axes_position_info < handle
     %
     %   Class:
-    %   interactive_plot.xy_positions
+    %   interactive_plot.axes.axes_position_info
     
     properties
         axes_handles
@@ -28,9 +28,9 @@ classdef xy_positions < handle
     end
     
     methods
-        function obj = xy_positions(axes_handles)
+        function obj = axes_position_info(axes_handles)
             %
-            %   obj = interactive_plot.xy_positions(axes_handles)
+            %   obj = interactive_plot.axes.axes_position_info(axes_handles)
             
             obj.axes_handles = axes_handles;
             obj.logAxesPositions();

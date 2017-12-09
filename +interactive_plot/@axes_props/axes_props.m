@@ -18,6 +18,10 @@ classdef axes_props
     methods
         function obj = axes_props(names)
             obj.names = names;
+            handles = shared.handles;
+            mouse_manager = shared.mouse_manager;
+            render_params = shared.render_params;
+            options = shared.options;
         end
     end
     

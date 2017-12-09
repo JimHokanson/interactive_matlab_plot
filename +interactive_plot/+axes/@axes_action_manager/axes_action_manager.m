@@ -60,18 +60,18 @@ classdef axes_action_manager < handle
     end
     
     methods
-        function obj = axes_action_manager(handles,...
-                xy_positions,mouse_man,eventz)
+        function obj = axes_action_manager(shared,xy_positions)
             %
             %   obj = interactive_plot.axes_action_manager()
+            
+            handles = shared.handles;
             
             obj.h_fig = handles.fig_handle;
             obj.axes_handles = handles.axes_handles;
             obj.line_handles = handles.line_handles;
-            obj.mouse_man = mouse_man;
-            obj.eventz = eventz;
+            obj.mouse_man = shared.mouse_manager;
+            obj.eventz = shared.eventz;
             obj.xy_positions = xy_positions;
-            mouse_man.axes_action_manager = obj;
             
             c = uicontextmenu;
             
