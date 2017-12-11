@@ -10,7 +10,12 @@ classdef options < handle
         update_on_drag
         scroll
         lines
+        
         streaming
+        %Streaming indicates that we expect new data to arrive.
+        
+        comments
+        
         axes_names
         xlim
         
@@ -27,24 +32,6 @@ classdef options < handle
         scroll_button_factor = 0.05;
     end
     
-    properties (Hidden)
-        %JAH: I'd prefer to remove all options related to rendering
-        %and only keep options related to behavior
-        
-        % properties used for sizes of different elements of the
-        % interactive plot like button width or scroll bar height and
-        % position
-        
-        
-        % set by the interactive plot class itself
-        bar_right_limit
-        bar_left_limit
-        
-        % TODO: include line sizing options
-        
-        % NYI------------
-        
-    end
     methods
         function obj = options(varargin)  
             %
@@ -55,6 +42,7 @@ classdef options < handle
             in.lines = true;
             in.streaming = false;
             in.axes_names = [];
+            in.comments = false;
 
             in = interactive_plot.sl.in.processVarargin(in, varargin);
             obj.update_on_drag = in.update_on_drag;
@@ -62,6 +50,7 @@ classdef options < handle
             obj.lines = in.lines;
             obj.streaming = in.streaming;
             obj.axes_names = in.axes_names;
+            obj.comments = in.comments;
         end
     end
 end

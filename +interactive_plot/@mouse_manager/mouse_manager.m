@@ -31,6 +31,7 @@ classdef mouse_manager < handle
         x_max_axes
         cur_ptr = 0
         
+        time_since_last_mouse_down
         h_tic_mouse_down
     end
     
@@ -53,9 +54,7 @@ classdef mouse_manager < handle
             temp = get(obj.axes_handles{end},'position');
             obj.y_min_axes = temp(2);
             
-            
-            % Related to double-click behavior
-            tic;
+            obj.h_tic_mouse_down = tic;
         end
         function linkObjects(obj, axes_action_manager, y_axis_resizer)
             obj.axes_action_manager = axes_action_manager;
@@ -69,64 +68,6 @@ classdef mouse_manager < handle
             set(obj.fig_handle, 'WindowButtonUpFcn',@(~,~)feval(fcn));
         end
         
-        
-        %Line moving
-        %------------------------------------------------------------------
-%         function initializeLineMoving(obj, id)
-%             set(obj.fig_handle, 'WindowButtonMotionFcn',@(~,~) obj.parent.line_moving_processor.moveLine(id));
-%             set(obj.fig_handle, 'WindowButtonUpFcn',  @(~,~) obj.releaseLineMoving());
-%         end
-%         function releaseLineMoving(obj)
-%             set(obj.fig_handle,'WindowButtonMotionFcn','');
-%             obj.parent.line_moving_processor.resizePlots();
-%             obj.initDefaultState();
-%         end
-
-        %Axis resizing
-        %------------------------------------------------------------------
-%         function initializeScaleTopFixed(obj)
-%             set(obj.fig_handle, 'WindowButtonMotionFcn',...
-%                 @(~,~) obj.axis_resizer.processScaleTopFixed());
-%             set(obj.fig_handle, 'WindowButtonUpFcn',  ...
-%                 @(~,~) obj.releaseAxisResize());
-%         end
-%         function initializeScaleBottomFixed(obj)
-%             set(obj.fig_handle, 'WindowButtonMotionFcn',...
-%                 @(~,~) obj.axis_resizer.processScaleBottomFixed());
-%             set(obj.fig_handle, 'WindowButtonUpFcn',  ...
-%                 @(~,~) obj.releaseAxisResize());
-%         end
-%         function initializeAxisPan(obj)
-%             set(obj.fig_handle, 'WindowButtonMotionFcn',...
-%                 @(~,~) obj.axis_resizer.processPan());
-%             set(obj.fig_handle, 'WindowButtonUpFcn',  ...
-%                 @(~,~) obj.releaseAxisResize());
-%         end
-%         function releaseAxisResize(obj)
-%             obj.initDefaultState();
-%         end
-        
-        
-        %Scrolling
-        %------------------------------------------------------------------
-%         function initializeScrolling(obj)
-%             % temporary hack. this is not efficient
-%             %--
-%             %JAH: This looks fine but I'm not clear why this code is here
-%             %and not in the scroll bar class
-%             cur_mouse_coords = get(obj.fig_handle, 'CurrentPoint');
-%             cur_mouse_x = cur_mouse_coords(1);
-%             obj.parent.scroll_bar.prev_mouse_x = cur_mouse_x;
-%             %--
-%             set(obj.fig_handle, 'WindowButtonMotionFcn', @(~,~) obj.parent.scroll_bar.scroll());
-%             set(obj.fig_handle, 'WindowButtonUpFcn', @(~,~) obj.releaseScrollBar());
-%         end
-%         function releaseScrollBar(obj)
-%             set(obj.fig_handle, 'WindowButtonMotionFcn', '');
-%             if ~obj.parent.options.update_on_drag
-%                 obj.parent.scroll_bar.updateAxes();
-%             end
-%         end
         %Defaults
         %------------------------------------------------------------------
         function initDefaultState(obj)
@@ -141,18 +82,22 @@ classdef mouse_manager < handle
             % left click function and opening the UIcontext menu no matter
             % which side is clicked
             
-            
+            %JAH: ???? Where is this documented?????
             if isequal(obj.fig_handle.SelectionType, 'alt')
                 % right click
                 return;
             end
             
-            if isempty(obj.h_tic_mouse_down) || toc(obj.h_tic_mouse_down) < 0.5
-                % double click. Have to undo the last zoom
-                obj.axes_action_manager.resetZoom();
-                obj.h_tic_mouse_down = tic;
-                return;
-            end
+            obj.time_since_last_mouse_down = toc(obj.h_tic_mouse_down);
+            
+            
+%             if isempty(obj.h_tic_mouse_down) || toc(obj.h_tic_mouse_down) < 0.5
+%                 % double click. Have to undo the last zoom
+%                 obj.axes_action_manager.resetZoom();
+%                 obj.h_tic_mouse_down = tic;
+%                 return;
+%             end
+
             obj.h_tic_mouse_down = tic;
             
             
@@ -161,33 +106,6 @@ classdef mouse_manager < handle
             x = cur_mouse_coords(1);
             h__getInfoByMousePosition(obj,x,y,true);
 
-            %{
-            dealing with the double click... difficult to do without
-            messing with normal behavior
-            
-            %https://www.mathworks.com/matlabcentral/answers/96424-how-can-i-execute-a-double-click-callback-without-executing-the-single-click-callback-in-my-matlab-g
-            persistent chk
-            if isempty(chk)
-                chk = 1;
-                pause(0.5); %Add a delay to distinguish single click from a double click
-                if chk == 1
-                    % doing a single click
-                    chk = [];
-                    h__getInfoByMousePosition(obj,x,y,true);
-                end
-            else
-                chk = [];
-                % doing a double click
-                    % Reset the zoom
-                    % GHG: Should we move this to the axes_action_manager?
-                    %       It might be better to feed the type of
-                    %       click to the current action                    
-                    
-                    % 
-                    [I,is_line] = obj.axes_action_manager.xy_positions.getActiveAxes(x,y);
-                    % I is the index of the axes we are hovering over
-            end
-            %}
         end
         function defaultMouseMovingCallback(obj)
             %
@@ -244,6 +162,8 @@ if y > obj.y_min_axes && y < obj.y_max_axes
     
     if x > obj.x_min_axes && x < obj.x_max_axes
         ptr = obj.axes_action_manager.getMousePointerAndAction(x,y,is_action);
+        
+    %TODO: If within a certain range punt to the axis resizer ...    
     elseif x > obj.x1 && x < obj.x2
         ptr = SCALE1_PTR;
         if is_action

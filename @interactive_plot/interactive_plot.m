@@ -25,18 +25,16 @@ classdef interactive_plot < handle
         
         
         axes_panel
-        left_panel
         bottom_panel
+        left_panel
         right_panel
+        top_panel
         
         render_params
         mouse_manager
-        line_moving_processor
         fig_size_change  %interactive_plot.fig_size_change
         streaming
         
-        axes_action_manager
-        xy_positions
         toolbar
         eventz
         
@@ -149,6 +147,8 @@ classdef interactive_plot < handle
             %Top Components
             %--------------------------------------------------------------
             obj.toolbar = interactive_plot.toolbar(obj.handles);
+            
+            obj.top_panel = interactive_plot.top.top_panel(obj.shared_props);
             
             %Center
             obj.axes_panel = interactive_plot.axes.axes_panel(obj.shared_props);

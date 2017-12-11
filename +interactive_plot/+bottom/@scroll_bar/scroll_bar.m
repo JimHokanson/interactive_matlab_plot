@@ -65,6 +65,10 @@ classdef scroll_bar <handle
         function obj = scroll_bar(mouse_man,handles,options,parent)
             %
             %   obj = interactive_plot.scroll_bar(mouse_man,handles,options,parent)
+            %
+            %   Inputs
+            %   ------
+            %   parent : interactive_plot.bottom_panel
             
             obj.parent = parent;
             obj.options = options;
