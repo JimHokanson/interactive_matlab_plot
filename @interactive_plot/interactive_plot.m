@@ -188,7 +188,8 @@ classdef interactive_plot < handle
             %Link right hand text display to the axes manager
             
             y_disp = obj.right_panel.y_display_handles;
-            obj.axes_panel.axes_action_manager.linkObjects(y_disp);
+            x_disp = obj.bottom_panel.x_disp_handle;
+            obj.axes_panel.axes_action_manager.linkObjects(y_disp,x_disp);
         end
     end
     

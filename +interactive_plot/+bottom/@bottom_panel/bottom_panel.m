@@ -35,6 +35,7 @@ classdef bottom_panel < handle
         auto_scroll_button
         zoom_out_button
         zoom_in_button
+        x_disp_handle
         
         %State
         %----------------------------
@@ -152,6 +153,19 @@ classdef bottom_panel < handle
             obj.zoom_in_button = interactive_plot.ip_button(...
                 obj.fig_handle,[x4, y, L, H],'+');
             
+            %X Display
+            %--------------------------------------------
+            p = [0 0.04 0.003 0.003];
+         	bc = [0.9400    0.9400    0.9400];
+            obj.x_disp_handle = annotation(obj.fig_handle,'textbox',p,...
+                    'Units', 'pixels', ...
+                    'String','Testing','FontSize',8,...
+                    'margin',2,'FitBoxToText','on',...
+                    'EdgeColor','k',... %This is arbitrary and will likely change
+                    'BackgroundColor',bc);
+            
+            %Processors
+            %------------------------------------------------
             obj.x_zoom = interactive_plot.bottom.x_zoom(obj,obj.zoom_out_button,...
                 obj.zoom_in_button,handles,options);
             obj.scroll_bar = interactive_plot.bottom.scroll_bar(...

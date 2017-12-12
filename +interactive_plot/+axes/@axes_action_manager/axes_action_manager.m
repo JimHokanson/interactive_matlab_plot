@@ -12,6 +12,7 @@ classdef axes_action_manager < handle
     properties
         line_moving_processor
         rhs_disp
+        x_disp
         mouse_man   %interactive_plot.mouse_manager
         eventz      %interative_plot.eventz
         h_fig
@@ -113,8 +114,9 @@ classdef axes_action_manager < handle
             obj.cur_action = -1;
             obj.setActiveAction(4);
         end
-        function linkObjects(obj,rhs_disp)
+        function linkObjects(obj,rhs_disp,x_disp)
             obj.rhs_disp = rhs_disp;
+            obj.x_disp = x_disp;
         end
         function setActiveAction(obj, selected_value)
            
@@ -589,7 +591,7 @@ classdef axes_action_manager < handle
             delete(obj.h_line);
             measurement = data_right_edge - data_left_edge;
             % TODO: where should this be displayed?
-            disp(measurement);
+            set(obj.x_disp,'String',sprintf('%g',measurement));
         end
     end
     
