@@ -11,6 +11,7 @@ classdef axes_action_manager < handle
     
     properties
         line_moving_processor
+        rhs_disp
         mouse_man   %interactive_plot.mouse_manager
         eventz      %interative_plot.eventz
         h_fig
@@ -112,9 +113,9 @@ classdef axes_action_manager < handle
             obj.cur_action = -1;
             obj.setActiveAction(4);
         end
-        %TODO: Add mouse down action listener ...
-        %- this should allow us to clear the current drawing for data
-        %select
+        function linkObjects(obj,rhs_disp)
+            obj.rhs_disp = rhs_disp;
+        end
         function setActiveAction(obj, selected_value)
            
             %I think we want this here ...
@@ -155,9 +156,6 @@ classdef axes_action_manager < handle
             else
                 ptr = obj.cur_action + 20;
             end
-            %ptr = 4;
-            
-            %TODO: Are we over the lines
             
             if is_action
                 %For now we are not worrying about line actions
@@ -618,8 +616,9 @@ classdef axes_action_manager < handle
             
             delete(obj.y_line);
             measurement = data_top_edge - data_bottom_edge;
-            % TODO: where should this be displayed?
-            disp(measurement);
+            
+            %TODO: Idealy this would be a call to a class ...
+            obj.rhs_disp{obj.selected_axes_I}.String = sprintf('%g',measurement);
         end
     end
 end
