@@ -34,6 +34,10 @@ classdef axes_panel < handle
                 
           	obj.axes_action_manager = interactive_plot.axes.axes_action_manager(...
                 shared,obj.axes_position_info);
+            
+            %Linking ...
+            obj.axes_action_manager.line_moving_processor = ...
+                obj.line_moving_processor;
         end
         function removeVerticalGap(obj)
             %x Removes vertical gaps from subplots

@@ -288,7 +288,7 @@ switch ptr
             NaN NaN NaN NaN NaN 2   1   1   1   2   NaN NaN NaN NaN NaN NaN
             NaN NaN NaN NaN NaN NaN 2   1   2   NaN NaN NaN NaN NaN NaN NaN
             ];
-        hotspot = [8 8];
+        hotspot = [9 9];
     case 21 %Horizontal zoom ...
             %1  2   3   4   5   6   7   8   9   10  11  12  13  14  15  16
         cdata=[...

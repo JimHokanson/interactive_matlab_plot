@@ -10,6 +10,7 @@ classdef axes_action_manager < handle
     %   https://github.com/JimHokanson/interactive_matlab_plot/issues/10
     
     properties
+        line_moving_processor
         mouse_man   %interactive_plot.mouse_manager
         eventz      %interative_plot.eventz
         h_fig
@@ -150,9 +151,9 @@ classdef axes_action_manager < handle
             [I,is_line] = obj.xy_positions.getActiveAxes(x,y);
             
             if is_line
-                ptr = obj.cur_action + 20;
-            else
                 ptr = 20;
+            else
+                ptr = obj.cur_action + 20;
             end
             %ptr = 4;
             
@@ -162,6 +163,12 @@ classdef axes_action_manager < handle
                 %For now we are not worrying about line actions
                 %since I think line callbacks will handle lines
                 DBL_CLICK_TIME = 0.5;
+                
+                if is_line
+                   %Do we want to clear in this case as well? 
+                    obj.line_moving_processor.cb_innerLineClicked(I);
+                    return
+                end
                 
                 obj.clearDataSelection();
                 

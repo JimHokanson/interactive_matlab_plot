@@ -146,7 +146,7 @@ for k = 2:(length(obj.line_handles) - 1)
     %JAH: Eventually we could do a mouse-over driven
             %callback which would allow us to expand the effect size of the
             %line
-    set(obj.line_handles{k}, 'ButtonDownFcn', @(~,~) obj.cb_innerLineClicked(k));
+    %set(obj.line_handles{k}, 'ButtonDownFcn', @(~,~) obj.cb_innerLineClicked(k));
 end
 
 %Bottom line
