@@ -29,13 +29,16 @@ classdef axes_panel < handle
             
             obj.axes_position_info = interactive_plot.axes.axes_position_info(obj.axes_handles);
 
-            obj.line_moving_processor = ...
-                interactive_plot.axes.line_moving_processor(shared,obj.axes_position_info);
-                
           	obj.axes_action_manager = interactive_plot.axes.axes_action_manager(...
                 shared,obj.axes_position_info);
             
-            %Linking ...
+        end
+        function createLines(obj)
+            obj.line_moving_processor = ...
+                interactive_plot.axes.line_moving_processor(obj.shared,obj.axes_position_info);
+            
+            %Linking ... - needed to instantiate line moving
+            %when over the lines +/- some buffer
             obj.axes_action_manager.line_moving_processor = ...
                 obj.line_moving_processor;
         end

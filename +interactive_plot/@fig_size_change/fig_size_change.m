@@ -1,4 +1,4 @@
-classdef fig_size_change
+classdef fig_size_change < handle
     %
     %   Class:
     %   interactive_plot.fig_size_change
@@ -8,6 +8,7 @@ classdef fig_size_change
     properties
         parent
         fig_handle
+        right_panel
     end
     
     methods
@@ -29,6 +30,8 @@ classdef fig_size_change
             %       on the axis resizer ...
             %
             %   TODO ...
+            
+            obj.right_panel.figureSizeChanged();
         end
     end
 end

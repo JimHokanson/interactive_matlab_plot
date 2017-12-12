@@ -150,14 +150,19 @@ classdef interactive_plot < handle
             
             obj.top_panel = interactive_plot.top.top_panel(obj.shared_props);
             
+
             %Center
             obj.axes_panel = interactive_plot.axes.axes_panel(obj.shared_props);
             
             %Left
             obj.left_panel = interactive_plot.left.left_panel(obj.shared_props);
             
-            %Right
-            obj.right_panel = interactive_plot.right.right_panel(obj.shared_props);
+        	%Right
+         	obj.right_panel = interactive_plot.right.right_panel(obj.shared_props);
+
+            %We do this later so that the lines draw over the text objects
+            %...
+            obj.axes_panel.createLines();
             
             %Bottom
             obj.bottom_panel = interactive_plot.bottom.bottom_panel(...
@@ -171,6 +176,8 @@ classdef interactive_plot < handle
             set(obj.fig_handle,'CloseRequestFcn', @(~,~) obj.cb_close);
             
             obj.fig_size_change = interactive_plot.fig_size_change(obj);
+            fsc = obj.fig_size_change;
+            fsc.right_panel = obj.right_panel;
             
             obj.toolbar.linkComponents(obj.axes_panel.axes_action_manager)
             obj.mouse_manager.linkObjects(...

@@ -233,8 +233,7 @@ classdef axes_action_manager < handle
                     return
                 end
                 interactive_plot.data_interface.setCalibration(obj.selected_line,calibration);
-                
-                notify(obj.eventz,'calibration',interactive_plot.event_data(calibration));
+                obj.eventz.notify('calibration',calibration);
             else
                 error('Unable to calibrate without selected data')
             end
