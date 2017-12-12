@@ -75,6 +75,9 @@ classdef axes_position_info < handle
                 h_I = (I+1)/2;
                 is_line = true;
                 
+                %fprintf('%d I:\n',I);
+
+                
                 %3 => line is #2, where #1 is the top line
             else
                 %even - detected bottom of axes
@@ -90,7 +93,7 @@ classdef axes_position_info < handle
                 pixels_per_norm = p2(4)/p1(4);
                 top_pixel_distance = top_distance * pixels_per_norm;
                 bottom_pixel_distance = bottom_distance * pixels_per_norm;
-                
+                %fprintf('I: %d, top: %g, bottom %g \n',I,top_distance,bottom_distance)
                 %fprintf('Top bottom: %g   %g  \n',top_pixel_distance,bottom_pixel_distance);
                 %TODO: Improve this logic - if line is big enough we don't
                 %need this ...

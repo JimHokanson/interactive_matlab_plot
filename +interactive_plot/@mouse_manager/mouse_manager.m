@@ -42,17 +42,17 @@ classdef mouse_manager < handle
             
             %Determine limits for axis resizer
             %-------------------------------------------------
-            temp = get(obj.axes_handles{1},'position');
-            obj.x4 = temp(1) - 0.02; %left most part of axis
-            obj.x3 = obj.x4 - 0.02;
-            obj.x2 = obj.x3 - 0.02;
-            obj.x1 = obj.x2 - 0.02;
-            obj.x_min_axes = temp(1);
-            obj.x_max_axes = temp(1)+temp(3);
+%             temp = get(obj.axes_handles{1},'position');
+%             obj.x4 = temp(1) - 0.02; %left most part of axis
+%             obj.x3 = obj.x4 - 0.02;
+%             obj.x2 = obj.x3 - 0.02;
+%             obj.x1 = obj.x2 - 0.02;
+%             obj.x_min_axes = temp(1);
+%             obj.x_max_axes = temp(1)+temp(3);
             
-            obj.y_max_axes = temp(2) + temp(4);
-            temp = get(obj.axes_handles{end},'position');
-            obj.y_min_axes = temp(2);
+            %obj.y_max_axes = temp(2) + temp(4);
+            %temp = get(obj.axes_handles{end},'position');
+            %obj.y_min_axes = temp(2);
             
             obj.h_tic_mouse_down = tic;
         end
@@ -60,6 +60,19 @@ classdef mouse_manager < handle
             obj.axes_action_manager = axes_action_manager;
             obj.y_axis_resizer = y_axis_resizer;
             obj.initDefaultState();
+        end
+        function updateAxesLimits(obj)
+            
+             temp = get(obj.axes_handles{1},'position');
+            obj.x4 = temp(1) - 0.02; %left most part of axis
+            obj.x3 = obj.x4 - 0.02;
+            obj.x2 = obj.x3 - 0.02;
+            obj.x1 = obj.x2 - 0.02;
+            obj.x_min_axes = temp(1);
+            obj.x_max_axes = temp(1)+temp(3);
+            obj.y_max_axes = temp(2) + temp(4);
+            temp = get(obj.axes_handles{end},'position');
+            obj.y_min_axes = temp(2);
         end
         function setMouseMotionFunction(obj,fcn)
             set(obj.fig_handle, 'WindowButtonMotionFcn',@(~,~)feval(fcn));
@@ -158,6 +171,7 @@ SCALE1_PTR = 1;
 SCALE2_PTR = 2;
 PAN_PTR = 3;
 
+%fprintf('y: %g, min %g, max %g \n',y,obj.y_min_axes,obj.y_max_axes);
 if y > obj.y_min_axes && y < obj.y_max_axes
     
     if x > obj.x_min_axes && x < obj.x_max_axes

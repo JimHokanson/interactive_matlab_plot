@@ -52,7 +52,7 @@ classdef right_panel < handle
                     %p = [0 0 0.1 0.1];
                 disp_handles{i} = uicontrol(obj.fig_handle,'Style','text',...
                     'Units', 'normalized', ...
-                    'String','','FontSize',10,...
+                    'String','','FontSize',8,...
                     'HorizontalAlignment','left');
                 p1 = get(disp_handles{i},'position');
                 p2 = getpixelposition(disp_handles{i});
@@ -88,7 +88,7 @@ classdef right_panel < handle
                         %p = [0 0 0.1 0.1];
                     names_handles{i} = uicontrol(obj.fig_handle,'Style','text',...
                         'Units', 'normalized', ...
-                        'String',axes_names{i},'FontSize',10,...
+                        'String',axes_names{i},'FontSize',8,...
                         'HorizontalAlignment','left');
                     p1 = get(names_handles{i},'position');
                     p2 = getpixelposition(names_handles{i});
@@ -124,7 +124,7 @@ name_height_pixel = obj.default_name_heights_pixel(index);
 name_padding_pixels = 10;
 name_padding_norm = 0.005;
 
-total_height = 2*name_height_pixel + 3*name_padding_pixels;
+total_height = 2*name_height_pixel + 2*name_padding_pixels;
 
 X_OFFSET = 5; %pixels
 MIN_AXES_HEIGHT = total_height; %pixels
@@ -140,21 +140,22 @@ axes_width_pixel = p_pixel(3);
 norm_per_pixels_x = p(3)./axes_width_pixel;
 
 %-----------------------------------------------------
-if axes_height_pixel < MIN_AXES_HEIGHT
-    name_bottom = top - 0.01;
-    name_output_height = 0.0001;
-    disp_output_height = 0.0001;
-    name_visible = 'off';
-    disp_bottom = top - 0.02;
-    disp_visibile = 'off';
-else
+%TODO: Make this staggered ...
+% if axes_height_pixel < MIN_AXES_HEIGHT
+%     name_bottom = top - 0.01;
+%     name_output_height = 0.0001;
+%     disp_output_height = 0.0001;
+%     name_visible = 'off';
+%     disp_bottom = top - 0.02;
+%     disp_visibile = 'off';
+% else
     name_bottom = top - name_height_norm - name_padding_norm;
     name_output_height = name_height_norm;
     disp_output_height = name_height_norm;
     name_visible = 'on';
     disp_bottom = top - 2*(name_height_norm - name_padding_norm);
     disp_visibile = 'on';
-end
+% end
 
 x = axes_right_edge + X_OFFSET*norm_per_pixels_x;
                 

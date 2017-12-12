@@ -176,6 +176,7 @@ classdef interactive_plot < handle
             obj.mouse_manager.linkObjects(...
                 obj.axes_panel.axes_action_manager,...
                 obj.left_panel.y_axis_resizer);
+            obj.mouse_manager.updateAxesLimits();
             
             %Link right hand text display to the axes manager
             
