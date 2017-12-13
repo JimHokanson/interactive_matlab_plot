@@ -1,11 +1,16 @@
 classdef comments < handle
     %
-    %
-    %   
+    %   Class:
+    %   interactive_plot.comments
     
     properties
+        sorted_ids
+        
+        %Unsorted
+        %--------------
         strings
         times
+        id
     end
     
     methods
