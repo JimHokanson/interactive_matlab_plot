@@ -16,7 +16,7 @@ for i = 1:N_PLOTS
 end
 axes_names = [];
 
-obj = interactive_plot(f,ax_ca,varargin{:},'axes_names',axes_names);
+obj = interactive_plot(f,ax_ca,varargin{:},'axes_names',axes_names,'comments',true);
 
 end
 

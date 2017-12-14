@@ -18,14 +18,14 @@ classdef axes_panel < handle
     end
     
     methods
-        function obj = axes_panel(shared)
+        function obj = axes_panel(shared,top_for_axes)
             %
             %   obj = interactive_plot.axes_panel(shared)
             
             obj.axes_handles = shared.handles.axes_handles;
             obj.shared = shared;
             
-            obj.removeVerticalGap();
+            obj.removeVerticalGap(top_for_axes);
             
             obj.axes_position_info = interactive_plot.axes.axes_position_info(obj.axes_handles);
 
@@ -42,7 +42,7 @@ classdef axes_panel < handle
             obj.axes_action_manager.line_moving_processor = ...
                 obj.line_moving_processor;
         end
-        function removeVerticalGap(obj)
+        function removeVerticalGap(obj,top_for_axes)
             %x Removes vertical gaps from subplots
             
             rows = 1:length(obj.axes_handles);
@@ -67,7 +67,7 @@ classdef axes_panel < handle
                 xlabel(cur_ax,'')
             end
             
-            top_position = obj.shared.render_params.top_axes_top_position;
+            top_position = top_for_axes; %obj.shared.render_params.top_axes_top_position;
             %GHG TODO: this needs to be based on the outer position of the
             %axes so that the x-ticks are not covered
             bottom_position = obj.shared.render_params.bottom_axes_bottom_position;

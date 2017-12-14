@@ -150,9 +150,9 @@ classdef interactive_plot < handle
             
             obj.top_panel = interactive_plot.top.top_panel(obj.shared_props);
             
-
             %Center
-            obj.axes_panel = interactive_plot.axes.axes_panel(obj.shared_props);
+            obj.axes_panel = interactive_plot.axes.axes_panel(...
+                obj.shared_props,obj.top_panel.top_for_axes);
             
             %Left
             obj.left_panel = interactive_plot.left.left_panel(obj.shared_props);
@@ -183,6 +183,7 @@ classdef interactive_plot < handle
             obj.mouse_manager.linkObjects(...
                 obj.axes_panel.axes_action_manager,...
                 obj.left_panel.y_axis_resizer);
+            obj.top_panel.linkObjects(obj.axes_panel.axes_action_manager);
             obj.mouse_manager.updateAxesLimits();
             
             %Link right hand text display to the axes manager

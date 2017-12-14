@@ -4,6 +4,8 @@ classdef comments < handle
     %   interactive_plot.comments
     
     properties
+        axes_handles
+        
         sorted_ids
         
         %Unsorted
@@ -14,10 +16,10 @@ classdef comments < handle
     end
     
     methods
-        function obj = comments()
-            
+        function obj = comments(shared)
+            obj.axes_handles = shared.handles.axes_handles;
         end
-        function addComment(obj,time)
+        function addComment(obj,time,str)
             
         end
     end

@@ -45,7 +45,9 @@ classdef axes_action_manager < handle
         
         %Data selection results
         %--------------------------------------------
-        x_clicked
+        x_clicked %When a single point is time has been clicked
+        %This value may be empty ...
+        %
         selected_data %interactive_plot.data_selection
         %Only valid after data selection
         
