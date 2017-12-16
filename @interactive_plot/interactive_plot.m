@@ -195,13 +195,18 @@ classdef interactive_plot < handle
     end
     
     methods
+        function addComment(obj,comment_string,comment_time)
+            %NYI
+            % - requires comments being active ...
+        end
         function dataAdded(obj,new_max_time)
             %Notify the code that new data has been added ...
             if isvalid(obj.fig_handle)
                 obj.streaming.changeMaxTime(new_max_time);
             end
         end
-        
+    end
+    methods    
         %TODOO: Move to axes_panel ...
         function cb_close(obj)
             delete(obj.fig_handle);

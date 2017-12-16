@@ -627,9 +627,9 @@ classdef axes_action_manager < handle
 end
 
 function [x,y] = h__getCurrentPoint(obj)
-cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
-y = cur_mouse_coords(2);
-x = cur_mouse_coords(1);
+
+[x,y] = interactive_plot.utils.getCurrentMousePoint(obj.h_fig);
+
 end
 
 function [x,y] = h__getConstrainedPoint(obj)
@@ -713,6 +713,9 @@ end
 
 function x_axes = h__translateX(h_axes,x_fig)
 %Converts x value from figure to axes
+
+%   x_axes = interactive_plot.utils.translateXFromFigToAxes(h_axes,x_fig)
+
 xlim = get(h_axes,'XLim');
 
 p_axes = get(h_axes,'position');
