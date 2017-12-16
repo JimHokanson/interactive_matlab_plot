@@ -35,8 +35,8 @@ classdef top_panel < handle
                 obj.h_add_comment = uicontrol(...
                     obj.fig_handle,'Style','pushbutton','units','normalized',...
                     'position',[0.93 0.96 0.06 0.04],...
-                    'String','Add');
-                obj.comments = interactive_plot.comments();
+                    'String','Add','Callback',@(~,~)obj.addComment());
+                obj.comments = interactive_plot.comments(shared);
             else
                 obj.top_for_axes = 1;
             end
@@ -50,10 +50,11 @@ classdef top_panel < handle
             if isempty(x_clicked)
                 xlim = get(obj.axes_handles{1},'XLim');
                 x_clicked = xlim(2);
+            end
                 string_to_add = get(obj.h_comment_string,'String');
                 obj.comments.addComment(x_clicked,string_to_add);
                 set(obj.h_comment_string,'String','');
-            end
+            
         end
     end
     
