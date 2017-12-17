@@ -13,7 +13,6 @@ classdef axes_panel < handle
         line_moving_processor
         axes_action_manager
         
-        axes_props
         axes_position_info
     end
     
@@ -28,7 +27,7 @@ classdef axes_panel < handle
             obj.removeVerticalGap(top_for_axes);
             
             obj.axes_position_info = interactive_plot.axes.axes_position_info(obj.axes_handles);
-
+            
           	obj.axes_action_manager = interactive_plot.axes.axes_action_manager(...
                 shared,obj.axes_position_info);
             

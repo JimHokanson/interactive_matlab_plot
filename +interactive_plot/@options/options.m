@@ -3,24 +3,42 @@ classdef options < handle
     %   Class:
     %   interactive_plot.options
     %
+    %   Keeps track of the options for the interactive_plot class
     %
-    % Keeps track of the options for the interactive_plot class
+    %   Design Notes
+    %   ------------
+    %   - This code should be read-only within the code base.
+    %   - It is only processed once. Updates to this class don't propogate
+    %   to the code base.
+    %
+    %   Examples
+    %   --------
+    %   opt = interactive_plot.options('streaming',true);
+    %
+    %   opt = interactive_plot.options;
+    %   opt.streaming = true;
+    %
+    %   interactive_plot(fig,h_axes,'streaming',true);
     
     properties
-        update_on_drag
-        scroll
-        lines
+        update_on_drag = true
         
-        streaming
+        
+        scroll = true %NYI
+        lines = true %NYI
+        
+        streaming = false
         %Streaming indicates that we expect new data to arrive.
         
-        comments
+        comments  = true%logical, default false
         
-        axes_names
-        xlim
+        axes_names = []
         
-        %How 
+        xlim %Default xlim to use, implemented???
+        
+        %TODO: This currently changes ...
         streaming_window_size = 20
+        
         x_stream_in_scale = 0.333
         x_stream_out_scale = 0.5;
         
@@ -37,20 +55,7 @@ classdef options < handle
             %
             %   obj = interactive_plot.options(varargin)
             
-            in.update_on_drag = true;
-            in.scroll = true;
-            in.lines = true;
-            in.streaming = false;
-            in.axes_names = [];
-            in.comments = false;
-
-            in = interactive_plot.sl.in.processVarargin(in, varargin);
-            obj.update_on_drag = in.update_on_drag;
-            obj.scroll = in.scroll;
-            obj.lines = in.lines;
-            obj.streaming = in.streaming;
-            obj.axes_names = in.axes_names;
-            obj.comments = in.comments;
+            interactive_plot.sl.in.processVarargin(obj, varargin);
         end
     end
 end

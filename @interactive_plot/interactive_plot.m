@@ -19,8 +19,8 @@ classdef interactive_plot < handle
     
     properties
         fig_handle
-        axes_handles
-        handles
+      
+        session
         shared_props
         
         
@@ -30,19 +30,9 @@ classdef interactive_plot < handle
         right_panel
         top_panel
         
-        render_params
-        mouse_manager
+     
         fig_size_change  %interactive_plot.fig_size_change
         streaming
-        
-        toolbar
-        eventz
-        
-        options  %interactive_plot.options
-
-        %TODO: These need to be removed ...
-        %We need these for
-
     end
     methods (Static)
         function obj = runTest(type,varargin)
@@ -117,48 +107,51 @@ classdef interactive_plot < handle
             
             
             in = interactive_plot.options();
-            obj.options = interactive_plot.sl.in.processVarargin(in,varargin);
             
-            obj.render_params = interactive_plot.render_params;
-
+            shared = interactive_plot.shared_props;
+            shared.options = interactive_plot.sl.in.processVarargin(in,varargin);
+            
+            obj.shared_props = shared;
+            
+            shared.render_params = interactive_plot.render_params;
+            shared.fig_handle = fig_handle;
             obj.fig_handle = fig_handle;
-            %Current limitation of the sotftware
-            set(obj.fig_handle, 'Units', 'normalized');
+            
+            %Current limitation of the software
+            set(fig_handle,'Units','normalized');
+            set(fig_handle,'CloseRequestFcn', @(~,~) obj.cb_close);
+            
             %TODO: Verify correct setup of the axes handles since these 
             %come from the user, not internally ...
-            obj.axes_handles = axes_handles;
-            obj.handles = interactive_plot.handles(fig_handle,axes_handles);
+            shared.axes_handles = axes_handles;
+            shared.handles = interactive_plot.handles(fig_handle,axes_handles);
             
-            all_axes = [obj.axes_handles{:}];
+            all_axes = [axes_handles{:}];
             linkaxes(all_axes,'x');
             
             %Non-rendered components
             %--------------------------------------------------------------
-            obj.mouse_manager = interactive_plot.mouse_manager(obj.handles);
-            obj.eventz = interactive_plot.eventz();
+            shared.mouse_manager = interactive_plot.mouse_manager(shared.handles);
+            shared.eventz = interactive_plot.eventz();
+            shared.session = interactive_plot.session(shared);
+            obj.session = shared.session;
             
-            obj.shared_props = interactive_plot.shared_props(...
-                obj.handles,...
-                obj.options,...
-                obj.render_params,...
-                obj.mouse_manager,...
-                obj.eventz);
             
             %Top Components
             %--------------------------------------------------------------
-            obj.toolbar = interactive_plot.toolbar(obj.handles);
+            shared.toolbar = interactive_plot.toolbar(shared.handles);
             
-            obj.top_panel = interactive_plot.top.top_panel(obj.shared_props);
+            obj.top_panel = interactive_plot.top.top_panel(shared);
             
             %Center
             obj.axes_panel = interactive_plot.axes.axes_panel(...
-                obj.shared_props,obj.top_panel.top_for_axes);
+                shared,obj.top_panel.top_for_axes);
             
             %Left
-            obj.left_panel = interactive_plot.left.left_panel(obj.shared_props);
+            obj.left_panel = interactive_plot.left.left_panel(shared);
             
         	%Right
-         	obj.right_panel = interactive_plot.right.right_panel(obj.shared_props);
+         	obj.right_panel = interactive_plot.right.right_panel(shared);
 
             %We do this later so that the lines draw over the text objects
             %...
@@ -166,31 +159,31 @@ classdef interactive_plot < handle
             
             %Bottom
             obj.bottom_panel = interactive_plot.bottom.bottom_panel(...
-                obj.handles,obj.mouse_manager,obj.options,obj.render_params);
+                shared);
             
             obj.streaming = interactive_plot.streaming(...
-                obj.options,obj.axes_handles,obj.bottom_panel);
+                shared,obj.bottom_panel);
 
             %Some final parts ...
             %------------------------
-            set(obj.fig_handle,'CloseRequestFcn', @(~,~) obj.cb_close);
-            
             obj.fig_size_change = interactive_plot.fig_size_change(obj);
             fsc = obj.fig_size_change;
             fsc.right_panel = obj.right_panel;
             
-            obj.toolbar.linkComponents(obj.axes_panel.axes_action_manager)
-            obj.mouse_manager.linkObjects(...
+            shared.toolbar.linkComponents(obj.axes_panel.axes_action_manager)
+            shared.mouse_manager.linkObjects(...
                 obj.axes_panel.axes_action_manager,...
                 obj.left_panel.y_axis_resizer);
             obj.top_panel.linkObjects(obj.axes_panel.axes_action_manager);
-            obj.mouse_manager.updateAxesLimits();
+            shared.mouse_manager.updateAxesLimits();
             
             %Link right hand text display to the axes manager
             
             y_disp = obj.right_panel.y_display_handles;
             x_disp = obj.bottom_panel.x_disp_handle;
             obj.axes_panel.axes_action_manager.linkObjects(y_disp,x_disp);
+            
+           
         end
     end
     
@@ -206,8 +199,8 @@ classdef interactive_plot < handle
             end
         end
     end
-    methods    
-        %TODOO: Move to axes_panel ...
+    methods (Hidden) 
+        %TODO: Save on figure close???? - auto_save
         function cb_close(obj)
             delete(obj.fig_handle);
         end

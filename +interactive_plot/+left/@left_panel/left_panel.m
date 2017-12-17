@@ -52,11 +52,14 @@ classdef left_panel
                 
                 [v1,v2,v3] = h__getSizeVectors(obj,ax,obj.button_width,obj.button_height);
                 
-                obj.zoom_out_buttons{k} = interactive_plot.ip_button(obj.fig_handle, v1,'-');
+                obj.zoom_out_buttons{k} = interactive_plot.utils.ip_button(...
+                    obj.fig_handle, v1,'-');
                 
-                obj.zoom_in_buttons{k} = interactive_plot.ip_button(obj.fig_handle, v2,'+');
+                obj.zoom_in_buttons{k} = interactive_plot.utils.ip_button(...
+                    obj.fig_handle, v2,'+');
                 
-                obj.axis_option_buttons{k} = interactive_plot.ip_button(obj.fig_handle, v3,'...');
+                obj.axis_option_buttons{k} = interactive_plot.utils.ip_button(...
+                    obj.fig_handle, v3,'...');
                 
                 % add an action listener to the size of the axes so that
                 % whenever they get taller/shorter we can adjust the size of

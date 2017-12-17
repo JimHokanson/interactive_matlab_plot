@@ -1,5 +1,5 @@
 classdef scroll_bar <handle
-    % 
+    %
     %   Class:
     %   interactive_plot.scroll_bar
     %
@@ -95,11 +95,11 @@ classdef scroll_bar <handle
             %----------------------------
             set(obj.left_button,'callback', @(~,~) obj.cb_scrollLeft());
             set(obj.right_button,'callback',@(~,~) obj.cb_scrollRight());
-                        
+            
             % add an action listener which updates the size of the scroll
             % bar when the zoom is changed
             obj.xlim_listener = addlistener(obj.h_axes, 'XLim', 'PostSet', @(~,~) obj.xLimChanged);
-
+            
             %  Add callback for on click on rectangle to engage mouse movement
             set(obj.slider, 'ButtonDownFcn', @(~,~) obj.initializeScrolling);
             
@@ -107,8 +107,8 @@ classdef scroll_bar <handle
             % this is testing for the case that the user had already zoomed
             % before feeding the figure to the class.
             obj.xLimChanged();
-
-           
+            
+            
         end
         function delete(obj)
             delete(obj.xlim_listener);
@@ -123,28 +123,26 @@ classdef scroll_bar <handle
             cur_mouse_x = cur_mouse_coords(1);
             obj.prev_mouse_x = cur_mouse_x;
             obj.parent.disableAutoScroll();
-          	obj.mouse_man.setMouseMotionFunction(@obj.scroll);
+            obj.mouse_man.setMouseMotionFunction(@obj.scroll);
             obj.mouse_man.setMouseUpFunction(@obj.releaseScrollBar);
         end
         function releaseScrollBar(obj)
             if ~obj.options.update_on_drag
                 obj.updateAxes();
             end
-            obj.mouse_man.initDefaultState();            
+            obj.mouse_man.initDefaultState();
         end
         function updateXMax(obj,new_x_max)
             %
             %   Called by streaming ...
+            %
+            %   interactive_plot.bottom.scroll_bar.updateXMax
             
-            %See streaming class
-             %obj.total_time_limits(2) = new_x_max;
-             %obj.total_time_range = obj.total_time_limits(2) - obj.total_time_limits(1);
-             
-             %This is needed because our xlim might not change if we don't
-             %have auto-scroll enabled. This hwoever forces the scroll bar
-             %to resize ...
-             obj.x_max = new_x_max;
-             obj.xLimChanged();
+            %This is needed because our xlim might not change if we don't
+            %have auto-scroll enabled. This however forces the scroll bar
+            %to resize ...
+            obj.x_max = new_x_max;
+            obj.xLimChanged();
         end
         function xLimChanged(obj)
             %  obj.xLimChanged()
@@ -173,7 +171,7 @@ classdef scroll_bar <handle
                 x_view_max = ax.XLim(2);
                 
                 obj.width_per_time = (obj.scroll_right_limit - obj.scroll_left_limit)/total_time_range;
-                                
+                
                 obj.slider_left = obj.scroll_left_limit + x_view_min*obj.width_per_time;
                 obj.slider_right = obj.scroll_left_limit + x_view_max*obj.width_per_time;
                 obj.bar_width = obj.slider_right - obj.slider_left;
@@ -257,7 +255,7 @@ classdef scroll_bar <handle
             if ~(new_xmin < obj.x_min)
                 set(ax,'XLim',xlim - amt_to_shift);
             else
-              	xlim(1) = obj.x_min;
+                xlim(1) = obj.x_min;
                 xlim(2) = obj.x_min + range_in_view;
                 set(ax,'XLim',xlim);
             end

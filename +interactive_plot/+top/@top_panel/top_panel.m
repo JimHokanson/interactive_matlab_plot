@@ -46,7 +46,7 @@ classdef top_panel < handle
                     obj.fig_handle,'Style','pushbutton','units','normalized',...
                     'position',[0.93 0.96 0.06 0.04],...
                     'String','Add','Callback',@(~,~)obj.addComment());
-                obj.comments = interactive_plot.comments(shared);
+                obj.comments = shared.session.comments;
             else
                 obj.top_for_axes = 1;
             end

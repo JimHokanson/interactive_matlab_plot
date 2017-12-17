@@ -43,7 +43,12 @@ classdef calibration_gui < handle
             obj.x_data = s.x;
             obj.y_data = s.y_raw;
             
-            plot(obj.h.axes1,s.x,s.y_raw)
+            ax = obj.h.axes1;
+            plot(ax,s.x,s.y_raw)
+            ylim = get(ax,'YLim');
+            y_range = ylim(2)-ylim(1);
+            add_factor = y_range*0.1;
+            set(ax,'YLim',[ylim(1)-add_factor ylim(2)+add_factor]);
             
             set(obj.h.axes1,'Units','normalized')
             p = get(obj.h.axes1,'Position');
@@ -107,7 +112,7 @@ classdef calibration_gui < handle
             cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
             x = cur_mouse_coords(1);
             
-            obj.mouse_x_initial = x;
+            obj.mouse_x_initial = x
   
             obj.h_fig_rect = annotation('rectangle',[x obj.axes_y_min 0.001 obj.axes_height],'Color','red');
 

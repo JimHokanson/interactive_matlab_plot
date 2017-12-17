@@ -54,7 +54,8 @@ classdef streaming_example < handle
             
             %Making the plot "interactive"
             obj.ip = interactive_plot(obj.h_fig,num2cell(ax),...
-                'streaming',true,'streaming_window_size',N_SECONDS_KEEP);
+                'streaming',true,'streaming_window_size',N_SECONDS_KEEP,...
+                'comments',true);
             
             %Initialization of our data generator
             %------------------------------------

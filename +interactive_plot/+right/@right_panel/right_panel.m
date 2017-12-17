@@ -15,6 +15,7 @@ classdef right_panel < handle
         fig_handle
         options  %interactive_plot.options
         axes_handles
+        settings
         
         channel_names
         name_text_handles
@@ -31,8 +32,9 @@ classdef right_panel < handle
             %   obj =
             %   interactive_plot.right_panel_layout_manager(fig_handle,axes_handles,options)
             
-            obj.fig_handle = shared.handles.fig_handle;
-            obj.axes_handles = shared.handles.axes_handles;
+            obj.settings = shared.session.settings;
+            obj.fig_handle = shared.fig_handle;
+            obj.axes_handles = shared.axes_handles;
             obj.options = shared.options;
             obj.initializeTextBoxes();
             %obj.initializeYDisplay();
@@ -51,15 +53,9 @@ classdef right_panel < handle
         function initializeTextBoxes(obj)
             local_units = 'pixels';
             n_axes = length(obj.axes_handles);
-            axes_names = obj.options.axes_names;
-            if isempty(axes_names)
-                axes_names = cell(1,n_axes);
-                axes_names(:) = {''};
-            else
-                %TODO: This could be made optional
-                % - spaces replaced as well with newlines ...
-                %names = regexprep(names,'_','\n');
-            end
+            
+            axes_names = obj.settings.axes_props.names;
+           
             
             obj.channel_names = axes_names;
             

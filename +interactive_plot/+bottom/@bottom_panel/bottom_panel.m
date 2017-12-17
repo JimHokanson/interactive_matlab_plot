@@ -6,14 +6,15 @@ classdef bottom_panel < handle
     properties
         mouse_man
         options
+        settings
         render_params
         fig_handle
         axes_handles
         
         %Processor Classes
         %--------------------
-        scroll_bar
-        x_zoom
+        scroll_bar %interactive_plot.bottom.scroll_bar
+        x_zoom  %interactive_plot.bottom.x_zoom
         
         
         %Positions
@@ -57,13 +58,19 @@ classdef bottom_panel < handle
     end
     
     methods
-        function obj = bottom_panel(handles,mouse_man,options,render_params)
-            obj.mouse_man = mouse_man;
-            obj.options = options;
-            obj.fig_handle = handles.fig_handle;
-            obj.axes_handles = handles.axes_handles;
+        function obj = bottom_panel(shared)
             
-            p = get(handles.axes_handles{1},'Position');
+            options = shared.options;
+            handles = shared.handles;
+            render_params = shared.render_params;
+            
+            obj.settings = shared.session.settings;
+            obj.mouse_man = shared.mouse_manager;
+            obj.options = shared.options;
+            obj.fig_handle = shared.fig_handle;
+            obj.axes_handles = shared.axes_handles;
+            
+            
             
             % We are assuming at this point all figure units are normalized
             
@@ -72,6 +79,7 @@ classdef bottom_panel < handle
             
             %Create scrollbar
             %----------------------------------------
+            p = get(obj.axes_handles{1},'Position');
             obj.scroll_left_limit = p(1) + render_params.small_button_width;
             
             if options.streaming
@@ -147,10 +155,10 @@ classdef bottom_panel < handle
             x4 = obj.scroll_right_limit + (n_buttons_rightside-1)*L; % position of x zoom in button
             y = obj.scroll_bottom; % y position of the bottom of the scroll bar
             
-            obj.zoom_out_button = interactive_plot.ip_button(...
+            obj.zoom_out_button = interactive_plot.utils.ip_button(...
                 obj.fig_handle,[x3,y,L,H],'-');
             
-            obj.zoom_in_button = interactive_plot.ip_button(...
+            obj.zoom_in_button = interactive_plot.utils.ip_button(...
                 obj.fig_handle,[x4, y, L, H],'+');
             
             %X Display
@@ -167,14 +175,16 @@ classdef bottom_panel < handle
             %Processors
             %------------------------------------------------
             obj.x_zoom = interactive_plot.bottom.x_zoom(obj,obj.zoom_out_button,...
-                obj.zoom_in_button,handles,options);
+                obj.zoom_in_button,shared);
             obj.scroll_bar = interactive_plot.bottom.scroll_bar(...
                 obj.mouse_man,handles,options,obj);
         end
     end
     methods
         function disableAutoScroll(obj)
+            %???? - who calls this???
             obj.auto_scroll_enabled = false;
+            obj.settings.auto_scroll_enabled = false;
             if ~isempty(obj.auto_scroll_button)
                 set(obj.auto_scroll_button,'Value',1);
                 h__setAutoScrollString(obj);
@@ -182,6 +192,7 @@ classdef bottom_panel < handle
         end
        	function cb_scrollStatusChanged(obj)
             obj.auto_scroll_enabled = ~get(obj.auto_scroll_button,'Value');
+            obj.settings.auto_scroll_enabled = obj.auto_scroll_enabled;
             h__setAutoScrollString(obj);
         end
     end

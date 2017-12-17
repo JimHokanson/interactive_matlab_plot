@@ -19,6 +19,10 @@ classdef axes_action_manager < handle
         axes_handles
         line_handles
         xy_positions %interactive_plot.axes.axes_position_info
+        settings
+        
+        
+        
         cur_action = 1
         %- 1) h_zoom - horizontal zoom
         %- 2) v_zoom - vertical zoom
@@ -150,9 +154,7 @@ classdef axes_action_manager < handle
             %    - set mouse down action ...
             
             %https://undocumentedmatlab.com/blog/undocumented-mouse-pointer-functions
-            
-            
-            
+                
             [I,is_line] = obj.xy_positions.getActiveAxes(x,y);
             
             if is_line
@@ -180,12 +182,6 @@ classdef axes_action_manager < handle
                 
                 obj.x_start_position = x;
                 obj.y_start_position = y;
-                
-                
-                % reset this range so that we define a new basis for the
-                % double-click zoom out
-                % this is probably not the best place for the reset--some
-                % testing will be needed
                 
                 switch obj.cur_action
                     case 1
@@ -241,7 +237,6 @@ classdef axes_action_manager < handle
             else
                 error('Unable to calibrate without selected data')
             end
-            
         end
         function clearDataSelection(obj)
             
