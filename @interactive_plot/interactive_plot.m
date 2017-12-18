@@ -132,7 +132,7 @@ classdef interactive_plot < handle
             %Non-rendered components
             %--------------------------------------------------------------
             shared.mouse_manager = interactive_plot.mouse_manager(shared.handles);
-            shared.eventz = interactive_plot.eventz();
+            shared.eventz = interactive_plot.eventz(@notify);
             shared.session = interactive_plot.session(shared);
             obj.session = shared.session;
             

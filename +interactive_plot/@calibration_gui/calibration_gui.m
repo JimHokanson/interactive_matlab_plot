@@ -50,7 +50,7 @@ classdef calibration_gui < handle
             add_factor = y_range*0.1;
             set(ax,'YLim',[ylim(1)-add_factor ylim(2)+add_factor]);
             
-            set(obj.h.axes1,'Units','normalized')
+            set(obj.h.axes1,'Units','normalized');
             p = get(obj.h.axes1,'Position');
             
             obj.axes_x_min = p(1);
@@ -92,6 +92,15 @@ classdef calibration_gui < handle
                         break;
                     end
                 end
+                
+                if obj.x1 == obj.x2
+                    errordlg('Input values are the same')
+                end
+                
+                if obj.y1 == obj.y2
+                    errordlg('Output values are the same')
+                end
+                
                 obj.is_ok = true;
             else
                 obj.is_ok = false;
@@ -112,7 +121,7 @@ classdef calibration_gui < handle
             cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
             x = cur_mouse_coords(1);
             
-            obj.mouse_x_initial = x
+            obj.mouse_x_initial = x;
   
             obj.h_fig_rect = annotation('rectangle',[x obj.axes_y_min 0.001 obj.axes_height],'Color','red');
 

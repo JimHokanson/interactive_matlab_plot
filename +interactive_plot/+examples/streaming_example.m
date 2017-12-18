@@ -97,11 +97,15 @@ classdef streaming_example < handle
                     ME.stack(1)
                     obj.killTimer();
                 end
+            else
+                obj.killTimer();
             end
         end
         function killTimer(obj)
             try %#ok<TRYNC>
                 stop(obj.timer);
+            end
+            try %#ok<TRYNC>
                 delete(obj.timer);
             end
         end

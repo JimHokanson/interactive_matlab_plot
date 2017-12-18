@@ -89,6 +89,7 @@ classdef axes_action_manager < handle
             
             handles = shared.handles;
             
+            obj.settings = shared.session.settings;
             obj.h_fig = handles.fig_handle;
             obj.axes_handles = handles.axes_handles;
             obj.line_handles = handles.line_handles;
@@ -234,6 +235,7 @@ classdef axes_action_manager < handle
                 end
                 interactive_plot.data_interface.setCalibration(obj.selected_line,calibration);
                 obj.eventz.notify('calibration',calibration);
+                obj.settings.setCalibration(calibration,obj.selected_axes_I);
             else
                 error('Unable to calibrate without selected data')
             end

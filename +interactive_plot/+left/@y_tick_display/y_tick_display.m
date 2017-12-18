@@ -11,6 +11,8 @@ classdef y_tick_display < handle
         axes_handles
         L1
         last_rendered_ylims
+        n_draws = 0;
+        last_Y
     end
     
     methods
@@ -19,7 +21,9 @@ classdef y_tick_display < handle
             if numel(axes_handles) ~= length(axes_handles)
                 error('Assumption violated')
             end
-            L1 = cell(1,length(axes_handles));
+            n_axes = length(axes_handles);
+            L1 = cell(1,n_axes);
+            obj.last_Y = cell(1,n_axes);
             %L2 = cell(1,length(axes_handles));
             
             for i = 1:length(axes_handles)
@@ -47,6 +51,13 @@ classdef y_tick_display < handle
             %   JAH TODO: 
             %   - add comments to this function to break into parts
             
+            ylim = get(h_axes,'YLim');
+            if isequal(ylim,obj.last_Y{axes_I})
+                return
+            end
+            obj.last_Y{axes_I} = ylim;
+            
+            obj.n_draws = obj.n_draws + 1;
             
             BASE_OPTIONS = [1 2 5 10];
             PIXEL_BUFFER = 5; %pixels

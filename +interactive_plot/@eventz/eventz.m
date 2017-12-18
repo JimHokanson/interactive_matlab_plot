@@ -12,12 +12,18 @@ classdef eventz < handle
         figure_size_changed
     end
     
+    properties
+        fh
+    end
+    
     methods
-        function obj = eventz()
-            
+        function obj = eventz(fh)
+            obj.fh = fh;
         end
-        function notify(event_name,event_data)
-        	notify(obj.eventz,event_name,interactive_plot.event_data(event_data));
+        function notify(obj,event_name,event_data)
+            %builtin('notify',obj,event_name,interactive_plot.event_data(event_data));
+            %obj.fh(obj,event_name,interactive_plot.event_data(event_data));
+        	notify@handle(obj,event_name,interactive_plot.event_data(event_data));
         end
     end
     
