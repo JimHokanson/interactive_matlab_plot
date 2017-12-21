@@ -31,16 +31,20 @@ classdef comments < handle
         axes_handles
         mouse_man
         
-        h_lines %One line handle per axes
+        h_lines 
+        %One line handle per axes
+        %Holds vertical line data for all coments, linked by NaN points
         
         bottom_axes %Handle to the axes on the bottom (for text placement)
         
         %These are currently inaccurate due to resizing ...
-        y_top_axes
+        y_top_axes %Normalized y postion of the top of the top axes
         y_bottom_axes
         
         %First menu item - for showing the name of the selected label
         h_m1
+        
+        %Handle to the menu for moving and making visible
         h_menu
         
         %Comment Data
@@ -102,6 +106,16 @@ classdef comments < handle
             end
             
             obj.h_lines = temp;
+        end
+    end
+    methods
+        function s = struct(obj)
+            
+                s = struct;
+                s.n_comments = obj.n_comments;
+                s.strings = obj.strings;
+                s.times = obj.times;
+                s.is_deleted = obj.is_deleted;
         end
         function deleteComment(obj)
             I = obj.selected_line_I;

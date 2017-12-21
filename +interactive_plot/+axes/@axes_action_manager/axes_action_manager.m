@@ -56,14 +56,10 @@ classdef axes_action_manager < handle
         %Only valid after data selection
         
         h_fig_rect
+        h_fig_line
         h_axes_rect
         h_axes_line
         
-        
-        
-        
-        h_line %horizontal zoom
-        y_line %vertical zoom
         
         % keep track of this for resetting the zoom on double click
         % this gets updated the first time the horizontal zoom is used
@@ -98,10 +94,6 @@ classdef axes_action_manager < handle
             obj.xy_positions = xy_positions;
             
             c = uicontextmenu;
-            
-            % Create child menu items for the uicontextmenu
-            % JAH: Nest menu's?????
-
             uimenu(c,'Label','data select','Callback',@(~,~)obj.setActiveAction(4));
             uimenu(c,'Label','horizontal zoom','Callback',@(~,~)obj.setActiveAction(1));
             uimenu(c,'Label','vertical zoom','Callback',@(~,~)obj.setActiveAction(2));
@@ -116,18 +108,16 @@ classdef axes_action_manager < handle
                 cur_axes.UIContextMenu = c;
             end
             
-            % for initializing the double click zoom reset 
-            %JAH: ???? - we set it to 4 on the very next line????
-            obj.cur_action = -1;
             obj.setActiveAction(4);
         end
         function linkObjects(obj,rhs_disp,x_disp)
+            %Called after initialization to add extra constructed objects
+            %for later use
             obj.rhs_disp = rhs_disp;
             obj.x_disp = x_disp;
         end
         function setActiveAction(obj, selected_value)
            
-            %I think we want this here ...
             obj.clearDataSelection();
             
             % update this for the double click zoom reset
@@ -149,7 +139,8 @@ classdef axes_action_manager < handle
             obj.cur_action = selected_value;
         end
         function ptr = getMousePointerAndAction(obj,x,y,is_action)
-            %Should be called by the mouse_motion_callback_manager
+            %Should be called by the mouse_motion_callback_manager as
+            %the 'default' action when over the axes (or lines)
             %
             %    - cursor update ...
             %    - set mouse down action ...
@@ -233,8 +224,7 @@ classdef axes_action_manager < handle
                 if isempty(calibration)
                     return
                 end
-                interactive_plot.data_interface.setCalibration(obj.selected_line,calibration);
-                obj.eventz.notify('calibration',calibration);
+                
                 obj.settings.setCalibration(calibration,obj.selected_axes_I);
             else
                 error('Unable to calibrate without selected data')
@@ -258,9 +248,9 @@ classdef axes_action_manager < handle
             obj.mouse_man.setMouseMotionFunction(@obj.dataSelectMove);
             obj.mouse_man.setMouseUpFunction(@obj.dataSelectMouseUp);
             
+            %TODO: Make this a function ...
             x = obj.x_start_position;
             y = obj.y_start_position;
-            
             obj.h_fig_rect = annotation('rectangle',[x y 0.001 0.001],'Color','red');
         end
         function dataSelectMove(obj)
@@ -270,7 +260,8 @@ classdef axes_action_manager < handle
             h__redrawRectangle(obj)
         end
         function dataSelectMouseUp(obj)            
-            %Do we want anything width based? (i.e. too small a rectangle)
+            %Do we want anything width based? (i.e. too small a rectangle?
+            %so make it a line instead?)
             MIN_RECT_TIME = 0.5;
             %Not sure how high we can go ...
             Y_MAX = 1e9;
@@ -283,7 +274,9 @@ classdef axes_action_manager < handle
                 x = p_new(1);
                 obj.x_clicked = x;
                 obj.h_axes_line = line([x x],[-Y_MAX Y_MAX],'YLimInclude','off','Linewidth',2,'Color','k');
-            else           
+            else    
+                
+                %TODO: Expose this in render params
                 %Note that the 4th element is an alpha value (transparency)
                 obj.h_axes_rect = rectangle(...
                     'Position',p_new,...
@@ -348,34 +341,15 @@ classdef axes_action_manager < handle
                obj.initial_x_ranges(obj.selected_axes_I,:) = obj.selected_axes.XLim; 
             end
 
-            cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
-            y = cur_mouse_coords(2);
-            x = cur_mouse_coords(1);
-            
-            obj.x_start_position = x;
-            obj.y_start_position = y;
-            
-            obj.h_line = annotation('line', 'X', [x,x], 'Y' ,[y,y], 'Color', 'k');
-            
             obj.mouse_man.setMouseMotionFunction(@obj.runHZoom);
             obj.mouse_man.setMouseUpFunction(@obj.endHzoom);
             
+            h__drawInitialLineFromMouse(obj)
         end
         function runHZoom(obj)
-            cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
+            x = h__getConstrainedPoint(obj);
             
-            x = cur_mouse_coords(1);
-
-            p_axes = obj.selected_axes.Position;
-            left_boundary = p_axes(1);
-            right_boundary = p_axes(1) + p_axes(3);
-
-            if x > right_boundary 
-                x = right_boundary;
-            elseif x <left_boundary
-                x = left_boundary;
-            end
-            set(obj.h_line, 'X', [obj.x_start_position, x]);
+            set(obj.h_fig_line, 'X', [obj.x_start_position, x]);
         end
         function endHzoom(obj)
             
@@ -383,18 +357,12 @@ classdef axes_action_manager < handle
             delete(obj.h_line);
             obj.mouse_man.initDefaultState;
             
+            %TODO: simplify this ...
             cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
             [data_left_edge, data_right_edge] = h__HZoom(obj, cur_mouse_coords);
-            %JAH: In order to hzoom we need to manually set the ylim so
-            %that it stays the same
-            %
-            %This however changes the YLimMode to manual. Unfortuantely if
-            %we change it back to auto then the YLim will change,
-            %invalidaing our h zoom
-            %
-            %JAH: Do we want the other axes to be fixed as well for YLim?
-            %- no, the user can always set the axes to manual - this should
-            %be exposed via the ylim options
+
+            %This changes  ylim to manual,
+            %TODO: Keep track of ylim mode, on resetk, reset ylimmode as well 
             ylim = get(obj.selected_axes,'YLim');
             if data_right_edge <= data_left_edge
                return; 
@@ -425,14 +393,7 @@ classdef axes_action_manager < handle
                  obj.initial_y_ranges(axes_idx, :) = obj.selected_axes.YLim;
              end
 
-            cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
-            y = cur_mouse_coords(2);
-            x = cur_mouse_coords(1);
-            
-            obj.x_start_position = x;
-            obj.y_start_position = y;
-            
-            obj.y_line = annotation('line', 'X', [x,x], 'Y' ,[y,y], 'Color', 'k');
+            h__drawInitialLineFromMouse(obj)
             
             obj.mouse_man.setMouseMotionFunction(@obj.runYZoom);
             obj.mouse_man.setMouseUpFunction(@obj.endYzoom);
@@ -621,6 +582,14 @@ classdef axes_action_manager < handle
             obj.rhs_disp{obj.selected_axes_I}.String = sprintf('%g',measurement);
         end
     end
+end
+
+function h__drawInitialLineFromMouse(obj)
+y = obj.y_start_position;
+x = obj.x_start_position;
+            
+obj.h_fig_line = annotation('line', 'X', [x,x], 'Y' ,[y,y], 'Color', 'k');
+            
 end
 
 function [x,y] = h__getCurrentPoint(obj)

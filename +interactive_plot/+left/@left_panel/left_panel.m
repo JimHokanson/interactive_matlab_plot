@@ -75,6 +75,10 @@ classdef left_panel
             obj.y_axis_options = interactive_plot.left.y_axis_options(...
                 handles,options,obj.axis_option_buttons);
         end
+        function autoscale(obj,I,view_only)
+            %TODO: Document ...
+            obj.y_axis_options.autoscale(view_only,I);
+        end
      	function yLimChanged(obj, idx)
             % idx is the index of both the axes and the zoom buttons for
             % that axes

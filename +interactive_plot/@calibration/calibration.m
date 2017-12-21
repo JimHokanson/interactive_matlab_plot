@@ -46,8 +46,8 @@ classdef calibration < handle
             xlim = [x_min x_max];
             
             %s : big_plot.raw_line_data
-            s = interactive_plot.data_interface.getRawLineData(line_handle,'xlim',xlim,...
-                'get_raw',true);
+            s = interactive_plot.data_interface.getRawLineData(line_handle,...
+                'xlim',xlim,'get_raw',true);
 
             %This blocks until it is filled out or closed
             g = interactive_plot.calibration_gui(s);
@@ -71,7 +71,17 @@ classdef calibration < handle
     
     methods
         function obj = calibration()
-            %all filled out in static constructor
+            %all data filled out in static constructor
+        end
+        function s = struct(obj)
+
+            s = struct;
+            s.x1 = obj.x1;
+            s.x2 = obj.x2;
+            s.y1 = obj.y1;
+            s.y2 = obj.y2;
+            s.m = obj.m;
+            s.b = obj.b;
         end
     end
     

@@ -7,9 +7,10 @@ classdef options < handle
     %
     %   Design Notes
     %   ------------
-    %   - This code should be read-only within the code base.
-    %   - It is only processed once. Updates to this class don't propogate
-    %   to the code base.
+    %   - This code should be read-only within the code base. In other
+    %   words the code base should not modify these values.
+    %   - These options may only be processed once. Updates to this class 
+    %   don't necessarily propogate to the code base.
     %
     %   Examples
     %   --------
@@ -18,11 +19,13 @@ classdef options < handle
     %   opt = interactive_plot.options;
     %   opt.streaming = true;
     %
+    %   interactive_plot(fig,h_axes,opt)
+    %
+    %
     %   interactive_plot(fig,h_axes,'streaming',true);
     
     properties
         update_on_drag = true
-        
         
         scroll = true %NYI
         lines = true %NYI
@@ -30,13 +33,13 @@ classdef options < handle
         streaming = false
         %Streaming indicates that we expect new data to arrive.
         
-        comments  = true%logical, default false
+        comments  = false %logical, default false
+        %If true then an area to add comments is shown on the screen
         
         axes_names = []
         
-        xlim %Default xlim to use, implemented???
+        xlim %Default xlim to use, implemented??? NYI????
         
-        %TODO: This currently changes ...
         streaming_window_size = 20
         
         x_stream_in_scale = 0.333
@@ -56,6 +59,9 @@ classdef options < handle
             %   obj = interactive_plot.options(varargin)
             
             interactive_plot.sl.in.processVarargin(obj, varargin);
+        end
+        function struct(obj)
+            
         end
     end
 end

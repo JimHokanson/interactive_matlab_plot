@@ -39,8 +39,15 @@ classdef session < handle
             
             %File path resolution
             %-----------------------
-            %file_path
-            %interactive_plot.settings
+            %- file_path
+            %- interactive_plot.settings
+            %- default save location
+            
+            s = struct(obj);
+        end
+        function s = struct(obj)
+            s.settings = struct(obj.settings);
+            s.comments = struct(obj.comments);
         end
     end
     

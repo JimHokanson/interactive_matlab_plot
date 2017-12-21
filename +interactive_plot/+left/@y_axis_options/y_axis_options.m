@@ -66,9 +66,12 @@ classdef y_axis_options < handle
             %showing up ...
             
         end
-        function autoscale(obj,view_only)
-            h_line = obj.line_handles{obj.current_I};
-            h_axes = obj.axes_handles{obj.current_I};
+        function autoscale(obj,view_only,I)
+            if nargin == 2
+                I = obj.current_I;
+            end
+            h_line = obj.line_handles{I};
+            h_axes = obj.axes_handles{I};
             y_data = get(h_line,'YData');
             if view_only
                 xlim = get(h_axes,'XLim');
@@ -94,6 +97,9 @@ classdef y_axis_options < handle
             extra = y_range*obj.options.auto_scale_padding;
             y_max = y_max + extra;
             y_min = y_min - extra;
+            if y_max == y_min
+                y_max = 0.0001 + y_min;
+            end
             set(h_axes,'YLim',[y_min y_max]);
         end
         function setYLimMode(obj,mode)

@@ -2,6 +2,12 @@ classdef toolbar < handle
     %
     %   Class:
     %   interactive_plot.toolbar
+    %
+    %??? - How did I do the editing?
+    %
+    %   addpath(fullfile(matlabroot,'toolbox/matlab/guide/guitools'))
+    %   cdata = iconeditor;
+    %   save('icon_<name>.mat','cdata')
     
     %Toolbar options
     %---------------
@@ -14,6 +20,7 @@ classdef toolbar < handle
         h_toolbar
         h_fig
         axes_handles
+        left_panel
     end
     
     methods
@@ -29,8 +36,10 @@ classdef toolbar < handle
             
             
         end
-        function linkComponents(obj,axes_action_manager)
+        function linkComponents(obj,axes_action_manager,left_panel)
             root = fileparts(fileparts(which('interactive_plot')));
+            
+            obj.left_panel = left_panel;
             
             icon_root = fullfile(root,'icons');
             ff = @(x) fullfile(icon_root,['icon_' x '.mat']);
@@ -38,6 +47,21 @@ classdef toolbar < handle
             h2 = uipushtool(obj.h_toolbar,'CData',h.cdata,...
                 'TooltipString','Calibrate',...
                 'ClickedCallback',@(~,~) axes_action_manager.calibrateData);
+            h = load(ff('auto_y_global'));
+            h2 = uipushtool(obj.h_toolbar,'CData',h.cdata,...
+                'TooltipString','Auto-Scale Y - Global',...
+                'ClickedCallback',@(~,~) obj.autoScaleAll(false));
+         	h = load(ff('auto_y_local'));
+            h2 = uipushtool(obj.h_toolbar,'CData',h.cdata,...
+                'TooltipString','Auto-Scale Y - View Only',...
+                'ClickedCallback',@(~,~) obj.autoScaleAll(true));
+                
+        end
+        function autoScaleAll(obj,view_only)
+            %autoscale(obj,I,view_only)
+            for i = 1:length(obj.axes_handles)
+                obj.left_panel.autoscale(i,view_only);
+            end
         end
     end
     
