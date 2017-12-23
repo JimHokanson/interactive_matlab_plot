@@ -17,44 +17,66 @@ classdef streaming_example < handle
         last_t = 0;
         
         dt = 1/1000
-        xy1
-        xy2
+        xy %cell of big_plot.streaming_data
+        big %cell of big_plot
         ax
         ip
     end
     
     methods
-        function obj = streaming_example()
+        function obj = streaming_example(varargin)
             %
             %   interactive_plot.examples.streaming_example
+            %
+            %   Optional Inputs
+            %   ---------------
+            %   period : (default 0.1) (s)
+            %       How often to plot data.
+            %   streaming_window_size : (default 100)
+            %   n_chans : (default 2)
+            %       # of rows to plot
+            
             
             %plotting a bit faster than "real time"
-            PERIOD = 0.1;
-            N_SECONDS_KEEP = 100;
+            %- currently adding 1 second every 0.1 s
+            in.period = 0.1;
+            in.streaming_window_size = 100;
+            in.n_chans = 2;
+            in = interactive_plot.sl.in.processVarargin(in,varargin);
             
             
             %Initialization of our streaming data
             %-------------------------------------
             obj.dt = 1/1000;
             n_samples_init = 1e6;
-            obj.xy1 = big_plot.streaming_data(obj.dt,n_samples_init);
-            obj.xy2 = big_plot.streaming_data(obj.dt,n_samples_init);
             
+            n_chans = in.n_chans;
+            
+            temp = cell(1,n_chans);
+            for i = 1:n_chans
+                temp{i} = big_plot.streaming_data(obj.dt,n_samples_init);
+            end
+            obj.xy = temp;
             
             %Plotting the data
             %------------------
             obj.h_fig = figure;
-            ax(1) = subplot(2,1,1);
-            plotBig(obj.xy1)
-            set(gca,'ylim',[-1.2 1.2])
-            ax(2) = subplot(2,1,2);
-            plotBig(obj.xy2)
-            set(gca,'ylim',[-1.2 1.2])
-            obj.ax = ax;
+            
+            temp1 = cell(1,n_chans);
+            temp2 = cell(1,n_chans);
+            for i = 1:n_chans
+               temp1{i} = subplot(n_chans,1,i);
+               temp2{i} = plotBig(obj.xy{i},'obj',true);
+               set(gca,'ylim',[-1.2 1.2])
+            end
+            
+            obj.big = temp2;
+            obj.ax = temp1;
             
             %Making the plot "interactive"
-            obj.ip = interactive_plot(obj.h_fig,num2cell(ax),...
-                'streaming',true,'streaming_window_size',N_SECONDS_KEEP,...
+            obj.ip = interactive_plot(obj.h_fig,obj.ax,...
+                'streaming',true,...
+                'streaming_window_size',in.streaming_window_size,...
                 'comments',true);
             
             %Initialization of our data generator
@@ -62,7 +84,7 @@ classdef streaming_example < handle
             %- Conceptually this could come from a DAQ or other streaming
             %data source
             h_timer = timer;
-            h_timer.Period = PERIOD;
+            h_timer.Period = in.period;
             h_timer.ExecutionMode = 'fixedRate';
             h_timer.TimerFcn = @(~,~)obj.cb_timer;
             start(h_timer);
@@ -72,6 +94,8 @@ classdef streaming_example < handle
             if isvalid(obj.h_fig)
                 try
                     start_t = obj.last_t + obj.dt;
+                    %Add 1 second of data ...
+                    %- Ideally this could be exposed to the user
                     t = start_t:obj.dt:(obj.last_t + 1);
                     obj.last_t = t(end);
                     
@@ -86,11 +110,17 @@ classdef streaming_example < handle
                     
                     %These are the lines that are needed to make 
                     %streaming work ...
-                    obj.xy1.addData(y1);
-                    obj.xy2.addData(y2);
+                    for i = 1:length(obj.xy)
+                        if mod(i,2)
+                            obj.xy{i}.addData(y1);
+                        else
+                            obj.xy{i}.addData(y2);
+                        end
+                    end
                     
                     obj.ip.dataAdded(obj.last_t);
-                    
+                    %Note that this code is not explicitly calling drawnow
+                    %...
                 catch ME
                     fprintf(2,'Caught error while running timer\n');
                     disp(ME)

@@ -59,7 +59,7 @@ classdef interactive_plot < handle
             elseif type == 2
                 obj = interactive_plot.examples.standard2(varargin{:});
             elseif type == 3
-                obj = interactive_plot.examples.streaming_example();
+                obj = interactive_plot.examples.streaming_example(varargin{:});
             end
         end
     end
