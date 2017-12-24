@@ -3,11 +3,9 @@ classdef axes_action_manager < handle
     %   Class:
     %   interactive_plot.axes_action_manager
     %
-    %   - right click to change cur_action
-    %   - on mouseover change to appropriate cursor
-    %   -
-    
-    %   https://github.com/JimHokanson/interactive_matlab_plot/issues/10
+    %
+    %   See Also:
+    %   interactive_plot.mouse_manager
     
     properties
         line_moving_processor
@@ -19,7 +17,8 @@ classdef axes_action_manager < handle
         axes_handles
         line_handles
         xy_positions %interactive_plot.axes.axes_position_info
-        settings
+        
+        settings     %interactive_plot.settings
         
         
         
@@ -34,7 +33,7 @@ classdef axes_action_manager < handle
         %- 6) measure_y - draw vertical line and show how tall the line is
         %- 7) y average - this would be a horizontal select
         
-                
+        
         last_calibration
         
         %Fill out when clicked
@@ -67,15 +66,15 @@ classdef axes_action_manager < handle
         initial_x_ranges = [] %[xmin, xmax]
         x_zoom_axes_idx = [];
         % this will be a bit more complicated for the yzoom case because we
-        % will have to keep track of which plot was zoomed on 
+        % will have to keep track of which plot was zoomed on
         % initial_y_range is a matrix where each row corresponds to an axes
         % in order and each column corresponds to the initial y ranges
-
+        
         initial_y_ranges = [];
         y_zoom_axes_idx = [];
         
         h_init_tic
-
+        
     end
     
     methods
@@ -97,7 +96,7 @@ classdef axes_action_manager < handle
             uimenu(c,'Label','data select','Callback',@(~,~)obj.setActiveAction(4));
             uimenu(c,'Label','horizontal zoom','Callback',@(~,~)obj.setActiveAction(1));
             uimenu(c,'Label','vertical zoom','Callback',@(~,~)obj.setActiveAction(2));
-            uimenu(c,'Label','unrestriced zoom','Callback',@(~,~)obj.setActiveAction(3));           
+            uimenu(c,'Label','unrestriced zoom','Callback',@(~,~)obj.setActiveAction(3));
             uimenu(c,'Label','measure x','Callback',@(~,~)obj.setActiveAction(5));
             uimenu(c,'Label','measure y','Callback',@(~,~)obj.setActiveAction(6));
             uimenu(c,'Label','y average','Callback',@(~,~)obj.setActiveAction(7));
@@ -117,7 +116,7 @@ classdef axes_action_manager < handle
             obj.x_disp = x_disp;
         end
         function setActiveAction(obj, selected_value)
-           
+            
             obj.clearDataSelection();
             
             % update this for the double click zoom reset
@@ -146,7 +145,7 @@ classdef axes_action_manager < handle
             %    - set mouse down action ...
             
             %https://undocumentedmatlab.com/blog/undocumented-mouse-pointer-functions
-                
+            
             [I,is_line] = obj.xy_positions.getActiveAxes(x,y);
             
             if is_line
@@ -161,7 +160,7 @@ classdef axes_action_manager < handle
                 DBL_CLICK_TIME = 0.5;
                 
                 if is_line
-                   %Do we want to clear in this case as well? 
+                    %Do we want to clear in this case as well?
                     obj.line_moving_processor.cb_innerLineClicked(I);
                     return
                 end
@@ -201,6 +200,7 @@ classdef axes_action_manager < handle
                     case 6
                         obj.initMeasureY();
                     case 7
+                        obj.initAverageY();
                 end
                 
             end
@@ -248,10 +248,7 @@ classdef axes_action_manager < handle
             obj.mouse_man.setMouseMotionFunction(@obj.dataSelectMove);
             obj.mouse_man.setMouseUpFunction(@obj.dataSelectMouseUp);
             
-            %TODO: Make this a function ...
-            x = obj.x_start_position;
-            y = obj.y_start_position;
-            obj.h_fig_rect = annotation('rectangle',[x y 0.001 0.001],'Color','red');
+            h__drawInitialRectFromMouse(obj,'r')
         end
         function dataSelectMove(obj)
             %
@@ -259,7 +256,7 @@ classdef axes_action_manager < handle
             
             h__redrawRectangle(obj)
         end
-        function dataSelectMouseUp(obj)            
+        function dataSelectMouseUp(obj)
             %Do we want anything width based? (i.e. too small a rectangle?
             %so make it a line instead?)
             MIN_RECT_TIME = 0.5;
@@ -267,14 +264,14 @@ classdef axes_action_manager < handle
             Y_MAX = 1e9;
             
             elapsed_time = toc(obj.h_init_tic);
-
+            
             p_new = h__translateRectangle(obj.selected_axes,obj.h_fig_rect);
             %If too quick, draw a line
             if elapsed_time < MIN_RECT_TIME
                 x = p_new(1);
                 obj.x_clicked = x;
                 obj.h_axes_line = line([x x],[-Y_MAX Y_MAX],'YLimInclude','off','Linewidth',2,'Color','k');
-            else    
+            else
                 
                 %TODO: Expose this in render params
                 %Note that the 4th element is an alpha value (transparency)
@@ -284,7 +281,7 @@ classdef axes_action_manager < handle
                 
                 obj.selected_data = interactive_plot.data_selection.fromPosition(p_new);
             end
-
+            
             %Delete the figure based rectangle, keeping the axes based rectangle
             delete(obj.h_fig_rect);
             obj.mouse_man.initDefaultState();
@@ -304,13 +301,13 @@ classdef axes_action_manager < handle
                     % hzoom
                     x_lims = obj.initial_x_ranges(obj.selected_axes_I,:);
                     if ~isequal(x_lims, [0,0])
-                    set(obj.selected_axes, 'XLim', x_lims);
+                        set(obj.selected_axes, 'XLim', x_lims);
                     end
                 case 2
                     %yzoom
                     y_lims = obj.initial_y_ranges(obj.selected_axes_I,:);
                     if ~isequal(y_lims, [0,0])
-                    set(obj.selected_axes, 'YLim', y_lims);
+                        set(obj.selected_axes, 'YLim', y_lims);
                     end
                 case 3
                     %uzoom
@@ -338,9 +335,9 @@ classdef axes_action_manager < handle
             % 3) create the line at the proper x0,y0
             
             if isequal(obj.initial_x_ranges(obj.selected_axes_I, :), [0,0])
-               obj.initial_x_ranges(obj.selected_axes_I,:) = obj.selected_axes.XLim; 
+                obj.initial_x_ranges(obj.selected_axes_I,:) = obj.selected_axes.XLim;
             end
-
+            
             obj.mouse_man.setMouseMotionFunction(@obj.runHZoom);
             obj.mouse_man.setMouseUpFunction(@obj.endHzoom);
             
@@ -354,21 +351,26 @@ classdef axes_action_manager < handle
         function endHzoom(obj)
             
             % This needs to more accessible for more classes
-            delete(obj.h_line);
+            
             obj.mouse_man.initDefaultState;
             
-            %TODO: simplify this ...
-            cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
-            [data_left_edge, data_right_edge] = h__HZoom(obj, cur_mouse_coords);
-
-            %This changes  ylim to manual,
-            %TODO: Keep track of ylim mode, on resetk, reset ylimmode as well 
-            ylim = get(obj.selected_axes,'YLim');
-            if data_right_edge <= data_left_edge
-               return; 
+            x_fig = get(obj.h_fig_line, 'X');
+            x_axes = h__translateX(obj.selected_axes,x_fig);
+            x_axes = sort(x_axes);
+            if x_axes(2) - x_axes(1) < 1e-9
+                x_axes(2) = x_axes(1)+1e-9;
             end
-            set(obj.selected_axes, 'XLim', [data_left_edge, data_right_edge],...
-                'YLim',ylim);
+            
+            %We add y_lim so that we get purely horizontal zooming,
+            %otherwise the axes would adjust ylim on xlim zooming, which
+            %is not the behavior we expect for a horizontal-only zoom
+            %
+            %TODO: Keep track of ylim mode, on resetk, reset ylimmode as well
+            y_lim = get(obj.selected_axes,'YLim');
+            set(obj.selected_axes, 'XLim', [x_axes(1), x_axes(2)],...
+                'YLim',y_lim);
+            
+            delete(obj.h_fig_line)
         end
     end
     methods
@@ -386,69 +388,50 @@ classdef axes_action_manager < handle
             % 2) need to get the initial position
             % 3) create the line at the proper x0,y0
             
-             axes_idx = obj.selected_axes_I;
-             initial_y_range = obj.initial_y_ranges(axes_idx, :);
-             
-             if isequal(initial_y_range, [0,0])
-                 obj.initial_y_ranges(axes_idx, :) = obj.selected_axes.YLim;
-             end
-
+            axes_idx = obj.selected_axes_I;
+            initial_y_range = obj.initial_y_ranges(axes_idx, :);
+            
+            if isequal(initial_y_range, [0,0])
+                obj.initial_y_ranges(axes_idx, :) = obj.selected_axes.YLim;
+            end
+            
             h__drawInitialLineFromMouse(obj)
             
             obj.mouse_man.setMouseMotionFunction(@obj.runYZoom);
             obj.mouse_man.setMouseUpFunction(@obj.endYzoom);
         end
         function runYZoom(obj)
-            cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
-            cur_y = cur_mouse_coords(2);
+            [~,y] = h__getConstrainedPoint(obj);
             
-            p_axes = obj.selected_axes.Position;
-            bottom_boundary = p_axes(2);
-            top_boundary = p_axes(2) + p_axes(4);
-
-            if cur_y > top_boundary 
-                cur_y = top_boundary;
-            elseif cur_y <bottom_boundary
-                cur_y = bottom_boundary;
-            end
-
-            % for some reason the y position is given as [top, bottom]
-            set(obj.y_line, 'Y', [cur_y, obj.y_start_position]);
+            set(obj.h_fig_line, 'Y', [obj.y_start_position, y]);
         end
         function endYzoom(obj)
             % This needs to more accessible for more classes
-            delete(obj.y_line);
+            
             obj.mouse_man.initDefaultState;
             
-            cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
-
-            [data_bottom_edge, data_top_edge] =  h__YZoom(obj, cur_mouse_coords);
-            if data_bottom_edge == data_top_edge
-                return;
+            y_fig = get(obj.h_fig_line, 'Y');
+            y_axes = h__translateY(obj.selected_axes,y_fig);
+            y_axes = sort(y_axes);
+            if y_axes(2) - y_axes(1) < 1e-9
+                y_axes(2) = y_axes(1)+1e-9;
             end
-            set(obj.selected_axes, 'YLim', [data_bottom_edge, data_top_edge]);
+            
+            %See note in endXZoom about setting other limits
+            x_lim = get(obj.selected_axes,'XLim');
+            set(obj.selected_axes, 'YLim', [y_axes(1), y_axes(2)],...
+                'XLim',x_lim);
+            
+            delete(obj.h_fig_line);
         end
     end
     methods
         function initUZoom(obj)
             % initiates the unconstrained zoom function
             %
-            % This causes a change in all of the axes x limits in addition
-            % to changing the y limit of just the figure we are looking at.
-            % That major change can be a bit disorienting
-            %
-            % Current functionality is to draw two lines as has been done
-            % for the x and y zoom. Should it be changed to a rectangle?
-            % (probably should be...)
-            %
-            % TODO: limit the position so that we can't go outside of the
-            % current axes while dragging!
-            %
-            % TODO: document this!
             
-
-            % TODO: these should be formatted the same way!
-           
+            
+            %TODO: Make these functions ...
             % for resetting the y lims:
             axes_idx = obj.selected_axes_I;
             initial_y_range = obj.initial_y_ranges(axes_idx, :);
@@ -457,139 +440,164 @@ classdef axes_action_manager < handle
             end
             % for resetting the xlims:
             if isequal(obj.initial_x_ranges(obj.selected_axes_I, :), [0,0])
-               obj.initial_x_ranges(obj.selected_axes_I,:) = obj.selected_axes.XLim; 
+                obj.initial_x_ranges(obj.selected_axes_I,:) = obj.selected_axes.XLim;
             end
             
-            cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
-            y = cur_mouse_coords(2);
-            x = cur_mouse_coords(1);
+            h__drawInitialRectFromMouse(obj)
             
-            obj.x_start_position = x;
-            obj.y_start_position = y;
-            
-            % [x, y, length, width]
-            
-            obj.h_fig_rect = annotation('rectangle', 'Position', [x,y , 0, 0], 'FaceColor', 'none');
-                       
             obj.mouse_man.setMouseMotionFunction(@obj.runUZoom);
             obj.mouse_man.setMouseUpFunction(@obj.endUZoom);
-            
         end
         function runUZoom(obj)
-            cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
-            cur_x = cur_mouse_coords(1);
-            cur_y = cur_mouse_coords(2);
-            
-            p_axes = obj.selected_axes.Position;
-            bottom_boundary = p_axes(2);
-            top_boundary = p_axes(2) + p_axes(4);
-            
-             left_boundary = p_axes(1);
-            right_boundary = p_axes(1) + p_axes(3);
-
-            if cur_x > right_boundary 
-                cur_x = right_boundary;
-            elseif cur_x <left_boundary
-                cur_x = left_boundary;
-            end
-            
-            if cur_y > top_boundary 
-                cur_y = top_boundary;
-            elseif cur_y <bottom_boundary
-                cur_y = bottom_boundary;
-            end
-
-            x0 = obj.x_start_position;
-            y0 = obj.y_start_position;
-            w = cur_x - x0;
-            h = cur_y - y0;
-            
-            set(obj.h_fig_rect, 'Position', [x0,y0,w,h]);
+            h__redrawRectangle(obj)
         end
         function endUZoom(obj)
             % This needs to more accessible for more classes
             %
-            % TODO: split this up into helper classes which can be shared
-            % with the vertical and horizontal zoom functions!!
             
-
             obj.mouse_man.initDefaultState;
+            
+            
+            p_new = h__translateRectangle(obj.selected_axes,obj.h_fig_rect);
+            
+            set(obj.selected_axes, 'XLim', [p_new(1), p_new(1)+p_new(3)]);
+            set(obj.selected_axes, 'YLim', [p_new(2), p_new(2)+p_new(4)]);
+            
             delete(obj.h_fig_rect);
-
-            cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
-            [data_left_edge, data_right_edge] = h__HZoom(obj, cur_mouse_coords);
-            [data_bottom_edge, data_top_edge] =  h__YZoom(obj, cur_mouse_coords);
-
-            if data_left_edge >= data_right_edge || data_top_edge<=data_bottom_edge
-                return;
-            end
-            set(obj.selected_axes, 'XLim', [data_left_edge, data_right_edge]);
-            set(obj.selected_axes, 'YLim', [data_bottom_edge, data_top_edge]);
         end
     end
     
     %Measure X ============================================================
     methods
         function initMeasureX(obj)
-           % measures the distance in the data between mouse down and mouse
-           % up on a given plot
-
-            [x,y] = h__getCurrentPoint(obj);
-            obj.h_line = annotation('line', 'X', [x,x], 'Y' ,[y,y], 'Color', 'k');
+            % measures the distance in the data between mouse down and mouse
+            % up on a given plot
+            
+            h__drawInitialLineFromMouse(obj)
             
             obj.mouse_man.setMouseMotionFunction(@obj.runMeasureX);
             obj.mouse_man.setMouseUpFunction(@obj.endMeasureX);
         end
-        function runMeasureX(obj)          
+        function runMeasureX(obj)
             x = h__getConstrainedPoint(obj);
-            set(obj.h_line, 'X', [obj.x_start_position, x]);
+            set(obj.h_fig_line, 'X', [obj.x_start_position, x]);
         end
         function endMeasureX(obj)
+            
             obj.mouse_man.initDefaultState();
-            cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
-            [data_left_edge, data_right_edge] = h__HZoom(obj, cur_mouse_coords);
-            delete(obj.h_line);
-            measurement = data_right_edge - data_left_edge;
-            % TODO: where should this be displayed?
+            
+            x_fig = get(obj.h_fig_line, 'X');
+            x_axes = h__translateX(obj.selected_axes,x_fig);
+            x_axes = sort(x_axes);
+            
+            measurement = x_axes(2) - x_axes(1);
             set(obj.x_disp,'String',sprintf('%g',measurement));
+            
+            delete(obj.h_fig_line)
         end
     end
     
     %Measure Y ============================================================
     methods
         function initMeasureY(obj)
-            [x,y] = h__getCurrentPoint(obj);
-            obj.y_line = annotation('line', 'X', [x,x], 'Y' ,[y,y], 'Color', 'k');
+            h__drawInitialLineFromMouse(obj)
             
             obj.mouse_man.setMouseMotionFunction(@obj.runMeasureY);
             obj.mouse_man.setMouseUpFunction(@obj.endMeasureY);
         end
         function runMeasureY(obj)
             [~,cur_y] = h__getConstrainedPoint(obj);
-            set(obj.y_line, 'Y', [cur_y, obj.y_start_position]);
+            set(obj.h_fig_line, 'Y', [cur_y, obj.y_start_position]);
         end
         function endMeasureY(obj)
             obj.mouse_man.initDefaultState();
             
-            cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
+            y_fig = get(obj.h_fig_line, 'Y');
+            y_axes = h__translateY(obj.selected_axes,y_fig);
+            y_axes = sort(y_axes);
             
-            [data_bottom_edge, data_top_edge] =  h__YZoom(obj, cur_mouse_coords);
-            
-            delete(obj.y_line);
-            measurement = data_top_edge - data_bottom_edge;
+            measurement = y_axes(2) - y_axes(1);
             
             %TODO: Idealy this would be a call to a class ...
             obj.rhs_disp{obj.selected_axes_I}.String = sprintf('%g',measurement);
+            
+            delete(obj.h_fig_line);
         end
     end
+    
+    %Average Y
+    %============================================================
+    methods  
+        function initAverageY(obj)
+            obj.mouse_man.setMouseMotionFunction(@obj.runAverageY);
+            obj.mouse_man.setMouseUpFunction(@obj.endAverageY);
+            
+            h__drawInitialLineFromMouse(obj)
+
+                        
+            %TODO: Replace with rectangle over entire y range
+            %h__drawInitialYBoundedRectFromMouse(obj)
+        end
+        function runAverageY(obj)
+            
+            %h__redrawRectangle(obj)
+            
+            x = h__getConstrainedPoint(obj);
+            
+            set(obj.h_fig_line, 'X', [obj.x_start_position, x]);
+        end
+        function endAverageY(obj)
+            
+            % This needs to more accessible for more classes
+            
+            obj.mouse_man.initDefaultState;
+            
+            %p_new = h__translateRectangle(obj.selected_axes,obj.h_fig_rect);
+
+            x_fig = get(obj.h_fig_line, 'X');
+            x_axes = h__translateX(obj.selected_axes,x_fig);
+            
+            s = obj.settings.axes_props.getRawLineData(obj.selected_axes_I,...
+                'get_x_data',false,...
+                'xlim',x_axes);
+                
+            measurement = mean(s.y_final);
+            
+            obj.rhs_disp{obj.selected_axes_I}.String = sprintf('%g',measurement);
+            delete(obj.h_fig_line);
+        end
+    end
+end
+
+function h__drawInitialYBoundedRectFromMouse(obj,color)
+
+%TODO:
+%- for average-y - NYI
+%- get y from axes
+%- fill in the rectangle
+if nargin == 1
+    color = 'k';
+end
+x = obj.x_start_position;
+y = obj.y_start_position;
+obj.h_fig_rect = annotation('rectangle',[x y 0.001 0.001],'Color',color);
+end
+
+function h__drawInitialRectFromMouse(obj,color)
+if nargin == 1
+    color = 'k';
+end
+x = obj.x_start_position;
+y = obj.y_start_position;
+obj.h_fig_rect = annotation('rectangle',[x y 0.001 0.001],'Color',color);
 end
 
 function h__drawInitialLineFromMouse(obj)
 y = obj.y_start_position;
 x = obj.x_start_position;
-            
+
 obj.h_fig_line = annotation('line', 'X', [x,x], 'Y' ,[y,y], 'Color', 'k');
-            
+
 end
 
 function [x,y] = h__getCurrentPoint(obj)
@@ -685,7 +693,7 @@ function x_axes = h__translateX(h_axes,x_fig)
 xlim = get(h_axes,'XLim');
 
 p_axes = get(h_axes,'position');
-            
+
 x1 = p_axes(1);
 x2 = p_axes(1)+p_axes(3);
 y1 = xlim(1);
@@ -694,7 +702,7 @@ y2 = xlim(2);
 m = (y2 - y1)./(x2 - x1);
 b = y2 - m*x2;
 
-x_axes = m*x_fig + b;       
+x_axes = m*x_fig + b;
 end
 
 function y_axes = h__translateY(h_axes,y_fig)
@@ -702,7 +710,7 @@ function y_axes = h__translateY(h_axes,y_fig)
 ylim = get(h_axes,'YLim');
 
 p_axes = get(h_axes,'position');
-            
+
 x1 = p_axes(2);
 x2 = p_axes(2)+p_axes(4);
 y1 = ylim(1);
@@ -712,72 +720,4 @@ m = (y2 - y1)./(x2 - x1);
 b = y2 - m*x2;
 
 y_axes = m*y_fig + b;
-end
-
-function [data_left_edge, data_right_edge] = h__HZoom(obj, cur_mouse_coords)
-
-%JAH: Not sure what this function is doing - non-descript name
-
-% TODO: change the name of this function because it is also used
-% for the function to measure x
-xlim = get(obj.selected_axes,'XLim');
-x_range = xlim(2)-xlim(1);
-
-p_axes = get(obj.selected_axes,'position');
-
-left_boundary = p_axes(1);
-right_boundary = p_axes(1) + p_axes(3);
-
-width  = p_axes(3);
-x_ax_per_norm = x_range/width;
-
-cur_x = cur_mouse_coords(1);
-if cur_x > right_boundary 
-    cur_x = right_boundary;
-elseif cur_x <left_boundary
-    cur_x = left_boundary;
-end
-start_x = obj.x_start_position;
-x_positions = sort([cur_x, start_x]);
-
-%This is to make Matlab happy
-if x_positions(2) == x_positions(1)
-    x_positions(2) = x_positions(1)+0.0001;
-end
-
-% need to convert the start and end x positions to the
-% corresponding coordinates in the data
-axes_left_edge = p_axes(1);
-data_left_edge = xlim(1) + (x_positions(1) - axes_left_edge)*x_ax_per_norm;
-data_right_edge = xlim(1) + (x_positions(2) - axes_left_edge)*x_ax_per_norm;
-end
-function [data_bottom_edge, data_top_edge] =  h__YZoom(obj, cur_mouse_coords)
-            
-ylim = get(obj.selected_axes,'YLim');
-y_range = ylim(2)-ylim(1);
-
-p_axes = get(obj.selected_axes,'position');
-hieght  = p_axes(4);
-y_ax_per_norm = y_range/hieght;
-
-cur_y = cur_mouse_coords(2);
-
-bottom_boundary = p_axes(2);
-top_boundary = p_axes(2) + p_axes(4);
-
-if cur_y > top_boundary 
-    cur_y = top_boundary;
-elseif cur_y <bottom_boundary
-    cur_y = bottom_boundary;
-end
-
-start_y = obj.y_start_position;
-y_positions = sort([cur_y, start_y]);
-
-% need to convert the start and end x positions to the
-% corresponding coordinates in the data
-
-axes_bottom_edge = p_axes(2);
-data_bottom_edge = ylim(1) + (y_positions(1) - axes_bottom_edge)*y_ax_per_norm;
-data_top_edge = ylim(1) + (y_positions(2) - axes_bottom_edge)*y_ax_per_norm;
 end

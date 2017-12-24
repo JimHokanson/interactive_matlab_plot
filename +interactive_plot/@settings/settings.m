@@ -31,6 +31,7 @@ classdef settings < handle
         end
     end
     
+    %Constructor ----------------------------------------------------------
     methods
         function obj = settings(shared)
             obj.options = shared.options;
@@ -41,6 +42,8 @@ classdef settings < handle
             obj.streaming_window_size = shared.options.streaming_window_size;
         end
     end
+    
+    
     methods
         function s = struct(obj)
             s.options = obj.options;
