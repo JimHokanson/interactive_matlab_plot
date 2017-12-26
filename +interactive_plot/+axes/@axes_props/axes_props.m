@@ -13,6 +13,7 @@ classdef axes_props < handle
     properties
         axes_handles    %cell array
         line_handles
+        data_ptrs %cell of either [] or big_plot.line_data_pointer
         eventz
         names           %cellstr
         calibrations    %cell array
@@ -76,7 +77,14 @@ classdef axes_props < handle
             obj.eventz = shared.eventz;
             obj.n_axes = length(obj.axes_handles);
             obj.line_handles = shared.handles.line_handles;
-                        
+               
+            temp = cell(1,obj.n_axes);
+            for i = 1:obj.n_axes
+                h_line = obj.line_handles{i};
+                temp{i} = big_plot.getRawDataPointer(h_line);
+            end
+            obj.data_ptrs = temp;
+            
             axes_names = shared.options.axes_names;
             if isempty(axes_names)
                 axes_names = cell(1,obj.n_axes);
