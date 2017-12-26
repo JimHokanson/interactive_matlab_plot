@@ -14,8 +14,7 @@ classdef axes_props < handle
         axes_handles    %cell array
         line_handles
         eventz          %interative_plot.eventz
-        
-        
+              
         names           %cellstr
         units           %cellstr
         

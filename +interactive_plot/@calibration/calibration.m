@@ -19,15 +19,23 @@ classdef calibration < handle
     %   1) store raw data in the class for plotBig
     %   2) implement calibration variables in streaming_data
     %   3) expose placing these calibration values in at plotBig
+    %
+    %   See Also
+    %   --------
+    %   interactive_plot.calibration_gui
     
     
     properties
         name
+        datenum  %When the calibration was created
         units
         
         %These are only populated if specifically selected.
         offset
         gain
+        
+        x_data
+        y_data
         
         x1
         x2
@@ -65,6 +73,7 @@ classdef calibration < handle
             end
             
             obj = interactive_plot.calibration();
+            obj.datenum = now;
             obj.x1 = g.x1;
             obj.x2 = g.x2;
             obj.y1 = g.y1;
@@ -83,6 +92,14 @@ classdef calibration < handle
         function s = struct(obj)
 
             s = struct;
+            s.VERSION  = 1;
+            s.name = obj.name;
+            s.units = obj.units;
+            s.datenum = obj.datenum;
+            s.offset = obj.offset;
+            s.gain = obj.gain;
+            s.x_data = obj.x_data;
+            s.y_data = obj.y_data;
             s.x1 = obj.x1;
             s.x2 = obj.x2;
             s.y1 = obj.y1;

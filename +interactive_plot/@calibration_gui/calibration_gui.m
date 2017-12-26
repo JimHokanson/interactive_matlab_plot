@@ -1,6 +1,7 @@
 classdef calibration_gui < handle
-    %UNTITLED Summary of this class goes here
-    %   Detailed explanation goes here
+    %
+    %   Class:
+    %   interactive_plot.calibration_gui
     
     properties
         h
