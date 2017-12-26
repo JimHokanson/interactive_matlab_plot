@@ -8,6 +8,10 @@ classdef comments < handle
     %   1) Start the line render at the edge of the text - this can be very
     %   complicated since it could span multiple axes
     %   2) Change pointer when over the text box
+    %
+    %   See Also
+    %   --------
+    %   interactive_plot.session
     
     
     %{
@@ -15,7 +19,7 @@ classdef comments < handle
     - when many comments in local area, allow selection in the
     uicontextmenu -??? How to get back to main selection????? - nested
      select then action?
-    - in menu, add option for moving taht follows mouse and on mouse
+    - in menu, add option for moving that follows mouse and on mouse
       down dows the releasing
     - DONE move comment
     - DONE delete comment
@@ -30,22 +34,26 @@ classdef comments < handle
         fig_handle
         axes_handles
         mouse_man
+        eventz
         
-        h_lines 
+        
+        %------------------------------------------------------------------
+        h_lines
         %One line handle per axes
         %Holds vertical line data for all coments, linked by NaN points
         
         bottom_axes %Handle to the axes on the bottom (for text placement)
         
-        %These are currently inaccurate due to resizing ...
+        %These are currently inaccurate due to resizing that begins at the
+        %beginning
         y_top_axes %Normalized y postion of the top of the top axes
         y_bottom_axes
         
         %First menu item - for showing the name of the selected label
-        h_m1
+        h_m1  %uimenu
         
         %Handle to the menu for moving and making visible
-        h_menu
+        h_menu  %uicontextmenu
         
         %Comment Data
         %--------------
@@ -66,10 +74,11 @@ classdef comments < handle
     
     methods
         function obj = comments(shared)
-            obj.fig_handle = shared.handles.fig_handle;
-            obj.axes_handles = shared.handles.axes_handles;
+            obj.fig_handle = shared.fig_handle;
+            obj.axes_handles = shared.axes_handles;
             obj.bottom_axes = obj.axes_handles{end};
             obj.mouse_man = shared.mouse_manager;
+            obj.eventz = shared.eventz;
             
             h_top = obj.axes_handles{1};
             p_top = get(h_top,'Position');
@@ -86,7 +95,6 @@ classdef comments < handle
             %axes
             obj.ylim_listener = addlistener(obj.bottom_axes, 'YLim', ...
                 'PostSet', @(~,~) obj.ylimChanged);
-            
             
             c = uicontextmenu;
             
@@ -109,19 +117,32 @@ classdef comments < handle
         end
     end
     methods
-        function s = struct(obj)
-            
-                s = struct;
-                s.n_comments = obj.n_comments;
-                s.strings = obj.strings;
-                s.times = obj.times;
-                s.is_deleted = obj.is_deleted;
+        function load(obj,s)
+            keyboard
         end
+        function s = struct(obj)
+            I = obj.n_comments;
+            s = struct;
+            s.n_comments = obj.n_comments;
+            s.strings = obj.strings(1:I);
+            s.times = obj.times(1:I);
+            s.is_deleted = obj.is_deleted(1:I);
+        end
+    end
+    
+    %Comment changing =====================================================
+    methods
         function deleteComment(obj)
             I = obj.selected_line_I;
             obj.is_deleted(I) = true;
             set(obj.h_text{I},'Visible','off')
             obj.renderComments();
+            
+            %Notify everyone
+            %-----------------------------------
+            s = struct;
+            s.comment_index = I;
+            obj.commentsUpdated('comment_deleted',s)
         end
         function editComment(obj)
             I = obj.selected_line_I;
@@ -132,14 +153,22 @@ classdef comments < handle
             %Must be a cell array
             default_answer = obj.strings(I);
             answer = inputdlg('Enter new value','Edit Comment',1,default_answer,options);
-            if ~isempty(answer)
-                new_string = answer{1};
-                obj.strings{I} = new_string;
-                display_string = h__getDisplayString(new_string,I);
-                set(obj.h_text{I},'String',display_string)
+            if isempty(answer)
+                %empty answer indicates canceling
+                return
             end
             
+            new_string = answer{1};
+            obj.strings{I} = new_string;
+            display_string = h__getDisplayString(new_string,I);
+            set(obj.h_text{I},'String',display_string)
             
+            %Notify everyone
+            %-----------------------------------
+            s = struct;
+            s.new_string = new_string;
+            s.comment_index = I;
+            obj.commentsUpdated('comment_edited',s)
         end
         function rightClickComment(obj)
             %
@@ -186,6 +215,8 @@ classdef comments < handle
                 return
             end
             
+            %Normal clicking - select for moving
+            %------------------------------------------------------
             %On clicking, create a line that represents the location of the
             %comment
             
@@ -228,6 +259,13 @@ classdef comments < handle
             obj.mouse_man.initDefaultState();
             
             obj.renderComments();
+            
+            %Notify everyone
+            %-----------------------------------
+            s = struct;
+            s.new_time = new_time;
+            s.comment_index = obj.selected_line_I;
+            obj.commentsUpdated('comment_moved',s)
         end
         function addComments(obj,times,strings)
             %NYI
@@ -246,8 +284,19 @@ classdef comments < handle
             
             I = obj.n_comments + 1;
             
-            if I > length(obj.times)
+            n_old = length(obj.times);
+            if I > n_old
                 %TODO: Handle overflow resizing
+                if n_old < 100
+                    n_new = 100;
+                else
+                    %double ...
+                    n_new = n_old;
+                end
+                obj.strings = [obj.strings cell(1,n_new)];
+                obj.h_text = [obj.h_text cell(1,n_new)];
+                obj.times = [obj.times zeros(1,n_new)];
+                obj.is_deleted = [obj.is_deleted false(1,n_new)];
             end
             
             obj.strings{I} = str;
@@ -260,8 +309,21 @@ classdef comments < handle
             
             obj.n_comments = I;
             obj.renderComments();
+            
+            %Notify everyone of the change
+            %-------------------------------
+            s = struct;
+            s.time = time;
+            s.str = str;
+            obj.commentsUpdated('add_comment',s)
         end
+    end
+    methods
         function ylimChanged(obj)
+            %
+            %   We need to adjust all of the text positions because the
+            %   text is placed in axes coordinates.
+            
             ylim = get(obj.bottom_axes,'YLim');
             for i = 1:obj.n_comments
                 obj.h_text{i}.Position(2) = ylim(1);
@@ -294,6 +356,20 @@ classdef comments < handle
                     set(h_line,'YData',y_line);
                 end
             end
+        end
+        function commentsUpdated(obj,event_name,custom_data)
+            %
+            %   Call this when the comments have been updated ...
+            
+            %session_updated
+            s = interactive_plot.eventz.session_updated_event_data();
+            s.class_updated = 'comments';
+            %s.prop_updated
+            s.event_name = event_name;
+            %s.axes_I
+            s.custom_data = custom_data;
+            
+            obj.eventz.notify('session_updated',s);
         end
     end
     

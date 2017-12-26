@@ -13,9 +13,15 @@ classdef axes_props < handle
     properties
         axes_handles    %cell array
         line_handles
-        eventz
+        eventz          %interative_plot.eventz
+        
+        
         names           %cellstr
+        units           %cellstr
+        
         calibrations    %cell array
+        %interactive_plot.calibration
+        
         n_axes
     end
     properties (Dependent)

@@ -22,6 +22,13 @@ classdef calibration < handle
     
     
     properties
+        name
+        units
+        
+        %These are only populated if specifically selected.
+        offset
+        gain
+        
         x1
         x2
         y1

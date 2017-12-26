@@ -23,7 +23,6 @@ classdef interactive_plot < handle
         session
         shared_props
         
-        
         axes_panel
         bottom_panel
         left_panel
@@ -64,8 +63,7 @@ classdef interactive_plot < handle
         end
     end
     
-    %Constructor
-    %===========================================
+    %Constructor    =======================================================
     methods
         function obj = interactive_plot(fig_handle, axes_handles, varargin)
             %
@@ -168,7 +166,7 @@ classdef interactive_plot < handle
             %------------------------
             obj.fig_size_change = interactive_plot.fig_size_change(obj);
             fsc = obj.fig_size_change;
-            fsc.right_panel = obj.right_panel;
+            fsc.linkObjects(obj.left_panel,obj.right_panel);
             
             shared.toolbar.linkComponents(...
                 obj.axes_panel.axes_action_manager,...
@@ -184,15 +182,37 @@ classdef interactive_plot < handle
             y_disp = obj.right_panel.y_display_handles;
             x_disp = obj.bottom_panel.x_disp_handle;
             obj.axes_panel.axes_action_manager.linkObjects(y_disp,x_disp);
-            
-           
         end
     end
     
     methods
-        function addComment(obj,comment_string,comment_time)
+        function save(obj,varargin)
+            
+            in.save_path = [];
+            in.save_data = false;
+            in = interactive_plot.sl.in.processVarargin(in,varargin);
+            
+            if isempty(in.save_path)
+               root_path = interactive_plot.sl.stack.getPackageRoot(); 
+               root_path = fullfile(root_path,'data');
+               if ~exist(root_path,'dir')
+                   mkdir(root_path)
+               end
+               date_string = datestr(now,'yymmdd__HH_MM_SS');
+               file_name = sprintf('%s_ip_data.mat',date_string);
+               in.save_path = fullfile(root_path,file_name);
+            end
+            
+            s = getSessionData(obj);
+            save(in.save_path,'-struct','s');
+        end
+        function s = getSessionData(obj)
+            s = struct(obj.session);
+        end
+        function addComment(obj,comment_time,comment_string)
             %NYI
             % - requires comments being active ...
+            obj.session.addComment(comment_time,comment_string);
         end
         function dataAdded(obj,new_max_time)
             %Notify the code that new data has been added ...

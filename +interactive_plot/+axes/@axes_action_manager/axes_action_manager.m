@@ -214,10 +214,21 @@ classdef axes_action_manager < handle
             %   This is currently exposed via a toolbar button. It requires
             %   that data has been selected.
             
+            %TODO: Rescale following calibration
+            %
+            %- This gets tricky if we are calibrating on already calibrated
+            %  data.
+            
+            %   - view calibration status of each axes
+            %   - adjust offset
+            %   - adjust gain
+            %   - full calibration
+            
+            
             if ~isempty(obj.selected_data)
                 if length(obj.selected_line) ~= 1
                     %We could prompt which line we want ...
-                    error('Only able to calibrate for 1 line per plot')
+                    error('Currently only able to calibrate for 1 line per plot')
                 end
                 calibration = interactive_plot.calibration.createCalibration(...
                     obj.selected_data,obj.selected_line);

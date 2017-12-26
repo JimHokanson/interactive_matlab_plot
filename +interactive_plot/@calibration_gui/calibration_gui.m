@@ -8,6 +8,7 @@ classdef calibration_gui < handle
         is_ok = false
         x_data
         y_data
+        units
         x1
         x2
         y1

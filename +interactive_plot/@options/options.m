@@ -24,24 +24,34 @@ classdef options < handle
     %
     %   interactive_plot(fig,h_axes,'streaming',true);
     
+    
     properties
-        update_on_drag = true
-        
-        scroll = true %NYI
-        lines = true %NYI
-        
         streaming = false
         %Streaming indicates that we expect new data to arrive.
         
+        streaming_window_size = 20
+
         comments  = false %logical, default false
         %If true then an area to add comments is shown on the screen
         
         axes_names = []
         
+        default_units = {};
+    end
+    
+    properties
+        update_on_drag = true
+        %If true, the plots update as the scroll bar is dragged. Otherwise
+        %the plots only update once the scroll bar has been released.
+        
+        %NYI - The idea here is to disable rendering of items
+        scroll = true %NYI
+        lines = true %NYI
+        
         xlim %Default xlim to use, implemented??? NYI????
-        
-        streaming_window_size = 20
-        
+    end
+    
+    properties
         x_stream_in_scale = 0.333
         x_stream_out_scale = 0.5;
         
