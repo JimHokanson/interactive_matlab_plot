@@ -1,32 +1,41 @@
 classdef y_tick_display < handle
     %
     %   Class:
-    %   interactive_plot.y_tick_display
+    %   interactive_plot.left.y_tick_display
     %
     %   JAH TODO: Do we want ticks on the inside or outside????
+    %       - presumably this should be an option
     %
     %   Handles placement of y-ticks on the axes
     
     properties
         axes_handles
+        h_fig
         L1
         last_rendered_ylims
+        n_axes
         n_draws = 0;
-        last_Y
+        last_ylim
+        last_ax_position
     end
     
     methods
-        function obj = y_tick_display(axes_handles)
+        function obj = y_tick_display(shared)
+            axes_handles = shared.axes_handles;
+            obj.h_fig = shared.fig_handle;
             obj.axes_handles = axes_handles;
             if numel(axes_handles) ~= length(axes_handles)
                 error('Assumption violated')
             end
             n_axes = length(axes_handles);
             L1 = cell(1,n_axes);
-            obj.last_Y = cell(1,n_axes);
+            obj.last_ylim = cell(1,n_axes);
+            obj.last_ax_position = cell(1,n_axes);
             %L2 = cell(1,length(axes_handles));
             
-            for i = 1:length(axes_handles)
+            obj.n_axes = n_axes;
+            
+            for i = 1:n_axes
                 cur_axes = axes_handles{i};
                 %We also need a listener on
                 %TODO: This needs to use MarkedClean  
@@ -35,40 +44,55 @@ classdef y_tick_display < handle
             	
                 %obj.L3 = addlistener(axes_handle.XRuler,'MarkedClean',@(~,~) obj.cleanListen);
 
-                L1{i} = addlistener(cur_axes.YRuler,'MarkedClean',@(~,~) obj.drawYTicks(i,cur_axes));
+                L1{i} = addlistener(cur_axes.YRuler,'MarkedClean',@(~,~) obj.drawYTicks(i,cur_axes,false));
                 
                 %No exponents, things are too tight
                 yruler = get(cur_axes,'YRuler');
                 yruler.Exponent = 0;
                 
-                obj.drawYTicks(i,cur_axes);
+                obj.drawYTicks(i,cur_axes,true);
             end
             obj.L1 = L1;
         end
-        function drawYTicks(obj,axes_I,h_axes)
+        function redrawAll(obj)
+            for i = 1:obj.n_axes
+                h_axes = obj.axes_handles{i};
+                obj.drawYTicks(i,h_axes,true);
+            end
+        end
+        function drawYTicks(obj,axes_I,h_axes,force_redraw)
             %
             %
             %   JAH TODO: 
             %   - add comments to this function to break into parts
             
-            ylim = get(h_axes,'YLim');
-            if isequal(ylim,obj.last_Y{axes_I})
-                return
-            end
-            obj.last_Y{axes_I} = ylim;
-            
-            obj.n_draws = obj.n_draws + 1;
-            
             BASE_OPTIONS = [1 2 5 10];
             PIXEL_BUFFER = 5; %pixels
+            
+            
+            ylim = get(h_axes,'YLim');
+            ypos = get(h_axes,'Position');
+            
+            if ~force_redraw && ...
+                    (isequal(ylim,obj.last_ylim{axes_I}) && ...
+                    isequal(ypos,obj.last_ax_position{axes_I}))
+                return
+            end
+            
+            obj.last_ylim{axes_I} = ylim;
+            obj.last_ax_position{axes_I} = ypos;
+            
+            obj.n_draws = obj.n_draws + 1;
             
             temp = getpixelposition(h_axes);
             pixel_height = temp(4);
             %Vary the height based on pixels.
             %-------------------------------------
             if pixel_height < 100
-                TEXT_SPACING = 25;
+                TEXT_SPACING = 15;
             elseif pixel_height < 200
+                TEXT_SPACING = 25;
+            elseif pixel_height < 300
                 TEXT_SPACING = 35;
             else
                 TEXT_SPACING = 45;

@@ -1,6 +1,7 @@
 classdef calibration_gui < handle
-    %UNTITLED Summary of this class goes here
-    %   Detailed explanation goes here
+    %
+    %   Class:
+    %   interactive_plot.calibration_gui
     
     properties
         h
@@ -8,6 +9,7 @@ classdef calibration_gui < handle
         is_ok = false
         x_data
         y_data
+        units
         x1
         x2
         y1

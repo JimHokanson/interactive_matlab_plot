@@ -9,6 +9,7 @@ classdef fig_size_change < handle
         parent
         fig_handle
         right_panel
+        left_panel
     end
     
     methods
@@ -19,6 +20,10 @@ classdef fig_size_change < handle
             obj.parent = parent;
             obj.fig_handle = parent.fig_handle;
             set(obj.fig_handle,'SizeChangedFcn',@(~,~)cb_figureSizeChanged(obj));
+        end
+        function linkObjects(obj,left_panel,right_panel)
+            obj.right_panel = right_panel;
+            obj.left_panel = left_panel;
         end
         function cb_figureSizeChanged(obj)
             %
@@ -31,6 +36,7 @@ classdef fig_size_change < handle
             %
             %   TODO ...
             
+            obj.left_panel.figureSizeChanged();
             obj.right_panel.figureSizeChanged();
         end
     end

@@ -1,8 +1,11 @@
 classdef y_axis_options < handle
     %
     %   Class:
-    %   interactive_plot.y_axis_options
-    
+    %   interactive_plot.left.y_axis_options
+    %
+    %   This class handles the button that provides action options for each
+    %   y-axis.
+    %
     %   Options
     %   -------
     %   1) Autoscale local
@@ -10,6 +13,11 @@ classdef y_axis_options < handle
     %   2) YLimMode - manual
     %   3) YLimMode - auto
     %   4) Set y-axis manually
+    %
+    %   See Also
+    %   --------
+    %   interactive_plot.left_panel
+    
     
     
     properties

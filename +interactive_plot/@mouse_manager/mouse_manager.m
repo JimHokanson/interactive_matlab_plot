@@ -409,43 +409,43 @@ switch ptr
             ];
         hotspot = [8 8];
 
-    case 26
+    case 26   %measure y
         %1  2   3   4   5   6   7   8   9   10  11  12  13  14  15  16
         cdata=[...
             NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN 1   1   1   1   1   1   1   NaN NaN NaN NaN NaN
             NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN         
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN         
             NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
             NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
             NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN 1   1   1   1   1   1   1 NaN NaN NaN NaN NaN
             NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
             NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
             NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN NaN NaN 1 NaN NaN NaN NaN NaN NaN NaN NaN
             NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN 1   1   1   1   1   1   1   NaN NaN NaN NaN NaN
             NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
             ];
         hotspot = [8 8];
-    case 27
+    case 27   %average y
         %1  2   3   4   5   6   7   8   9   10  11  12  13  14  15  16
         cdata=[...
             NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            NaN NaN NaN NaN NaN 1   1   1   1   1   NaN NaN NaN NaN NaN NaN
             NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
             NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN         
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN 1   1   1   1   1   1   1 NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN NaN
-            NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
+            1   NaN NaN NaN NaN 1   NaN NaN NaN 1   NaN NaN NaN NaN NaN 1    
+            1   NaN NaN NaN NaN NaN 1   NaN 1   NaN NaN NaN NaN NaN NaN 1    
+            1   NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN 1    
+            1   NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN 1    
+            1   1   1   1   NaN NaN NaN 1   NaN NaN NaN NaN 1   1   1   1   
+            1   NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN 1    
+            1   NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN 1    
+            1   NaN NaN NaN NaN NaN NaN 1   NaN NaN NaN NaN NaN NaN NaN 1    
+            1   NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN 1    
             NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
             NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN
             NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN

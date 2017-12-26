@@ -14,9 +14,15 @@ classdef axes_props < handle
         axes_handles    %cell array
         line_handles
         data_ptrs %cell of either [] or big_plot.line_data_pointer
-        eventz
+        eventz          %interative_plot.eventz
+              
+
         names           %cellstr
+        units           %cellstr
+        
         calibrations    %cell array
+        %interactive_plot.calibration
+        
         n_axes
     end
     properties (Dependent)
@@ -98,6 +104,31 @@ classdef axes_props < handle
             obj.names = axes_names;
             
             obj.calibrations = cell(1,obj.n_axes);
+        end
+    end
+    methods
+        function s = getRawLineData(obj,I,varargin)
+            %
+            %   Inputs
+            %   ------
+            %   I : which axes to retrieve data for ...
+            %
+            %   Optional Inputs
+            %   ---------------
+            %   get_x_data = true;
+            %   xlim = [];
+            %   get_calibrated = true;
+            %   get_raw = false;
+            %
+            %   Outputs
+            %   -------
+            %   s : big_plot.raw_line_data
+            
+            %Trying to get rid of data_interface class
+            
+            h_line = obj.line_handles{I};
+            
+            s = big_plot.getRawLineData(h_line,varargin{:});
         end
         function setCalibration(obj,calibration,I)
             %For right now, line and I are the same ...

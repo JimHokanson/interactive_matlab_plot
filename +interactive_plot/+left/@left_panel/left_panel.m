@@ -2,19 +2,23 @@ classdef left_panel
     %
     %   Class:
     %   interactive_plot.left_panel
+    %
+    %   See Also
+    %   --------
     
     properties
         fig_handle
         axes_handles
         button_height
         button_width
+        axes_props
         
         %Logic processors ...
         %-----------------------------
         y_axis_resizer
         y_zoom_buttons
-        y_tick_display
-        y_axis_options
+        y_tick_display      %interactive_plot.left.y_tick_display
+        y_axis_options      %interactive_plot.left.y_axis_options
         
         %Actual GUI objects
         %--------------------
@@ -38,6 +42,7 @@ classdef left_panel
             
             obj.fig_handle = handles.fig_handle;
             obj.axes_handles = handles.axes_handles;
+            obj.axes_props = shared.session.settings.axes_props;
 
             obj.button_height = render_params.small_button_height;
             obj.button_width = render_params.small_button_width;
@@ -47,8 +52,29 @@ classdef left_panel
             obj.zoom_out_buttons = cell(1,n_axes);
             obj.axis_option_buttons = cell(1,n_axes);
             
-            for k = 1:length(obj.axes_handles)
+            %Units resolving
+            %---------------
+            if isempty(options.default_units)
+                units = cell(1,n_axes);
+                units(:) = {''};
+            elseif ischar(options.default_units)
+                units = cell(1,n_axes);
+                units(:) = {options.default_units};
+            elseif iscell(options.default_units)
+                if length(options.default_units) ~= n_axes
+                    error('Improper length of default units cell')
+                end
+                units = options.default_units;
+            else
+                error('Unexpected type for default units')
+            end
+            
+            obj.axes_props = units; 
+            
+            for k = 1:n_axes
                 ax = obj.axes_handles{k};
+                
+                ylabel(ax,units(k));
                 
                 [v1,v2,v3] = h__getSizeVectors(obj,ax,obj.button_width,obj.button_height);
                 
@@ -71,13 +97,16 @@ classdef left_panel
                 mouse_manager,handles);
             obj.y_zoom_buttons = interactive_plot.left.y_zoom_buttons(...
                 handles,render_params,options,obj.zoom_in_buttons,obj.zoom_out_buttons);
-            obj.y_tick_display = interactive_plot.left.y_tick_display(handles.axes_handles);
+            obj.y_tick_display = interactive_plot.left.y_tick_display(shared);
             obj.y_axis_options = interactive_plot.left.y_axis_options(...
                 handles,options,obj.axis_option_buttons);
         end
         function autoscale(obj,I,view_only)
             %TODO: Document ...
             obj.y_axis_options.autoscale(view_only,I);
+        end
+        function figureSizeChanged(obj)
+            obj.y_tick_display.redrawAll();
         end
      	function yLimChanged(obj, idx)
             % idx is the index of both the axes and the zoom buttons for
