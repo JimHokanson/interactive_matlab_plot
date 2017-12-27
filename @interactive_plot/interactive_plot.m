@@ -32,6 +32,7 @@ classdef interactive_plot < handle
      
         fig_size_change  %interactive_plot.fig_size_change
         streaming
+        eventz
     end
     methods (Static)
         function obj = runTest(type,varargin)
@@ -133,31 +134,37 @@ classdef interactive_plot < handle
             shared.eventz = interactive_plot.eventz(@notify);
             shared.session = interactive_plot.session(shared);
             obj.session = shared.session;
-            
+            obj.eventz = shared.eventz;
             
             %Top Components
             %--------------------------------------------------------------
             shared.toolbar = interactive_plot.toolbar(shared.handles);
             
             obj.top_panel = interactive_plot.top.top_panel(shared);
+            refresh(fig_handle)
             
             %Center
             obj.axes_panel = interactive_plot.axes.axes_panel(...
                 shared,obj.top_panel.top_for_axes);
+            refresh(fig_handle)
             
             %Left
             obj.left_panel = interactive_plot.left.left_panel(shared);
+            refresh(fig_handle)
             
         	%Right
          	obj.right_panel = interactive_plot.right.right_panel(shared);
-
+            refresh(fig_handle)
+            
             %We do this later so that the lines draw over the text objects
             %...
             obj.axes_panel.createLines();
+            refresh(fig_handle)
             
             %Bottom
             obj.bottom_panel = interactive_plot.bottom.bottom_panel(...
                 shared);
+            refresh(fig_handle)
             
             obj.streaming = interactive_plot.streaming(...
                 shared,obj.bottom_panel);
@@ -174,7 +181,10 @@ classdef interactive_plot < handle
             shared.mouse_manager.linkObjects(...
                 obj.axes_panel.axes_action_manager,...
                 obj.left_panel.y_axis_resizer);
-            obj.top_panel.linkObjects(obj.axes_panel.axes_action_manager);
+            obj.top_panel.linkObjects(...
+                obj.axes_panel.axes_action_manager);
+            obj.left_panel.y_axis_options.linkObjects(...
+                obj.axes_panel.axes_action_manager);
             shared.mouse_manager.updateAxesLimits();
             
             %Link right hand text display to the axes manager

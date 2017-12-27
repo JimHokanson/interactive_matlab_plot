@@ -190,10 +190,13 @@ classdef comments < handle
                 display_string(18:20) = '...';
             end
             
-            drawnow();
+            drawnow('nocallbacks')
             set(obj.h_m1,'Label',display_string);
             set(obj.h_menu,'Position',[x y],'Visible','on')
-            drawnow();
+            drawnow('nocallbacks')
+            
+            %Would this be better?
+            %refreshdata(obj.h_menu)
         end
         function commentSelected(obj,I)
             %

@@ -99,7 +99,7 @@ classdef left_panel
                 handles,render_params,options,obj.zoom_in_buttons,obj.zoom_out_buttons);
             obj.y_tick_display = interactive_plot.left.y_tick_display(shared);
             obj.y_axis_options = interactive_plot.left.y_axis_options(...
-                handles,options,obj.axis_option_buttons);
+                shared,obj.axis_option_buttons);
         end
         function autoscale(obj,I,view_only)
             %TODO: Document ...

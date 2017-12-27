@@ -19,7 +19,7 @@ classdef axes_action_manager < handle
         xy_positions %interactive_plot.axes.axes_position_info
         
         settings     %interactive_plot.settings
-        
+        axes_props
         
         
         cur_action = 1
@@ -91,6 +91,7 @@ classdef axes_action_manager < handle
             obj.mouse_man = shared.mouse_manager;
             obj.eventz = shared.eventz;
             obj.xy_positions = xy_positions;
+            obj.axes_props = obj.settings.axes_props;
             
             c = uicontextmenu;
             uimenu(c,'Label','data select','Callback',@(~,~)obj.setActiveAction(4));
@@ -214,15 +215,12 @@ classdef axes_action_manager < handle
             %   This is currently exposed via a toolbar button. It requires
             %   that data has been selected.
             
-            %TODO: Rescale following calibration
+            %TODO: Rescale ylim following calibration
             %
             %- This gets tricky if we are calibrating on already calibrated
             %  data.
             
-            %   - view calibration status of each axes
-            %   - adjust offset
-            %   - adjust gain
-            %   - full calibration
+
             
             
             if ~isempty(obj.selected_data)

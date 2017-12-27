@@ -37,6 +37,11 @@ classdef calibration_gui < handle
             root = fileparts(which('interactive_plot.calibration_gui'));
             gui_path = fullfile(root,'calibration_gui.fig');
             
+            h_fig = figure();
+            set(h_fig,'Units','normalized');
+            
+            
+            
             h_fig = openfig(gui_path);
             set(h_fig,'Units','normalized');
             obj.h_fig = h_fig;

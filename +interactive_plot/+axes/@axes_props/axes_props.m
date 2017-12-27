@@ -28,6 +28,7 @@ classdef axes_props < handle
     properties (Dependent)
         y_min
         y_max
+        has_calibration
     end
     
     methods
@@ -46,6 +47,9 @@ classdef axes_props < handle
                 p = get(ax,'Position');
                 value(i) = p(2) + p(4);
             end
+        end
+        function value = get.has_calibration(obj)
+            value = ~cellfun('isempty',obj.calibrations);
         end
     end
     
@@ -95,15 +99,40 @@ classdef axes_props < handle
             if isempty(axes_names)
                 axes_names = cell(1,obj.n_axes);
                 axes_names(:) = {''};
-            else
-                %TODO: This could be made optional
-                % - spaces replaced as well with newlines ...
-                %names = regexprep(names,'_','\n');
             end
             
             obj.names = axes_names;
             
             obj.calibrations = cell(1,obj.n_axes);
+        end
+    end
+    methods
+        function displayChannelCalibrationInfo(obj)
+            %
+            %   
+            
+            f = figure();
+            set(f,'units','normalized')
+            h = uitable(f,'units','normalized','Position',[0.05 0.05 0.9 0.9]);
+            %
+            %   Columns
+            %   --------------------
+            %   - channel name
+            %   - calibration name
+            %   - time of calibration
+            %   - ????? anything else?????
+            channel_names = obj.names;
+            c2 = cell(1,obj.n_axes);
+            c3 = cell(1,obj.n_axes);
+            for i = 1:obj.n_axes
+                cal = obj.calibrations{i};
+                if isempty(cal)
+                
+                else
+                    
+                end
+            end
+            set(h,'ColumnName',{'Chan Name','Calibration Name','Time of Calibration'})
         end
     end
     methods
@@ -131,12 +160,26 @@ classdef axes_props < handle
             s = big_plot.getRawLineData(h_line,varargin{:});
         end
         function setCalibration(obj,calibration,I)
-            %For right now, line and I are the same ...
+            %For right now, line and I are the same (1 to 1 match)
+            %   - we might eventually have more lines ...
             selected_line = obj.line_handles{I};
             interactive_plot.data_interface.setCalibration(...
                 selected_line,calibration);
             obj.eventz.notify('calibration',calibration);
             obj.calibrations{I} = calibration;
+            
+            %Send out a session change notification as well ...
+            %-----------------------------------------------------------
+            s = interactive_plot.eventz.session_updated_event_data();
+            s.class_updated = 'axes_props';
+            s.prop_updated = 'calibrations';
+            s.event_name = 'set_calibration';
+            s.axes_I = I;
+            s.custom_data = calibration;
+            obj.eventz.notify('session_updated',s);
+            
+            
+            
         end
         function s = struct(obj)
             

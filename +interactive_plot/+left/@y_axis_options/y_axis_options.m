@@ -16,7 +16,7 @@ classdef y_axis_options < handle
     %
     %   See Also
     %   --------
-    %   interactive_plot.left_panel
+    %   interactive_plot.left.left_panel
     
     
     
@@ -25,32 +25,44 @@ classdef y_axis_options < handle
         axes_handles
         line_handles
         options
+        axes_action_manager
+        axes_props
+        
         context_menu
+        cal_dependent_menus
+        
         current_I
         
         buttons
     end
     
     methods
-        function obj = y_axis_options(handles,options,buttons)
+        function obj = y_axis_options(shared,buttons)
             %
             %   obj = interactive_plot.y_axis_options(handles,options,buttons)
          
-            obj.fig_handle = handles.fig_handle;
-            obj.axes_handles = handles.axes_handles;
-            obj.line_handles = handles.line_handles;
+            obj.fig_handle = shared.fig_handle;
+            obj.axes_handles = shared.axes_handles;
+            obj.line_handles = shared.handles.line_handles;
             obj.buttons = buttons;
-            obj.options = options;
+            obj.options = shared.options;
+            obj.axes_props = shared.session.settings.axes_props;
             
             c = uicontextmenu('Parent',obj.fig_handle);
+            
+            m_temp = cell(1,3); 
             
             uimenu(c,'Label','autoscale view','Callback',@(~,~)obj.autoscale(1));
             uimenu(c,'Label','autoscale global','Callback',@(~,~)obj.autoscale(0));
             uimenu(c,'Label','ylim manual','Callback',@(~,~)obj.setYLimMode('manual'));
          	uimenu(c,'Label','ylim auto','Callback',@(~,~)obj.setYLimMode('auto'));
-            %uimenu(c,'Label','set ylim','Callback',@(~,~)obj.autoscale());
+            uimenu(c,'Label','new calibration','Callback',@(~,~)obj.newCalibration());
+            m_temp{1} = uimenu(c,'Label','adjust cal offset','Callback',@(~,~)obj.adjustCalibrationOffset());
+            m_temp{2} = uimenu(c,'Label','adjust cal gain','Callback',@(~,~)obj.adjustCalibrationGain());
+            m_temp{3} = uimenu(c,'Label','edit cal','Callback',@(~,~)obj.editCalibration());
             
             obj.context_menu = c;
+            obj.cal_dependent_menus = [m_temp{:}];
             
             n_buttons = length(buttons);
             
@@ -60,21 +72,30 @@ classdef y_axis_options < handle
             end
          
         end
-        function buttonClicked(obj,I)
-            drawnow()
-            %disp('button clicked')
-            obj.current_I = I;
-            current_button = obj.buttons{I}.h;
-            p = getpixelposition(current_button);
-            %Position must be in pixel units for context menu
-            %The context menu only takes in a xy of the upper left corner
-            set(obj.context_menu,'Visible','on','Position',p(1:2))
-            drawnow()
-            %This seems to help with reliability of the context menu
-            %showing up ...
+        function linkObjects(obj,axes_action_manager)
+           obj.axes_action_manager = axes_action_manager;
+        end
+    end
+    %Calibration callbacks ================================================
+    methods
+        function newCalibration(obj)
+            obj.axes_action_manager.calibrateData();
+        end
+        function adjustCalibrationOffset(obj)
             
         end
-        function autoscale(obj,view_only,I)
+        function adjustCalibrationGain(obj)
+            
+        end
+        
+        function editCalibration(obj)
+            
+        end
+    end
+    
+    %Other menu callbacks =================================================
+    methods
+         function autoscale(obj,view_only,I)
             if nargin == 2
                 I = obj.current_I;
             end
@@ -114,6 +135,33 @@ classdef y_axis_options < handle
             current_axes = obj.axes_handles{obj.current_I};
             set(current_axes,'YLimMode',mode);
         end
+    end
+    
+    methods
+        function buttonClicked(obj,I)
+            drawnow('nocallbacks')
+            %disp('button clicked')
+            obj.current_I = I;
+            current_button = obj.buttons{I}.h;
+            p = getpixelposition(current_button);
+            %Position must be in pixel units for context menu
+            %The context menu only takes in a xy of the upper left corner
+            
+            visible = obj.axes_props.has_calibration(I);
+            if visible
+                v_value = 'on';
+            else
+                v_value = 'off';
+            end
+            set(obj.cal_dependent_menus,'Visible',v_value);
+            
+            set(obj.context_menu,'Visible','on','Position',p(1:2))
+            
+            %This seems to help with reliability of the context menu
+            %showing up ...
+            drawnow('nocallbacks')
+        end
+       
         function delete(obj)
             delete(obj.context_menu);
         end
