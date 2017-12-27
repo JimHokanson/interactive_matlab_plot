@@ -74,6 +74,8 @@ classdef calibration < handle
             
             obj = interactive_plot.calibration();
             obj.datenum = now;
+            obj.name = g.name;
+            obj.units = g.units
             obj.x1 = g.x1;
             obj.x2 = g.x2;
             obj.y1 = g.y1;

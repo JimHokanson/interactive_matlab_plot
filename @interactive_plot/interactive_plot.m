@@ -138,7 +138,7 @@ classdef interactive_plot < handle
             
             %Top Components
             %--------------------------------------------------------------
-            shared.toolbar = interactive_plot.toolbar(shared.handles);
+            shared.toolbar = interactive_plot.toolbar(shared);
             
             obj.top_panel = interactive_plot.top.top_panel(shared);
             refresh(fig_handle)

@@ -159,7 +159,17 @@ classdef axes_props < handle
             
             s = big_plot.getRawLineData(h_line,varargin{:});
         end
+        function setUnits(obj,value,I)
+           obj.units{I} = value;
+           ax = obj.axes_handles{I};
+           ylabel(ax,value);
+        end
         function setCalibration(obj,calibration,I)
+            
+            if ~isempty(calibration.units)
+               obj.setUnits(calibration.units,I); 
+            end
+            
             %For right now, line and I are the same (1 to 1 match)
             %   - we might eventually have more lines ...
             selected_line = obj.line_handles{I};

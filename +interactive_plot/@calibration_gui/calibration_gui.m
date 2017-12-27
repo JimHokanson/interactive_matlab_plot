@@ -2,14 +2,26 @@ classdef calibration_gui < handle
     %
     %   Class:
     %   interactive_plot.calibration_gui
+    %
+    %   See Also
+    %   interactive_plot.calibration
     
     properties
-        h
         h_fig
+        h_axes
+        h_avg
+        h_in
+        h_out
+        h_name
+        h_units
+        h_cancel
+        h_ok
+        
         is_ok = false
         x_data
         y_data
         units
+        name
         x1
         x2
         y1
@@ -34,32 +46,104 @@ classdef calibration_gui < handle
             %       .x 
             %       .y
             
-            root = fileparts(which('interactive_plot.calibration_gui'));
-            gui_path = fullfile(root,'calibration_gui.fig');
-            
+%             root = fileparts(which('interactive_plot.calibration_gui'));
+%             gui_path = fullfile(root,'calibration_gui.fig');
+%             
+
+            %==============================================================
             h_fig = figure();
-            set(h_fig,'Units','normalized');
-            
-            
-            
-            h_fig = openfig(gui_path);
-            set(h_fig,'Units','normalized');
             obj.h_fig = h_fig;
-            obj.h = guihandles(h_fig);
+            set(h_fig,'Units','normalized');
+            obj.h_axes = axes('Parent',h_fig,'Units','normalized',...
+                'Position',[0.07 0.07 0.88 0.68]);
+            
+            for i = 1:2
+                if i == 1
+                    B1 = 0.90;
+                else
+                    B1 = 0.80;
+                end
+                H1 = 0.08;
+                C_WIDTH = 0.12;
+                LEFT = 0.03;
+                BUFFER = 0.01;
+                obj.h_avg(i) = uicontrol('style','pushbutton','Parent',h_fig,...
+                    'Units','normalized','Position',[LEFT B1 C_WIDTH H1],...
+                    'String','Average','FontSize',12);
+                LEFT = LEFT + C_WIDTH + BUFFER;
+                
+                obj.h_in(i) = uicontrol('style','edit','Parent',h_fig,...
+                    'Units','normalized','Position',[LEFT B1 C_WIDTH H1],...
+                    'HorizontalAlignment','left');
+                LEFT = LEFT + C_WIDTH;
+                uicontrol('style','text','Parent',h_fig,...
+                    'Units','normalized','Position',[LEFT B1 0.05 H1],...
+                    'String','TO','FontSize',12);
+                LEFT = LEFT + 0.05;
+                
+                obj.h_out(i) = uicontrol('style','edit','Parent',h_fig,...
+                    'Units','normalized','Position',[LEFT B1 C_WIDTH H1],...
+                    'HorizontalAlignment','left');
+                
+                
+                %Name and Units
+                %---------------------------------------------
+                LEFT = LEFT + C_WIDTH + 3*BUFFER;
+                if i == 1
+                    str = 'Name';
+                else
+                    str = 'Units';
+                end
+                uicontrol('style','text','Parent',h_fig,...
+                    'Units','normalized','Position',[LEFT B1 0.1 H1],...
+                    'String',str,'FontSize',12,'HorizontalAlignment','right');
+                
+                LEFT = LEFT + 0.1;
+                temp = uicontrol('style','edit','Parent',h_fig,...
+                    'Units','normalized','Position',[LEFT B1 2*C_WIDTH H1],...
+                    'HorizontalAlignment','left');
+            
+                if i == 1
+                    obj.h_name = temp;
+                else
+                    obj.h_units = temp;
+                end
+                
+                %Ok and Cancel buttons
+                %---------------------------------------------
+                
+                LEFT = LEFT + 2*C_WIDTH + 3*BUFFER;
+                if i == 1
+                    str = 'Cancel';
+                else
+                    str = 'OK';
+                end
+                temp = uicontrol('style','pushbutton','Parent',h_fig,...
+                    'Units','normalized','Position',[LEFT B1 C_WIDTH H1],...
+                    'String',str,'FontSize',12);
+                
+                if i == 1
+                    obj.h_cancel = temp;
+                else
+                    obj.h_ok = temp;
+                end
+            end
+            %==============================================================
+            
             
             obj.x_data = s.x;
             obj.y_data = s.y_raw;
             
-            ax = obj.h.axes1;
+            ax = obj.h_axes;
             plot(ax,s.x,s.y_raw)
             ylim = get(ax,'YLim');
             y_range = ylim(2)-ylim(1);
             add_factor = y_range*0.1;
             set(ax,'YLim',[ylim(1)-add_factor ylim(2)+add_factor]);
             
-            set(obj.h.axes1,'Units','normalized');
-            p = get(obj.h.axes1,'Position');
+            p = get(ax,'Position');
             
+            %Needed for selection highlighting
             obj.axes_x_min = p(1);
             obj.axes_x_max = p(1) + p(3);
             obj.axes_y_min = p(2);
@@ -77,22 +161,23 @@ classdef calibration_gui < handle
             %cancel_button
             %ok_button
             
-            set(obj.h.avg1,'Callback',@(~,~) obj.averageData(1));
-            set(obj.h.avg2,'Callback',@(~,~) obj.averageData(2));
+            set(obj.h_avg(1),'Callback',@(~,~) obj.averageData(1));
+            set(obj.h_avg(2),'Callback',@(~,~) obj.averageData(2));
             
-            set(obj.h.cancel_button,'Callback',@(~,~) obj.closeFigure(0));
-            set(obj.h.ok_button,'Callback',@(~,~) obj.closeFigure(1));
+            set(obj.h_cancel,'Callback',@(~,~) obj.closeFigure(0));
+            set(obj.h_ok,'Callback',@(~,~) obj.closeFigure(1));
             
-            set(obj.h.axes1,'ButtonDownFcn',@(~,~) obj.mouseDown)
+            set(obj.h_axes,'ButtonDownFcn',@(~,~) obj.mouseDown)
             
             uiwait(h_fig);
         end
         function closeFigure(obj,is_good)
             if is_good
+                hs = {obj.h_in(1) obj.h_in(2) obj.h_out(1) obj.h_out(2)};
                 fields = {'x1','x2','y1','y2'};
                 for i = 1:4
                     cur_name = fields{i};
-                    obj.(cur_name) = str2double(get(obj.h.(cur_name),'String'));
+                    obj.(cur_name) = str2double(get(hs{i},'String'));
                     value = obj.(cur_name);
                     if isnan(value)
                         errordlg('Not all values have been set')
@@ -107,6 +192,9 @@ classdef calibration_gui < handle
                 if obj.y1 == obj.y2
                     errordlg('Output values are the same')
                 end
+                
+                obj.units = get(obj.h_units,'String');
+                obj.name = get(obj.h_name,'String');
                 
                 obj.is_ok = true;
             else
@@ -156,7 +244,7 @@ classdef calibration_gui < handle
             %clear callbacks
             
             x_fig_range = obj.axes_x_max - obj.axes_x_min;
-            xlim = get(obj.h.axes1,'XLim');
+            xlim = get(obj.h_axes,'XLim');
             x_axes_range = xlim(2)-xlim(1);
             
             p = get(obj.h_fig_rect,'Position');
@@ -182,11 +270,7 @@ classdef calibration_gui < handle
             
             avg_data = mean(double(y_data_local));
             
-            if I == 1
-                h_x = obj.h.x1;
-            else
-                h_x = obj.h.x2;
-            end
+            h_x = obj.h_in(I);
             set(h_x,'String',sprintf('%g',avg_data));
             
         end

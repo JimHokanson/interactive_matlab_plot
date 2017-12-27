@@ -8,6 +8,9 @@ classdef toolbar < handle
     %   addpath(fullfile(matlabroot,'toolbox/matlab/guide/guitools'))
     %   cdata = iconeditor;
     %   save('icon_<name>.mat','cdata')
+    %
+    %   Edit Old
+    %   cdata = iconeditor('icon',cdata)
     
     %Toolbar options
     %---------------
@@ -21,18 +24,21 @@ classdef toolbar < handle
         h_fig
         axes_handles
         left_panel
+        axes_props %interactive_plot.axes.axes_props
     end
     
     methods
-        function obj = toolbar(handles)
+        function obj = toolbar(shared)
             %
             %   obj = interactive_plot.toolbar(h_fig,axes_handles)
+            
+            handles = shared.handles;
             
             obj.h_fig = handles.fig_handle;
             set(obj.h_fig,'ToolBar','none');
             obj.axes_handles = handles.axes_handles;
             obj.h_toolbar = uitoolbar(obj.h_fig);
-            
+            obj.axes_props = shared.session.settings.axes_props;
             
             
         end
@@ -43,6 +49,11 @@ classdef toolbar < handle
             
             icon_root = fullfile(root,'icons');
             ff = @(x) fullfile(icon_root,['icon_' x '.mat']);
+            
+            h = load(ff('cal_info'));
+            h2 = uipushtool(obj.h_toolbar,'CData',h.cdata,...
+                'TooltipString','Calibration Info',...
+                'ClickedCallback',@(~,~) obj.axes_props.displayChannelCalibrationInfo);
             h = load(ff('cal'));
             h2 = uipushtool(obj.h_toolbar,'CData',h.cdata,...
                 'TooltipString','Calibrate',...
