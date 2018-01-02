@@ -46,7 +46,7 @@ classdef calibration < handle
     end
     
     methods (Static)
-        function obj = createCalibration(selected_data,line_handle)
+        function obj = createCalibration(selected_data,current_calibration,line_handle)
             %
             %   c = interactive_plot.calibration.createCalibration(selected_data,line_handle)
             
@@ -65,7 +65,7 @@ classdef calibration < handle
                 'xlim',xlim,'get_raw',true);
 
             %This blocks until it is filled out or closed
-            g = interactive_plot.calibration_gui(s);
+            g = interactive_plot.calibration_gui(s,current_calibration);
             
             if ~g.is_ok
                 obj = [];
@@ -75,7 +75,10 @@ classdef calibration < handle
             obj = interactive_plot.calibration();
             obj.datenum = now;
             obj.name = g.name;
-            obj.units = g.units
+            obj.units = g.units;
+            
+            obj.x_data = s.x;
+            obj.y_data = s.y_raw;
             obj.x1 = g.x1;
             obj.x2 = g.x2;
             obj.y1 = g.y1;

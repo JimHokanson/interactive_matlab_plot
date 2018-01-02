@@ -69,7 +69,7 @@ classdef left_panel
                 error('Unexpected type for default units')
             end
             
-            obj.axes_props = units;
+            obj.axes_props.units = units;
             
             for k = 1:n_axes
                 ax = obj.axes_handles{k};

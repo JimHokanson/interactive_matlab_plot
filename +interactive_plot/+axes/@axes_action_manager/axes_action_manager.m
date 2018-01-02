@@ -228,8 +228,10 @@ classdef axes_action_manager < handle
                     %We could prompt which line we want ...
                     error('Currently only able to calibrate for 1 line per plot')
                 end
+                I = obj.selected_axes_I;
                 calibration = interactive_plot.calibration.createCalibration(...
-                    obj.selected_data,obj.selected_line);
+                    obj.selected_data,obj.axes_props.calibrations{I},...
+                    obj.selected_line);
                 if isempty(calibration)
                     return
                 end

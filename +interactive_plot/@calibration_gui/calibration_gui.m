@@ -38,18 +38,18 @@ classdef calibration_gui < handle
     end
     
     methods
-        function obj = calibration_gui(s)
+        function obj = calibration_gui(s,old_calibration)
             %
             %   Inputs
             %   ------
-            %   s : struct
-            %       .x 
+            %   s : big_plot.raw_line_data
+            %       .x
             %       .y
             
-%             root = fileparts(which('interactive_plot.calibration_gui'));
-%             gui_path = fullfile(root,'calibration_gui.fig');
-%             
-
+            %             root = fileparts(which('interactive_plot.calibration_gui'));
+            %             gui_path = fullfile(root,'calibration_gui.fig');
+            %
+            
             %==============================================================
             h_fig = figure();
             obj.h_fig = h_fig;
@@ -57,52 +57,59 @@ classdef calibration_gui < handle
             obj.h_axes = axes('Parent',h_fig,'Units','normalized',...
                 'Position',[0.07 0.07 0.88 0.68]);
             
+            
+            H1 = 0.08;
+            C_WIDTH = 0.12;
+            BUFFER = 0.01;
+            FS = 12;
+            
             for i = 1:2
                 if i == 1
                     B1 = 0.90;
                 else
                     B1 = 0.80;
                 end
-                H1 = 0.08;
-                C_WIDTH = 0.12;
-                LEFT = 0.03;
-                BUFFER = 0.01;
+                
+                
+                left = 0.03;
+                
+                
                 obj.h_avg(i) = uicontrol('style','pushbutton','Parent',h_fig,...
-                    'Units','normalized','Position',[LEFT B1 C_WIDTH H1],...
+                    'Units','normalized','Position',[left B1 C_WIDTH H1],...
                     'String','Average','FontSize',12);
-                LEFT = LEFT + C_WIDTH + BUFFER;
+                left = left + C_WIDTH + BUFFER;
                 
                 obj.h_in(i) = uicontrol('style','edit','Parent',h_fig,...
-                    'Units','normalized','Position',[LEFT B1 C_WIDTH H1],...
-                    'HorizontalAlignment','left');
-                LEFT = LEFT + C_WIDTH;
+                    'Units','normalized','Position',[left B1 C_WIDTH H1],...
+                    'HorizontalAlignment','left','FontSize',FS);
+                left = left + C_WIDTH;
                 uicontrol('style','text','Parent',h_fig,...
-                    'Units','normalized','Position',[LEFT B1 0.05 H1],...
+                    'Units','normalized','Position',[left B1 0.05 H1],...
                     'String','TO','FontSize',12);
-                LEFT = LEFT + 0.05;
+                left = left + 0.05;
                 
                 obj.h_out(i) = uicontrol('style','edit','Parent',h_fig,...
-                    'Units','normalized','Position',[LEFT B1 C_WIDTH H1],...
-                    'HorizontalAlignment','left');
+                    'Units','normalized','Position',[left B1 C_WIDTH H1],...
+                    'HorizontalAlignment','left','FontSize',FS);
                 
                 
                 %Name and Units
                 %---------------------------------------------
-                LEFT = LEFT + C_WIDTH + 3*BUFFER;
+                left = left + C_WIDTH + 3*BUFFER;
                 if i == 1
                     str = 'Name';
                 else
                     str = 'Units';
                 end
                 uicontrol('style','text','Parent',h_fig,...
-                    'Units','normalized','Position',[LEFT B1 0.1 H1],...
+                    'Units','normalized','Position',[left B1 0.1 H1],...
                     'String',str,'FontSize',12,'HorizontalAlignment','right');
                 
-                LEFT = LEFT + 0.1;
+                left = left + 0.1;
                 temp = uicontrol('style','edit','Parent',h_fig,...
-                    'Units','normalized','Position',[LEFT B1 2*C_WIDTH H1],...
-                    'HorizontalAlignment','left');
-            
+                    'Units','normalized','Position',[left B1 2*C_WIDTH H1],...
+                    'HorizontalAlignment','left','FontSize',FS);
+                
                 if i == 1
                     obj.h_name = temp;
                 else
@@ -112,14 +119,14 @@ classdef calibration_gui < handle
                 %Ok and Cancel buttons
                 %---------------------------------------------
                 
-                LEFT = LEFT + 2*C_WIDTH + 3*BUFFER;
+                left = left + 2*C_WIDTH + 3*BUFFER;
                 if i == 1
                     str = 'Cancel';
                 else
                     str = 'OK';
                 end
                 temp = uicontrol('style','pushbutton','Parent',h_fig,...
-                    'Units','normalized','Position',[LEFT B1 C_WIDTH H1],...
+                    'Units','normalized','Position',[left B1 C_WIDTH H1],...
                     'String',str,'FontSize',12);
                 
                 if i == 1
@@ -130,6 +137,15 @@ classdef calibration_gui < handle
             end
             %==============================================================
             
+            if ~isempty(old_calibration)
+                oc = old_calibration;
+                set(obj.h_name,'String',oc.name);
+                set(obj.h_units,'String',oc.units);
+                set(obj.h_in(1),'String',sprintf('%g',oc.x1));
+                set(obj.h_in(2),'String',sprintf('%g',oc.x2));
+                set(obj.h_out(1),'String',sprintf('%g',oc.y1));
+                set(obj.h_out(2),'String',sprintf('%g',oc.y2));
+            end
             
             obj.x_data = s.x;
             obj.y_data = s.y_raw;
@@ -148,7 +164,7 @@ classdef calibration_gui < handle
             obj.axes_x_max = p(1) + p(3);
             obj.axes_y_min = p(2);
             obj.axes_height = p(4);
-        
+            
             %Setup Callbacks
             %-------------------
             %DONE axes1
@@ -217,9 +233,9 @@ classdef calibration_gui < handle
             x = cur_mouse_coords(1);
             
             obj.mouse_x_initial = x;
-  
+            
             obj.h_fig_rect = annotation('rectangle',[x obj.axes_y_min 0.001 obj.axes_height],'Color','red');
-
+            
         end
         function mouseMove(obj)
             cur_mouse_coords = get(obj.h_fig, 'CurrentPoint');
@@ -259,7 +275,7 @@ classdef calibration_gui < handle
             obj.sel_x_start = start_x;
             obj.sel_x_end = end_x;
             
-                        
+            
             set(obj.h_fig,'WindowButtonMotionFcn','');
             set(obj.h_fig,'WindowButtonUpFcn','');
         end
