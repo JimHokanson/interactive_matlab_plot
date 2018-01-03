@@ -28,7 +28,7 @@ classdef interactive_plot < handle
         left_panel
         right_panel
         top_panel
-        
+        menu
      
         fig_size_change  %interactive_plot.fig_size_change
         streaming
@@ -141,34 +141,44 @@ classdef interactive_plot < handle
             shared.toolbar = interactive_plot.toolbar(shared);
             
             obj.top_panel = interactive_plot.top.top_panel(shared);
-            refresh(fig_handle)
+            %refresh(fig_handle)
+            %These make the whole process feel much more snappy
+            drawnow('nocallbacks')
             
             %Center
             obj.axes_panel = interactive_plot.axes.axes_panel(...
                 shared,obj.top_panel.top_for_axes);
-            refresh(fig_handle)
+            %refresh(fig_handle)
+            drawnow('nocallbacks')
             
             %Left
             obj.left_panel = interactive_plot.left.left_panel(shared);
-            refresh(fig_handle)
+            %refresh(fig_handle)
+            drawnow('nocallbacks')
             
         	%Right
          	obj.right_panel = interactive_plot.right.right_panel(shared);
-            refresh(fig_handle)
+            %refresh(fig_handle)
+            drawnow('nocallbacks')
             
             %We do this later so that the lines draw over the text objects
             %...
             obj.axes_panel.createLines();
-            refresh(fig_handle)
+            %refresh(fig_handle)
+            drawnow('nocallbacks')
             
             %Bottom
             obj.bottom_panel = interactive_plot.bottom.bottom_panel(...
                 shared);
-            refresh(fig_handle)
+            %refresh(fig_handle)
+            drawnow('nocallbacks')
             
             obj.streaming = interactive_plot.streaming(...
                 shared,obj.bottom_panel);
 
+            obj.menu = interactive_plot.fig_menu(shared);
+            
+            
             %Some final parts ...
             %------------------------
             obj.fig_size_change = interactive_plot.fig_size_change(obj);
@@ -197,6 +207,13 @@ classdef interactive_plot < handle
     
     methods
         function save(obj,varargin)
+            %
+            %   save(obj,varargin)       
+            %
+            %   Optional Inputs
+            %   ---------------
+            %   save_path : (default, in this repo)
+            %   save_data : (default false) NYI
             
             in.save_path = [];
             in.save_data = false;
@@ -217,6 +234,10 @@ classdef interactive_plot < handle
             save(in.save_path,'-struct','s');
         end
         function s = getSessionData(obj)
+            %
+            %   s = 
+            %
+            %   
             s = struct(obj.session);
         end
         function addComment(obj,comment_time,comment_string)

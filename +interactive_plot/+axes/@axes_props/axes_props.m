@@ -109,6 +109,27 @@ classdef axes_props < handle
         end
     end
     methods
+        function name = getNonEmptyName(obj,I)
+           name = obj.names{I};
+           if isempty(name)
+               name = sprintf('untitled_chan__%d',I);
+           end
+        end
+% % %         function clean_names = getCleanAxesNames(obj,varargin)
+% % %             
+% % %             in.
+% % %             if nargin == 1
+% % %                 I = 1:obj.n_axes;
+% % %             end
+% % %             
+% % %             clean_names = cell(1,length(I));
+% % %             for i = 1:length(I)
+% % %                 cur_I = I(i);
+% % %                 name = obj.names{cur_I};
+% % %                 clean_names{i} = regexprep(name,'\s','_');
+% % %             end
+% % %             
+% % %         end
         function displayChannelCalibrationInfo(obj)
             %
             %   

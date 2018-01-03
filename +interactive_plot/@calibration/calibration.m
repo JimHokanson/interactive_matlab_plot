@@ -23,10 +23,12 @@ classdef calibration < handle
     %   See Also
     %   --------
     %   interactive_plot.calibration_gui
+    %   interactive_plot.axes.axes_props
     
     
     properties
-        name
+        name     %User specified name to associate with the calibration
+        chan_name
         datenum  %When the calibration was created
         units
         
@@ -46,9 +48,18 @@ classdef calibration < handle
     end
     
     methods (Static)
-        function obj = createCalibration(selected_data,current_calibration,line_handle)
+        function obj = createCalibration(selected_data,current_calibration,chan_name,line_handle)
             %
-            %   c = interactive_plot.calibration.createCalibration(selected_data,line_handle)
+            %   c = interactive_plot.calibration.createCalibration(...
+            %               selected_data,current_calibration,line_handle)
+            %
+            %   Inputs
+            %   ------
+            %   selected_data
+            %   current_calibration : [] or interactive_plot.calibration
+            %   line_handle
+            
+            
             
             %***** We currently don't support calibrating on
             %already calibrated data
@@ -75,6 +86,7 @@ classdef calibration < handle
             obj = interactive_plot.calibration();
             obj.datenum = now;
             obj.name = g.name;
+            obj.chan_name = chan_name;
             obj.units = g.units;
             
             obj.x_data = s.x;
@@ -96,9 +108,14 @@ classdef calibration < handle
         end
         function s = struct(obj)
 
+            %TODO: This would be better as a function that had
+            %introspection on the class to guarantee all propertiers are
+            %targeted
             s = struct;
             s.VERSION  = 1;
+            s.STRUCT_DATE = now;
             s.name = obj.name;
+            s.chan_name = obj.chan_name;
             s.units = obj.units;
             s.datenum = obj.datenum;
             s.offset = obj.offset;

@@ -39,26 +39,47 @@ classdef session < handle
     end
     
     methods
-        function save(obj,varargin)
-            %
-            %   NYI
-            %
-            in.file_path = '';
-            in.save_data = false;
-            in = interactive_plot.sl.in.processVarargin(in,varargin);
+        function saveCalibrations(obj,varargin)
+           in.save_path = 'prompt';
+           in = interactive_plot.sl.in.processVarargin(in,varargin);
+           
+           if strcmp(in.save_path,'prompt')
+               save_path = uigetdir('','Choose a save directory');
+               if isnumeric(save_path)
+                   return
+               end
+           else
+               error('Not yet implemented')
+           end
+           
+           if ~exist(save_path,'dir')
+               mkdir(save_path)
+           end
+           
+           ax_props = obj.settings.axes_props;
+           s = struct(ax_props);
+           cals = s.calibrations;
+           date_string = datestr(now,'yyyy_mm_dd__HH_MM_SS');
+           for i = 1:length(cals)
+              cur_cal = cals{i};
+              if ~isempty(cur_cal)
+                 file_name = sprintf('%s__%s__ip_calibration.mat',cur_cal.chan_name,date_string);
+                 file_path = fullfile(save_path,file_name);
+                 save(file_path,'-struct','cur_cal');
+              end
+           end
+        end
+        function loadCalibrations(obj,varargin)
             
-            
-            %File path resolution
-            %-----------------------
-            %- file_path
-            %- interactive_plot.settings
-            %- default save location
-            
-            s = struct(obj);
         end
         function s = struct(obj)
             %
             %   Returns data to save as a structure
+            %
+            %   See Also
+            %   --------
+            %   interactive_plot>getSessionData
+            
             s.VERSION = 1;
             s.type = 'interactive_plot.session';
             s.settings = struct(obj.settings);

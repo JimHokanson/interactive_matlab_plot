@@ -33,9 +33,7 @@ classdef axes_action_manager < handle
         %- 6) measure_y - draw vertical line and show how tall the line is
         %- 7) y average - this would be a horizontal select
         
-        
-        last_calibration
-        
+                
         %Fill out when clicked
         %--------------------------------------------
         selected_axes_I
@@ -216,7 +214,8 @@ classdef axes_action_manager < handle
             %   This is currently exposed via a toolbar button. It requires
             %   that data has been selected.
             
-            %TODO: Rescale ylim following calibration
+            %TODO: Rescale ylim following calibration i.e. if we double
+            %the data, double the ylim
             %
             %- This gets tricky if we are calibrating on already calibrated
             %  data.
@@ -232,6 +231,7 @@ classdef axes_action_manager < handle
                 I = obj.selected_axes_I;
                 calibration = interactive_plot.calibration.createCalibration(...
                     obj.selected_data,obj.axes_props.calibrations{I},...
+                    obj.axes_props.getNonEmptyName(I),...
                     obj.selected_line);
                 if isempty(calibration)
                     return
