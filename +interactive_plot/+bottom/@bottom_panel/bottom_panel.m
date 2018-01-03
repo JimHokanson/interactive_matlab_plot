@@ -37,6 +37,8 @@ classdef bottom_panel < handle
         zoom_out_button
         zoom_in_button
         x_disp_handle
+        x_options_button
+        x_options
         
         %State
         %----------------------------
@@ -74,70 +76,75 @@ classdef bottom_panel < handle
             
             % We are assuming at this point all figure units are normalized
             
-            obj.small_button_width = render_params.small_button_width;
-            obj.small_button_height = render_params.small_button_height;
+            %obj.small_button_width = render_params.small_button_width;
+            %obj.small_button_height = render_params.small_button_height;
+            
+            p_axes = get(obj.axes_handles{1},'Position');
+            x = p_axes(1);
+            y = render_params.scroll_bar_bottom; % y position of the bottom of the scroll bar
+            button_width = render_params.small_button_width;
+            button_height = render_params.small_button_height;
+            
+            p_button = [x y button_width button_height];
+            
+            %X Options Button
+            %-------------------------------------------
+            obj.x_options_button = uicontrol(obj.fig_handle,...
+                'Style', 'pushbutton', 'String', '...',...
+                'units', 'normalized', 'Position',p_button,...
+                'Visible', 'on');
             
             %Create scrollbar
             %----------------------------------------
-            p = get(obj.axes_handles{1},'Position');
-            obj.scroll_left_limit = p(1) + render_params.small_button_width;
-            
             if options.streaming
                 n_buttons_rightside = 4;
             else
                 n_buttons_rightside = 3;
             end
-            obj.scroll_right_limit = p(1) + p(3) - n_buttons_rightside*obj.small_button_width;
-            obj.scroll_bottom = render_params.scroll_bar_bottom;
+            
+            obj.scroll_left_limit = x + 2*button_width;
+            obj.scroll_right_limit = p_axes(1) + p_axes(3) - n_buttons_rightside*button_width;
+            obj.scroll_bottom = y;
             obj.scroll_height = render_params.scroll_bar_height;
+            obj.scroll_width = obj.scroll_right_limit - obj.scroll_left_limit;
+            
+            p_scroll = [obj.scroll_left_limit, obj.scroll_bottom, ...
+                obj.scroll_width, obj.scroll_height];
             
             %Background - doesn't move
-            obj.scroll_width = obj.scroll_right_limit - obj.scroll_left_limit;
-            p1 = [obj.scroll_left_limit, obj.scroll_bottom, ...
-                obj.scroll_width, obj.scroll_height];
-            obj.scroll_background_bar = annotation('rectangle', p1, 'FaceColor', 'w');
+            obj.scroll_background_bar = annotation('rectangle', p_scroll, 'FaceColor', 'w');
             
-            obj.slider = annotation('rectangle', p1, 'FaceColor', 'k');
+            %Foreground
+            obj.slider = annotation('rectangle', p_scroll, 'FaceColor', 'k');
             
             %Scroll Bar Buttons
-            %-----------------------------------------
-            bar_height = obj.scroll_height;
-            button_width = obj.small_button_width;
-            x1 = obj.scroll_left_limit - button_width; % position of scroll left button
-            x2 = obj.scroll_right_limit; % position of scroll right button
-            y = obj.scroll_bottom; % y position of the bottom of the scroll bar
+            %--------------------------------------------------------- 
+            p_button(1) = obj.scroll_left_limit - button_width;
             
             % uicontrol push buttons don't look quite as good in this case,
             % but they have a visible response when clicked and are
             % slightly easier to work with
             obj.left_button = uicontrol(obj.fig_handle,...
                 'Style', 'pushbutton', 'String', '<',...
-                'units', 'normalized', 'Position',[x1, y, button_width, bar_height],...
+                'units', 'normalized', 'Position',p_button,...
                 'Visible', 'on');
-            %'callback', @(~,~) obj.cb_scrollLeft()
+            
+            p_button(1) = obj.scroll_right_limit;
             
             obj.right_button = uicontrol(obj.fig_handle,...
                 'Style', 'pushbutton', 'String', '>',...
-                'units', 'normalized', 'Position',[x2, y, button_width, bar_height],...
+                'units', 'normalized', 'Position',p_button,...
                 'Visible', 'on');
             
             %Auto Scroll Button
             %---------------------------------------------
-            
             if options.streaming
                 
-                H = obj.small_button_height;
-                L = obj.small_button_width;
-                
-                % numbering (x3,x4) is based on the buttons which already exist
-                % (created in the scroll_bar class which is the parent of this
-                % class)
-                x = obj.scroll_right_limit + L; % position of x zoom out button
-                y = obj.scroll_bottom; % y position of the bottom of the scroll bar
+                p_button(1) = obj.scroll_right_limit + button_width;
                 
                 obj.auto_scroll_button = uicontrol(obj.fig_handle,...
                     'Style', 'togglebutton', 'String', '~',...
-                    'units', 'normalized', 'Position',[x, y, L, H],...
+                    'units', 'normalized', 'Position',p_button,...
                     'Visible','on','callback', @(~,~) obj.cb_scrollStatusChanged);
                 
                 obj.auto_scroll_enabled = true;
@@ -145,28 +152,31 @@ classdef bottom_panel < handle
             
             %X Zoom Button
             %-------------------------------------------------
-            H = obj.small_button_height;
-            L = obj.small_button_width;
-            
-            % numbering (x3,x4) is based on the buttons which already exist
-            % (created in the scroll_bar class which is the parent of this
-            % class)
-            x3 = obj.scroll_right_limit + (n_buttons_rightside-2)*L; % position of x zoom out button
-            x4 = obj.scroll_right_limit + (n_buttons_rightside-1)*L; % position of x zoom in button
-            y = obj.scroll_bottom; % y position of the bottom of the scroll bar
+            p_button(1) = obj.scroll_right_limit + (n_buttons_rightside-2)*button_width;
             
             obj.zoom_out_button = interactive_plot.utils.ip_button(...
-                obj.fig_handle,[x3,y,L,H],'-');
+                obj.fig_handle,p_button,'-');
+            
+            p_button(1) = obj.scroll_right_limit + (n_buttons_rightside-1)*button_width;
             
             obj.zoom_in_button = interactive_plot.utils.ip_button(...
-                obj.fig_handle,[x4, y, L, H],'+');
+                obj.fig_handle,p_button,'+');
             
-            %X Display
+            %X Numeric Display
             %--------------------------------------------
-            p = [0 0.04 0.003 0.003];
+            %p = [0 0.04 0.003 0.003];
+            
+            %Position to the right of the zoom in button
+            
+            %Annotation text position - 2nd element is top????
+            
+            p_x_disp = [p_axes(1) + p_axes(3) + 0.01, 0.03 0.003, 0.003];
+            
+            %This background matches the default figure color background
+            %...
          	bc = [0.9400    0.9400    0.9400];
-            obj.x_disp_handle = annotation(obj.fig_handle,'textbox',p,...
-                    'Units', 'pixels', ...
+            obj.x_disp_handle = annotation(obj.fig_handle,'textbox',p_x_disp,...
+                    'Units', 'normalized', ...
                     'String','Testing','FontSize',8,...
                     'margin',2,'FitBoxToText','on',...
                     'EdgeColor','k',... %This is arbitrary and will likely change
@@ -177,7 +187,9 @@ classdef bottom_panel < handle
             obj.x_zoom = interactive_plot.bottom.x_zoom(obj,obj.zoom_out_button,...
                 obj.zoom_in_button,shared);
             obj.scroll_bar = interactive_plot.bottom.scroll_bar(...
-                obj.mouse_man,handles,options,obj);
+                shared,obj);
+            obj.x_options = interactive_plot.bottom.x_axis_options(...
+                shared,obj.x_options_button);
         end
     end
     methods

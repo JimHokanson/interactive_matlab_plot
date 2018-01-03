@@ -22,6 +22,7 @@ classdef scroll_bar <handle
         mouse_man
         options
         fig_handle
+        axes_props
         h_axes
         
         scroll_left_limit
@@ -43,8 +44,6 @@ classdef scroll_bar <handle
         %----------------------
         prev_mouse_x
         width_per_time
-        x_min
-        x_max
         slider_right
         slider_left
         view_xlim
@@ -52,6 +51,8 @@ classdef scroll_bar <handle
     end
     
     properties (Dependent)
+        x_min
+        x_max
         auto_scroll_enabled
     end
     
@@ -59,10 +60,22 @@ classdef scroll_bar <handle
         function value = get.auto_scroll_enabled(obj)
             value = obj.parent.auto_scroll_enabled;
         end
+        function value = get.x_min(obj)
+            value = obj.axes_props.x_min;
+        end
+        function value = get.x_max(obj)
+            value = obj.axes_props.x_max;
+        end
+        function set.x_min(obj,value)
+            obj.axes_props.x_min = value;
+        end
+        function set.x_max(obj,value)
+            obj.axes_props.x_max = value;
+        end
     end
     
     methods
-        function obj = scroll_bar(mouse_man,handles,options,parent)
+        function obj = scroll_bar(shared,parent)
             %
             %   obj = interactive_plot.scroll_bar(mouse_man,handles,options,parent)
             %
@@ -71,16 +84,18 @@ classdef scroll_bar <handle
             %   parent : interactive_plot.bottom_panel
             
             obj.parent = parent;
-            obj.options = options;
-            obj.fig_handle = handles.fig_handle;
-            obj.h_axes = handles.axes_handles{1};
-            obj.mouse_man = mouse_man;
+            obj.options = shared.options;
+            obj.fig_handle = shared.fig_handle;
+            obj.h_axes = shared.axes_handles{1};
+            obj.mouse_man = shared.mouse_manager;
+            obj.axes_props = shared.session.settings.axes_props; 
             
-            if isempty(options.xlim)
+            xlim = obj.options.xlim;
+            if isempty(xlim)
                 xlim = get(obj.h_axes,'XLim');
-                obj.x_min = xlim(1);
-                obj.x_max = xlim(2);
             end
+            obj.x_min = xlim(1);
+            obj.x_max = xlim(2);
             
             obj.scroll_left_limit = parent.scroll_left_limit;
             obj.scroll_right_limit = parent.scroll_right_limit;

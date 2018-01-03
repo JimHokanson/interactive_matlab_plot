@@ -165,7 +165,7 @@ classdef axes_action_manager < handle
                     obj.line_moving_processor.cb_innerLineClicked(I);
                     return
                 end
-                
+                                
                 obj.clearDataSelection();
                 
                 obj.selected_axes_I = I;
@@ -179,6 +179,7 @@ classdef axes_action_manager < handle
                     case 1
                         if obj.mouse_man.time_since_last_mouse_down < DBL_CLICK_TIME
                             obj.resetZoom();
+                            %disp('reset')
                         else
                             obj.initHZoom();
                         end

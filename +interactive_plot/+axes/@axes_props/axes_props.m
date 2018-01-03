@@ -16,7 +16,9 @@ classdef axes_props < handle
         data_ptrs %cell of either [] or big_plot.line_data_pointer
         eventz          %interative_plot.eventz
               
-
+        x_min
+        x_max
+        
         names           %cellstr
         units           %cellstr
         
