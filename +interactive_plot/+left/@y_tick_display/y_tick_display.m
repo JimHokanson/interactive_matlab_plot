@@ -89,7 +89,7 @@ classdef y_tick_display < handle
             %Vary the height based on pixels.
             %-------------------------------------
             if pixel_height < 100
-                TEXT_SPACING = 15;
+                TEXT_SPACING = 20;
             elseif pixel_height < 200
                 TEXT_SPACING = 25;
             elseif pixel_height < 300

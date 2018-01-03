@@ -124,17 +124,22 @@ classdef axes_props < handle
             %   - time of calibration
             %   - ????? anything else?????
             channel_names = obj.names;
-            c2 = cell(1,obj.n_axes);
-            c3 = cell(1,obj.n_axes);
+            c2 = cell(obj.n_axes,1);
+            c2(:) = {''};
+            c3 = cell(obj.n_axes,1);
+            c3(:) = {''};
+            l_units = obj.units;
             for i = 1:obj.n_axes
                 cal = obj.calibrations{i};
-                if isempty(cal)
-                
-                else
-                    
+                if ~isempty(cal)
+                    c2{i} = cal.name;
+                    c3{i} = datestr(cal.datenum);
                 end
             end
-            set(h,'ColumnName',{'Chan Name','Calibration Name','Time of Calibration'})
+            data = [channel_names(:) c2 c3 l_units(:)];
+            set(h,'ColumnName',...
+                {'Chan Name','Calibration Name','Time of Calibration','Units'},...
+                'Data',data,'ColumnWidth',{120 120 130 60})
         end
     end
     methods
