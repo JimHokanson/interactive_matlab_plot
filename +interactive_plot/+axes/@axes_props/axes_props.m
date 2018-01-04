@@ -197,7 +197,21 @@ classdef axes_props < handle
            ylabel(ax,value);
         end
         function loadCalibrations(obj,file_paths,varargin)
-            keyboard
+            if ischar(file_paths)
+                file_paths = {file_paths};
+            end
+            l_clean_names = obj.clean_names;
+            
+            for i = 1:length(file_paths)
+                h = load(file_paths{i});
+                %Untitled channels not yet supported' ...
+                I = find(strcmp(h.chan_name,l_clean_names));
+                if isempty(I)
+                    error('Unable to find match for %s',h.chan_name);
+                end
+                cal = interactive_plot.calibration.fromStruct(h);
+                obj.setCalibration(cal,I);
+            end
         end
         function setCalibration(obj,calibration,I)
             

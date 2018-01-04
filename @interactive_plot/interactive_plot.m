@@ -254,7 +254,7 @@ classdef interactive_plot < handle
         function loadCalibrations(obj,file_paths,varargin)
             %interactive_plot.axes.axes_props
             axes_props = obj.session.settings.axes_props;
-            axes_props.loadCalibrations(file_path,varargin);
+            axes_props.loadCalibrations(file_paths,varargin);
         end
     end
     methods (Hidden) 

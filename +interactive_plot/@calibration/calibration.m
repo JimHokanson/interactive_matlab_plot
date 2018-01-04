@@ -100,6 +100,24 @@ classdef calibration < handle
             obj.b = obj.y2 - obj.m*obj.x2;
             
         end
+        function obj = fromStruct(s)
+            %   interactive_plot.calibration.fromStruct
+            obj = interactive_plot.calibration();
+            obj.name = s.name;
+            obj.chan_name = s.chan_name;
+            obj.units = s.units;
+            obj.datenum = s.datenum;
+            obj.offset = s.offset;
+            obj.gain = s.gain;
+            obj.x_data = s.x_data;
+            obj.y_data = s.y_data;
+            obj.x1 = s.x1;
+            obj.x2 = s.x2;
+            obj.y1 = s.y1;
+            obj.y2 = s.y2;
+            obj.m = s.m;
+            obj.b = s.b;
+        end
     end
     
     methods
