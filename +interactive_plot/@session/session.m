@@ -63,6 +63,10 @@ classdef session < handle
            for i = 1:length(cals)
               cur_cal = cals{i};
               if ~isempty(cur_cal)
+                  %temp fix 
+                 chan_name = cur_cal.chan_name;
+                 chan_name = regexprep(chan_name,'\s','_');
+                 cur_cal.chan_name = chan_name;
                  file_name = sprintf('%s__%s__ip_calibration.mat',cur_cal.chan_name,date_string);
                  file_path = fullfile(save_path,file_name);
                  save(file_path,'-struct','cur_cal');
