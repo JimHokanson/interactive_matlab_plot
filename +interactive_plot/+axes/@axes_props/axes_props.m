@@ -31,6 +31,7 @@ classdef axes_props < handle
         y_min
         y_max
         has_calibration
+        clean_names
     end
     
     methods
@@ -52,6 +53,9 @@ classdef axes_props < handle
         end
         function value = get.has_calibration(obj)
             value = ~cellfun('isempty',obj.calibrations);
+        end
+        function value = get.clean_names(obj)
+            value = regexprep(obj.names,'\s','_');
         end
     end
     
@@ -191,6 +195,9 @@ classdef axes_props < handle
            obj.units{I} = value;
            ax = obj.axes_handles{I};
            ylabel(ax,value);
+        end
+        function loadCalibrations(obj,file_paths,varargin)
+            keyboard
         end
         function setCalibration(obj,calibration,I)
             
