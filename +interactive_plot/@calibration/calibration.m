@@ -114,6 +114,7 @@ classdef calibration < handle
             s = struct;
             s.VERSION  = 1;
             s.STRUCT_DATE = now;
+            s.TYPE = 'interactive_plot.calibration';
             s.name = obj.name;
             s.chan_name = obj.chan_name;
             s.units = obj.units;
