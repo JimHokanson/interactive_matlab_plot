@@ -230,7 +230,7 @@ classdef interactive_plot < handle
                in.save_path = fullfile(root_path,file_name);
             end
             
-            s = getSessionData(obj);
+            s = getSessionData(obj); %#ok<NASGU>
             save(in.save_path,'-struct','s');
         end
         function s = getSessionData(obj)
@@ -250,6 +250,11 @@ classdef interactive_plot < handle
             if isvalid(obj.fig_handle)
                 obj.streaming.changeMaxTime(new_max_time);
             end
+        end
+        function loadCalibrations(obj,file_paths,varargin)
+            %interactive_plot.axes.axes_props
+            axes_props = obj.session.settings.axes_props;
+            axes_props.loadCalibrations(file_path,varargin);
         end
     end
     methods (Hidden) 
