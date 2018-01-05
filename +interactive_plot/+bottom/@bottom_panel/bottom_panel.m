@@ -10,6 +10,7 @@ classdef bottom_panel < handle
         render_params
         fig_handle
         axes_handles
+        right_panel
         
         %Processor Classes
         %--------------------
@@ -63,7 +64,6 @@ classdef bottom_panel < handle
         function obj = bottom_panel(shared)
             
             options = shared.options;
-            handles = shared.handles;
             render_params = shared.render_params;
             
             obj.settings = shared.session.settings;
@@ -191,22 +191,44 @@ classdef bottom_panel < handle
             obj.x_options = interactive_plot.bottom.x_axis_options(...
                 shared,obj.x_options_button);
         end
+        function linkObjects(obj,right_panel)
+           obj.right_panel = right_panel; 
+        end
     end
     methods
+        function setXDisplayString(obj,str)
+            obj.x_disp_handle.String = str;
+        end
         function disableAutoScroll(obj)
-            %???? - who calls this???
-            obj.auto_scroll_enabled = false;
-            obj.settings.auto_scroll_enabled = false;
-            if ~isempty(obj.auto_scroll_button)
-                set(obj.auto_scroll_button,'Value',1);
-                h__setAutoScrollString(obj);
-            end
+            %
+            %   Called on scrolling initialization
+            
+            logic_value = false;
+            is_cb = false;
+            h__processNewAutoScrollValue(obj,logic_value,is_cb)
         end
        	function cb_scrollStatusChanged(obj)
-            obj.auto_scroll_enabled = ~get(obj.auto_scroll_button,'Value');
-            obj.settings.auto_scroll_enabled = obj.auto_scroll_enabled;
-            h__setAutoScrollString(obj);
+            logic_value = ~get(obj.auto_scroll_button,'Value');
+            is_cb = true;
+            h__processNewAutoScrollValue(obj,logic_value,is_cb)
+            
         end
+    end   
+end
+
+function h__processNewAutoScrollValue(obj,logic_value,is_cb)
+    
+    obj.auto_scroll_enabled = logic_value;
+    obj.settings.auto_scroll_enabled = logic_value;
+    if ~logic_value
+       %Clear all y-display strings 
+       obj.right_panel.clearDisplayStrings();
+    end
+    if is_cb
+        h__setAutoScrollString(obj);
+    elseif ~isempty(obj.auto_scroll_button)
+        set(obj.auto_scroll_button,'Value',logic_value);
+        h__setAutoScrollString(obj);
     end
     
 end

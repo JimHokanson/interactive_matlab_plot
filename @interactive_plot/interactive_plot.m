@@ -196,12 +196,10 @@ classdef interactive_plot < handle
             obj.left_panel.y_axis_options.linkObjects(...
                 obj.axes_panel.axes_action_manager);
             shared.mouse_manager.updateAxesLimits();
+            obj.bottom_panel.linkObjects(obj.right_panel);
             
             %Link right hand text display to the axes manager
-            
-            y_disp = obj.right_panel.y_display_handles;
-            x_disp = obj.bottom_panel.x_disp_handle;
-            obj.axes_panel.axes_action_manager.linkObjects(y_disp,x_disp);
+            obj.axes_panel.axes_action_manager.linkObjects(obj.right_panel,obj.bottom_panel);
         end
     end
     
@@ -245,10 +243,19 @@ classdef interactive_plot < handle
             % - requires comments being active ...
             obj.session.addComment(comment_time,comment_string);
         end
-        function dataAdded(obj,new_max_time)
+        function dataAdded(obj,new_max_time,new_data_means)
             %Notify the code that new data has been added ...
             if isvalid(obj.fig_handle)
                 obj.streaming.changeMaxTime(new_max_time);
+            end
+            if nargin == 3
+                if obj.session.settings.auto_scroll_enabled
+                    rp = obj.right_panel;
+                    for i = 1:length(new_data_means)
+                        str = sprintf('%g',new_data_means(i));
+                        rp.setDisplayString(str,i);
+                    end 
+                end
             end
         end
         function loadCalibrations(obj,file_paths,varargin)

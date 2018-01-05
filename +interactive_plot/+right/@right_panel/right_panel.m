@@ -84,6 +84,15 @@ classdef right_panel < handle
             obj.name_text_handles = names_handles;
             obj.y_display_handles = disp_handles;
         end
+        function clearDisplayStrings(obj)
+            for i = 1:length(obj.y_display_handles)
+                obj.y_display_handles{i}.String = '';
+            end
+        end
+        function setDisplayString(obj,str,I)
+            obj.y_display_handles{I}.String = str;
+            %rhs_disp{obj.selected_axes_I}.String
+        end
         function figureSizeChanged(obj)
             n_axes = length(obj.axes_handles);
             for i = 1:n_axes

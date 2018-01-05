@@ -9,8 +9,8 @@ classdef axes_action_manager < handle
     
     properties
         line_moving_processor
-        rhs_disp
-        x_disp
+        right_panel
+        bottom_panel
         mouse_man   %interactive_plot.mouse_manager
         eventz      %interative_plot.eventz
         h_fig
@@ -108,11 +108,11 @@ classdef axes_action_manager < handle
             
             obj.setActiveAction(4);
         end
-        function linkObjects(obj,rhs_disp,x_disp)
+        function linkObjects(obj,right_panel,bottom_panel)
             %Called after initialization to add extra constructed objects
             %for later use
-            obj.rhs_disp = rhs_disp;
-            obj.x_disp = x_disp;
+            obj.right_panel = right_panel;
+            obj.bottom_panel = bottom_panel;
         end
         function setActiveAction(obj, selected_value)
             
@@ -503,7 +503,8 @@ classdef axes_action_manager < handle
             x_axes = sort(x_axes);
             
             measurement = x_axes(2) - x_axes(1);
-            set(obj.x_disp,'String',sprintf('%g',measurement));
+            str = sprintf('%g',measurement);
+            obj.bottom_panel.setXDisplayString(str);
             
             delete(obj.h_fig_line)
         end
@@ -530,8 +531,9 @@ classdef axes_action_manager < handle
             
             measurement = y_axes(2) - y_axes(1);
             
-            %TODO: Idealy this would be a call to a class ...
-            obj.rhs_disp{obj.selected_axes_I}.String = sprintf('%g',measurement);
+            str = sprintf('%g',measurement);
+            I = obj.selected_axes_I;
+            obj.right_panel.setDisplayString(str,I);
             
             delete(obj.h_fig_line);
         end
@@ -575,7 +577,10 @@ classdef axes_action_manager < handle
                 
             measurement = mean(s.y_final);
             
-            obj.rhs_disp{obj.selected_axes_I}.String = sprintf('%g',measurement);
+            str = sprintf('%g',measurement);
+            I = obj.selected_axes_I;
+            obj.right_panel.setDisplayString(str,I);
+            
             delete(obj.h_fig_line);
         end
     end

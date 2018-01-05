@@ -17,7 +17,7 @@ classdef streaming_example < handle
         last_t = 0;
         
         dt = 1/1000
-        xy %cell of big_plot.streaming_data
+        xy  %cell of big_plot.streaming_data
         big %cell of big_plot
         ax
         ip
@@ -87,8 +87,11 @@ classdef streaming_example < handle
             h_timer.Period = in.period;
             h_timer.ExecutionMode = 'fixedRate';
             h_timer.TimerFcn = @(~,~)obj.cb_timer;
-            start(h_timer);
+            %Assign to an objcet first so that the handle is valid
+            %when deleting
             obj.timer = h_timer;
+            start(h_timer);
+            
         end
         function cb_timer(obj)
             if isvalid(obj.h_fig)
@@ -110,15 +113,19 @@ classdef streaming_example < handle
                     
                     %These are the lines that are needed to make 
                     %streaming work ...
-                    for i = 1:length(obj.xy)
+                    n_lines = length(obj.xy);
+                    data_means = zeros(1,n_lines);
+                    for i = 1:n_lines
                         if mod(i,2)
+                            data_means(i) = mean(y1);
                             obj.xy{i}.addData(y1);
                         else
+                            data_means(i) = mean(y2);
                             obj.xy{i}.addData(y2);
                         end
                     end
                     
-                    obj.ip.dataAdded(obj.last_t);
+                    obj.ip.dataAdded(obj.last_t,data_means);
                     %Note that this code is not explicitly calling drawnow
                     %...
                 catch ME
