@@ -282,7 +282,8 @@ classdef axes_action_manager < handle
             if elapsed_time < MIN_RECT_TIME
                 x = p_new(1);
                 obj.x_clicked = x;
-                obj.h_axes_line = line([x x],[-Y_MAX Y_MAX],'YLimInclude','off','Linewidth',2,'Color','k');
+                obj.h_axes_line = line([x x],[-Y_MAX Y_MAX],...
+                    'YLimInclude','off','Linewidth',2,'Color','k');
             else
                 
                 %TODO: Expose this in render params
@@ -292,6 +293,14 @@ classdef axes_action_manager < handle
                     'EdgeColor',[0 0 0 0],'FaceColor',[0.1 0.1 0.1 0.1]);
                 
                 obj.selected_data = interactive_plot.data_selection.fromPosition(p_new);
+                
+                I = obj.selected_axes_I;
+                x_range = [p_new(1) p_new(1)+p_new(3)];
+                data_average = h__getDataAverage(obj,I,x_range);
+            
+                str = sprintf('%g',data_average);
+                obj.right_panel.setDisplayString(str,I);
+                
             end
             
             %Delete the figure based rectangle, keeping the axes based rectangle
@@ -570,20 +579,22 @@ classdef axes_action_manager < handle
 
             x_fig = get(obj.h_fig_line, 'X');
             x_axes = h__translateX(obj.selected_axes,x_fig);
-            
-            s = obj.settings.axes_props.getRawLineData(obj.selected_axes_I,...
-                'get_x_data',false,...
-                'xlim',x_axes);
-                
-            measurement = mean(s.y_final);
-            
-            str = sprintf('%g',measurement);
             I = obj.selected_axes_I;
+            data_average = h__getDataAverage(obj,I,x_axes);
+            
+            str = sprintf('%g',data_average);
             obj.right_panel.setDisplayString(str,I);
             
             delete(obj.h_fig_line);
         end
     end
+end
+
+function data_average = h__getDataAverage(obj,I,x_range)
+    s = obj.settings.axes_props.getRawLineData(...
+            I,'get_x_data',false,'xlim',x_range);
+
+    data_average = mean(s.y_final);
 end
 
 function h__drawInitialYBoundedRectFromMouse(obj,color)
