@@ -18,7 +18,7 @@ classdef line_moving_processor < handle
         
         mouse_man
         fig_handle
-        xy_positions %interactive_plot.xy_positions
+        xy_positions    %interactive_plot.xy_positions
         options
         
         axes_handles
@@ -27,7 +27,8 @@ classdef line_moving_processor < handle
         line_handles
         
         line_y_positions
-        % the y positions of all the lines
+        %The y positions of all the lines.
+        %This includes the outer lines ...
         
         clump_ids
         % clump_ids must always be sorted
@@ -80,22 +81,48 @@ classdef line_moving_processor < handle
         %--------------
         %   moveLine(obj, id)
         
-        function renderLines(obj)
-            n_lines_in_clump = length(obj.clump_ids);
-            for k = 1:n_lines_in_clump
-                idx = obj.clump_ids(k);
+        function renderLines(obj,ids)
+            if nargin == 1
+                ids = obj.clump_ids;
+            end
+            n_lines = length(ids);
+            for k = 1:n_lines
+                idx = ids(k);
                 line_to_move = obj.line_handles{idx};
                 line_to_move.Position(2) = obj.line_y_positions(idx);
             end
         end
-        function resizePlots(obj)
+        function resizePlots(obj,new_line_y_positions)
             %
             %   resize is based on updated y_positions.
+            %
+            %   resizePlots(obj,*new_line_y_positions)
+            %
+            %   Normally this is called after moving the lines with 
+            %   the mouse. It can also be called with a second input
+            %   to resize the plots based on the axes
+            %
+            %   Example
+            %   --------
+            %   %This will evenly space all axes
+            %   old_y = obj.line_y_positions;
+            %   new_y = linspace(old_y(1),old_y(end),length(old_y));
+            
+            if nargin == 2
+                obj.line_y_positions = new_line_y_positions;
+                move_lines = true;
+            else
+                move_lines = false;
+            end
             
             tops = obj.line_y_positions(1:end-1) - 0.5*obj.line_thickness;
             bottoms = obj.line_y_positions(2:end) + 0.5*obj.line_thickness;
             
-            obj.xy_positions.updateAxesTopAndBottoms(tops,bottoms);           
+            obj.xy_positions.updateAxesTopAndBottoms(tops,bottoms);  
+            
+            if move_lines
+               obj.renderLines(1:length(obj.line_y_positions)); 
+            end
         end
         function cb_innerLineClicked(obj, id)
             %
@@ -106,7 +133,10 @@ classdef line_moving_processor < handle
             
             % When you first click a line, the clump is only that line
             obj.clump_ids = id;
+            
+            %Note that moveLine is in a different file
             obj.mouse_man.setMouseMotionFunction(@()obj.moveLine(id));
+            
             obj.mouse_man.setMouseUpFunction(@obj.releaseLineMoving);
         end
         function releaseLineMoving(obj)

@@ -55,7 +55,7 @@ classdef options < handle
         x_stream_in_scale = 0.333
         x_stream_out_scale = 0.5;
         
-        auto_scale_padding = 0.05
+        auto_scale_padding = 0.15
         yzoom_in_scale = 0.3
         yzoom_out_scale = 0.3
         xzoom_in_scale = 0.2;

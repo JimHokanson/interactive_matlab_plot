@@ -24,7 +24,7 @@ classdef y_axis_options < handle
         fig_handle %necessary?
         axes_handles
         line_handles
-        options
+        options         %interactive_plot.options
         axes_action_manager
         axes_props
         
@@ -96,6 +96,11 @@ classdef y_axis_options < handle
     %Other menu callbacks =================================================
     methods
          function autoscale(obj,view_only,I)
+             %
+             %
+             %  Uses global option
+             %  .auto_scale_padding
+             %
             if nargin == 2
                 I = obj.current_I;
             end

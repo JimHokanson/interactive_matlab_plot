@@ -24,6 +24,7 @@ classdef toolbar < handle
         h_fig
         axes_handles
         left_panel
+        axes_panel
         axes_props %interactive_plot.axes.axes_props
     end
     
@@ -42,10 +43,11 @@ classdef toolbar < handle
             
             
         end
-        function linkComponents(obj,axes_action_manager,left_panel)
+        function linkComponents(obj,axes_action_manager,left_panel,axes_panel)
             root = fileparts(fileparts(which('interactive_plot')));
             
             obj.left_panel = left_panel;
+            obj.axes_panel = axes_panel;
             
             icon_root = fullfile(root,'icons');
             ff = @(x) fullfile(icon_root,['icon_' x '.mat']);
@@ -70,7 +72,16 @@ classdef toolbar < handle
             h2 = uipushtool(obj.h_toolbar,'CData',h.cdata,...
                 'TooltipString','View in new fig',...
                 'ClickedCallback',@(~,~) axes_action_manager.plotDataInNewWindow);
-                
+            h = load(ff('even_space_axes'));
+            h2 = uipushtool(obj.h_toolbar,'CData',h.cdata,...
+                'TooltipString','Evenly space axes',...
+                'ClickedCallback',@(~,~) obj.evenlySpaceAxes);    
+        end
+        function evenlySpaceAxes(obj)
+            processor = obj.axes_panel.line_moving_processor();
+          	old_y = processor.line_y_positions;
+            new_y = linspace(old_y(1),old_y(end),length(old_y)); 
+            processor.resizePlots(new_y);
         end
         function nyi(obj)
             

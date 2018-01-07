@@ -10,10 +10,10 @@ classdef axes_panel < handle
         shared
         axes_handles
         
-        line_moving_processor
-        axes_action_manager
+        line_moving_processor   %interactive_plot.axes.line_moving_processor
+        axes_action_manager     %interactive_plot.axes.axes_action_manager 
         
-        axes_position_info
+        axes_position_info      %interactive_plot.axes.axes_position_info
     end
     
     methods
@@ -21,7 +21,7 @@ classdef axes_panel < handle
             %
             %   obj = interactive_plot.axes_panel(shared)
             
-            obj.axes_handles = shared.handles.axes_handles;
+            obj.axes_handles = shared.axes_handles;
             obj.shared = shared;
             
             obj.removeVerticalGap(top_for_axes);
@@ -33,6 +33,8 @@ classdef axes_panel < handle
             
         end
         function createLines(obj)
+            %This is called (from parent) after some text-rendering so 
+            %that the annotations are above the text boxes
             obj.line_moving_processor = ...
                 interactive_plot.axes.line_moving_processor(obj.shared,obj.axes_position_info);
             
