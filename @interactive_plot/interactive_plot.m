@@ -263,6 +263,9 @@ classdef interactive_plot < handle
             axes_props = obj.session.settings.axes_props;
             axes_props.loadCalibrations(file_paths,varargin);
         end
+        function h_fig = getFigureHandle(obj)
+            h_fig = obj.fig_handle;
+        end
     end
     methods (Hidden) 
         %TODO: Save on figure close???? - auto_save
