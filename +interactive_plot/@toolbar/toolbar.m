@@ -66,7 +66,14 @@ classdef toolbar < handle
             h2 = uipushtool(obj.h_toolbar,'CData',h.cdata,...
                 'TooltipString','Auto-Scale Y - View Only',...
                 'ClickedCallback',@(~,~) obj.autoScaleAll(true));
+            h = load(ff('view_new_fig'));
+            h2 = uipushtool(obj.h_toolbar,'CData',h.cdata,...
+                'TooltipString','View in new fig',...
+                'ClickedCallback',@(~,~) axes_action_manager.plotDataInNewWindow);
                 
+        end
+        function nyi(obj)
+            
         end
         function autoScaleAll(obj,view_only)
             %autoscale(obj,I,view_only)

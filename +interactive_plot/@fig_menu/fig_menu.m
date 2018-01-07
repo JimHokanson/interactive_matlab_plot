@@ -15,6 +15,7 @@ classdef fig_menu < handle
             obj.h_fig = shared.fig_handle;
             set(obj.h_fig,'MenuBar', 'none')
             
+            %2017b specific 'Text'
             %m = uimenu(obj.h_fig,'Text','File');
             %mitem = uimenu(m,'Text','Save Calibrations','MenuSelectedFcn',@(~,~)shared.session.saveCalibrations);
         end

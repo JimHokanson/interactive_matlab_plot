@@ -207,8 +207,24 @@ classdef axes_action_manager < handle
         end
     end
     
-    %Data Selection ===========================================
+    %Selected Data Methods =========================
     methods
+        function plotDataInNewWindow(obj)
+            if ~isempty(obj.selected_data)
+                I = obj.selected_axes_I;
+                
+                d = obj.selected_data;
+                
+                s = obj.settings.axes_props.getRawLineData(...
+                    I,'get_x_data',true,'xlim',d.x_range);
+                
+                figure()
+                %plot(s.x,s.y_final);
+                plotBig(s.x,s.y_final)
+            else
+                error('Unable to expand plot without selected data')
+            end
+        end
         function calibrateData(obj)
             %
             %   This is currently exposed via a toolbar button. It requires
@@ -242,6 +258,10 @@ classdef axes_action_manager < handle
                 error('Unable to calibrate without selected data')
             end
         end
+    end
+    
+    %Data Selection ===========================================
+    methods
         function clearDataSelection(obj)
             
             obj.selected_data = [];
@@ -300,6 +320,9 @@ classdef axes_action_manager < handle
             
                 str = sprintf('%g',data_average);
                 obj.right_panel.setDisplayString(str,I);
+                
+                str = sprintf('%g',diff(x_range));
+                obj.bottom_panel.setXDisplayString(str);
                 
             end
             

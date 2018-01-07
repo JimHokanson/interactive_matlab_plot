@@ -185,7 +185,8 @@ classdef axes_props < handle
             %   -------
             %   s : big_plot.raw_line_data
             
-            %Trying to get rid of data_interface class
+            %Trying to get rid of data_interface class and putting
+            %everything in this classs
             
             h_line = obj.line_handles{I};
             
