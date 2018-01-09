@@ -33,6 +33,9 @@ classdef settings < handle
     %Constructor ----------------------------------------------------------
     methods
         function obj = settings(shared)
+            %
+            %   obj = interactive_plot.settings(shared)
+            
             obj.options = shared.options;
             obj.axes_props = interactive_plot.axes.axes_props(shared);
             
