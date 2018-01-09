@@ -9,10 +9,10 @@ classdef session < handle
     %Need autosave functionality ...
     
     properties
-        settings  %interactive_plot.settings
+        settings    %interactive_plot.settings
         
         %Data that is specific to this session
-        comments
+        comments    %interactive_plot.comments
         
         %NYI
         auto_save = false
@@ -72,9 +72,6 @@ classdef session < handle
                  save(file_path,'-struct','cur_cal');
               end
            end
-        end
-        function loadCalibrations(obj,varargin)
-            
         end
         function s = struct(obj)
             %

@@ -20,7 +20,7 @@ classdef interactive_plot < handle
     properties
         fig_handle
       
-        session
+        session         %interactive_plot.session
         shared_props
         
         axes_panel
@@ -240,8 +240,9 @@ classdef interactive_plot < handle
             s = struct(obj.session);
         end
         function addComment(obj,comment_time,comment_string)
-            %NYI
-            % - requires comments being active ...
+            %
+            %   addComment(obj,comment_time,comment_string)
+            
             obj.session.addComment(comment_time,comment_string);
         end
         function dataAdded(obj,new_max_time,new_data_means)
@@ -272,6 +273,7 @@ classdef interactive_plot < handle
         %TODO: Save on figure close???? - auto_save
         function cb_close(obj)
             delete(obj.fig_handle);
+            delete(obj)
         end
     end
 end

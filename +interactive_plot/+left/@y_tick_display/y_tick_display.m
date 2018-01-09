@@ -66,7 +66,15 @@ classdef y_tick_display < handle
             %   JAH TODO: 
             %   - add comments to this function to break into parts
             
+            %This means we'll only have ticks at values of 1,2,or 5
+            %or some fraction of these values
+            %=> 1,10,100,0.1,0.001 etc
+            %=> 2,20,200,0.2,0.002 etc
+            %=> 5,50,500 etc
+            %
+            %   Along with multiples of these, e.g. 2,4,6,8
             BASE_OPTIONS = [1 2 5 10];
+            
             PIXEL_BUFFER = 5; %pixels
             
             
@@ -100,9 +108,9 @@ classdef y_tick_display < handle
             
             ylim = get(h_axes,'YLim');
 
-            %# spacing
-            
-            
+            %Determine y-tick spacing based on an ideal pixel spacing
+            %and the nearest allowable spacing power option (i.e
+            %BASE_OPTIONS)
             y_range = ylim(2)-ylim(1);
             units_per_pixel = y_range/pixel_height;
             
