@@ -197,6 +197,13 @@ classdef axes_props < handle
            ax = obj.axes_handles{I};
            ylabel(ax,value);
         end
+        function s = getCalibrationsSummary(obj)
+            %
+            %   Written so that others (e.g. daq2) could apply the calibration
+            %   as well.
+            
+            s = interactive_plot.axes.calibration_summary;
+        end
         function loadCalibrations(obj,file_paths,varargin)
             if ischar(file_paths)
                 file_paths = {file_paths};

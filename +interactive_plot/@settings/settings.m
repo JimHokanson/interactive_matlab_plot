@@ -11,7 +11,7 @@ classdef settings < handle
     properties 
         options  %  interactive_plot.options
         
-        axes_props
+        axes_props  %   interactive_plot.axes.axes_props
         
         %The status of the button ...
         auto_scroll_enabled
