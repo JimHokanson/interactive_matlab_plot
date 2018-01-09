@@ -226,8 +226,8 @@ classdef axes_props < handle
             b = zeros(1,n);
             is_calibrated = false(1,n);
             
-            for i = 1:length(obj.n_axes)
-                c = s.calibrations{i};
+            for i = 1:n
+                c = obj.calibrations{i};
                 if ~isempty(c)
                     m(i) = c.m;
                     b(i) = c.b;
