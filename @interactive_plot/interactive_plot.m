@@ -20,7 +20,10 @@ classdef interactive_plot < handle
     properties
         fig_handle
       
-        session         %interactive_plot.session
+        session         %   interactive_plot.session
+        %   interactive_plot.settings
+        %   interactive_plot.axes.axes_props
+        
         shared_props
         
         axes_panel
@@ -238,6 +241,9 @@ classdef interactive_plot < handle
             %
             %   
             s = struct(obj.session);
+        end
+        function s = getCalibrationsSummary(obj)
+            s = obj.session.settings.axes_props.getCalibrationsSummary(obj);
         end
         function addComment(obj,comment_time,comment_string)
             %

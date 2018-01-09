@@ -43,6 +43,8 @@ classdef calibration < handle
         x2
         y1
         y2
+        
+        %These will always be the only two things needed for calibration
         m
         b
     end

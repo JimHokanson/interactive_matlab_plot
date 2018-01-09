@@ -8,7 +8,12 @@ classdef axes_props < handle
     %
     %   See Also
     %   --------
+    %   interactive_plot.settings
     %   
+    %   Improvements
+    %   ------------
+    %   1) We have too many names between this and daq2. Clean, original,
+    %   safe for variables, non-empty, etc.
     
     properties
         axes_handles    %cell array
@@ -89,6 +94,9 @@ classdef axes_props < handle
     
     methods
         function obj = axes_props(shared)
+            %
+            %   obj = interactive_plot.axes.axes_props(shared)
+            
             obj.axes_handles = shared.axes_handles;
             obj.eventz = shared.eventz;
             obj.n_axes = length(obj.axes_handles);
@@ -196,6 +204,41 @@ classdef axes_props < handle
            obj.units{I} = value;
            ax = obj.axes_handles{I};
            ylabel(ax,value);
+        end
+        function s = getCalibrationsSummary(obj)
+            %
+            %   Written so that others (e.g. daq2) could apply the calibration
+            %   as well.
+            %
+            %   Outputs
+            %   -------
+            %   s : interactive_plot.axes.calibration_summary
+            %
+            %   See Also
+            %   --------
+            %   interactive_plot>getCalibrationsSummary
+            
+            s = interactive_plot.axes.calibration_summary;
+            
+            n = obj.n_axes;
+            
+            m = ones(1,n);
+            b = zeros(1,n);
+            is_calibrated = false(1,n);
+            
+            for i = 1:length(obj.n_axes)
+                c = s.calibrations{i};
+                if ~isempty(c)
+                    m(i) = c.m;
+                    b(i) = c.b;
+                    is_calibrated(i) = true;
+                end
+            end
+            
+            s.m = m;
+            s.b = b;
+            s.names = obj.names;
+            s.is_calibrated = is_calibrated;
         end
         function loadCalibrations(obj,file_paths,varargin)
             if ischar(file_paths)

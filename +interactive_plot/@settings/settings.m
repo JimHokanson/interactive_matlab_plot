@@ -11,7 +11,7 @@ classdef settings < handle
     properties 
         options  %  interactive_plot.options
         
-        axes_props
+        axes_props  %   interactive_plot.axes.axes_props
         
         %The status of the button ...
         auto_scroll_enabled
@@ -33,6 +33,9 @@ classdef settings < handle
     %Constructor ----------------------------------------------------------
     methods
         function obj = settings(shared)
+            %
+            %   obj = interactive_plot.settings(shared)
+            
             obj.options = shared.options;
             obj.axes_props = interactive_plot.axes.axes_props(shared);
             
