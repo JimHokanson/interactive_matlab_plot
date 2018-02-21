@@ -56,7 +56,6 @@ classdef right_panel < handle
             
             axes_names = obj.settings.axes_props.names;
            
-            
             obj.channel_names = axes_names;
             
             names_handles = cell(1,n_axes);
@@ -67,22 +66,51 @@ classdef right_panel < handle
                 
                 %p = [0 0 0.1 0.1];
                 p = [0 0 0.003 0.03];
-                bc = [0.9400    0.9400    0.9400];
-                names_handles{i} = annotation(obj.fig_handle,'textbox',p,...
-                    'Units', local_units, ...
-                    'String',cur_string,'FontSize',8,...
-                    'margin',obj.textbox_margin,'FitBoxToText','on',...
-                    'EdgeColor','r',... %This is arbitrary and will likely change
-                    'BackgroundColor',bc);
                 
-                disp_handles{i} = annotation(obj.fig_handle,'textbox',p,...
-                    'Units', local_units, ...
-                    'String','','FontSize',8,...
-                    'margin',obj.textbox_margin,'FitBoxToText','on',...
-                    'BackgroundColor',bc);
+                %JAH: This is a work in progress. For some reason
+                %textbox annotations appears to take up a lot of processing
+                %time when changing the text constantly - about 20 ms
+                %per text value update
+                %
+                %Switching to uicontrols makes this go away, but then
+                %my annotation lines no longer block the text
+                
+                %For uicontrol
+                %-------------
+                width = 70;
+                height = 15;
+                p = [0 0 width height];
+                %Enabling this causes the program to do a lot of extra work
+                fit_to_text = 'off';
+                bc = [0.9400 0.9400 0.9400];
+%                 names_handles{i} = annotation(obj.fig_handle,'textbox',p,...
+%                     'Units', local_units, ...
+%                     'String',cur_string,'FontSize',8,...
+%                     'margin',obj.textbox_margin,'FitBoxToText',fit_to_text,...
+%                     'EdgeColor','r',... %This is arbitrary and will likely change
+%                     'BackgroundColor',bc,...
+%                     'Interpreter','none');
+%                 
+%                 disp_handles{i} = annotation(obj.fig_handle,'textbox',p,...
+%                     'Units', local_units, ...
+%                     'String','','FontSize',8,...
+%                     'margin',obj.textbox_margin,'FitBoxToText',fit_to_text,...
+%                     'BackgroundColor',bc,...
+%                     'Interpreter','none');
+                
+                names_handles{i} = uicontrol(obj.fig_handle,'style','text',...
+                    'String',cur_string,...
+                    'position',p,'FontSize',8,'Units', local_units);
+                disp_handles{i} = uicontrol(obj.fig_handle,'style','text',...
+                    'position',p,'FontSize',8,'Units', local_units);
+                
             end
             obj.name_text_handles = names_handles;
             obj.y_display_handles = disp_handles;
+            
+            for i = 1:n_axes
+               h__rerender(obj,i); 
+            end
         end
         function clearDisplayStrings(obj)
             for i = 1:length(obj.y_display_handles)
@@ -106,7 +134,6 @@ classdef right_panel < handle
 end
 
 function h__rerender(obj,index)
-
 h_axes = obj.axes_handles{index};
 h_name = obj.name_text_handles{index};
 h_disp = obj.y_display_handles{index};
@@ -132,11 +159,15 @@ bottom_name = top_pixel - p_name(4) - 1;
 bottom_disp = bottom_name - p_disp(4)-2;
 
 p_name_new = [x bottom_name p_name(3) p_name(4)];
-set(h_name,'Position',p_name_new);
+set(h_name,'Position',p_name_new)
 p_disp_new = [x bottom_disp p_disp(3) p_disp(4)];
-set(h_disp,'Position',p_disp_new);
+set(h_disp,'Position',p_disp_new)
 
-
+% disp(h_axes.Position)
+% disp(h_name.Position)
+% disp(h_disp.Position)
+% 
+% assignin('base','wtf',h_disp)
 
 % % keyboard
 % % 
