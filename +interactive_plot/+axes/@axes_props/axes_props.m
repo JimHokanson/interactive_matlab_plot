@@ -9,7 +9,8 @@ classdef axes_props < handle
     %   See Also
     %   --------
     %   interactive_plot.settings
-    %   
+    %   interactive_plot.session
+    %
     %   Improvements
     %   ------------
     %   1) We have too many names between this and daq2. Clean, original,
@@ -20,7 +21,7 @@ classdef axes_props < handle
         line_handles
         data_ptrs %cell of either [] or big_plot.line_data_pointer
         eventz          %interative_plot.eventz
-              
+        
         x_min
         x_max
         
@@ -101,7 +102,7 @@ classdef axes_props < handle
             obj.eventz = shared.eventz;
             obj.n_axes = length(obj.axes_handles);
             obj.line_handles = shared.handles.line_handles;
-               
+            
             temp = cell(1,obj.n_axes);
             for i = 1:obj.n_axes
                 h_line = obj.line_handles{i};
@@ -122,29 +123,34 @@ classdef axes_props < handle
     end
     methods
         function name = getNonEmptyName(obj,I)
-           name = obj.names{I};
-           if isempty(name)
-               name = sprintf('untitled_chan__%d',I);
-           end
+            name = obj.names{I};
+            if isempty(name)
+                name = sprintf('untitled_chan__%d',I);
+            end
         end
-% % %         function clean_names = getCleanAxesNames(obj,varargin)
-% % %             
-% % %             in.
-% % %             if nargin == 1
-% % %                 I = 1:obj.n_axes;
-% % %             end
-% % %             
-% % %             clean_names = cell(1,length(I));
-% % %             for i = 1:length(I)
-% % %                 cur_I = I(i);
-% % %                 name = obj.names{cur_I};
-% % %                 clean_names{i} = regexprep(name,'\s','_');
-% % %             end
-% % %             
-% % %         end
+        % % %         function clean_names = getCleanAxesNames(obj,varargin)
+        % % %
+        % % %             in.
+        % % %             if nargin == 1
+        % % %                 I = 1:obj.n_axes;
+        % % %             end
+        % % %
+        % % %             clean_names = cell(1,length(I));
+        % % %             for i = 1:length(I)
+        % % %                 cur_I = I(i);
+        % % %                 name = obj.names{cur_I};
+        % % %                 clean_names{i} = regexprep(name,'\s','_');
+        % % %             end
+        % % %
+        % % %         end
         function displayChannelCalibrationInfo(obj)
             %
-            %   
+            %   displayChannelCalibrationInfo(obj)
+            %
+            %   This function displays a figure with a table summarizing
+            %   the calibration status of each channel.
+            %
+            %   ??? Who calls this. A toolbar?
             
             f = figure();
             set(f,'units','normalized')
@@ -201,9 +207,13 @@ classdef axes_props < handle
             s = big_plot.getRawLineData(h_line,varargin{:});
         end
         function setUnits(obj,value,I)
-           obj.units{I} = value;
-           ax = obj.axes_handles{I};
-           ylabel(ax,value);
+            %
+            %   setUnits(obj,value,I)
+            %
+            
+            obj.units{I} = value;
+            ax = obj.axes_handles{I};
+            ylabel(ax,value);
         end
         function s = getCalibrationsSummary(obj)
             %
@@ -216,7 +226,7 @@ classdef axes_props < handle
             %
             %   See Also
             %   --------
-            %   interactive_plot>getCalibrationsSummary
+            %   interactive_plot.getCalibrationsSummary
             
             s = interactive_plot.axes.calibration_summary;
             
@@ -241,6 +251,10 @@ classdef axes_props < handle
             s.is_calibrated = is_calibrated;
         end
         function loadCalibrations(obj,file_paths,varargin)
+            %
+            %   loadCalibrations(obj,file_paths,varargin)
+            %
+            
             if ischar(file_paths)
                 file_paths = {file_paths};
             end
@@ -258,16 +272,32 @@ classdef axes_props < handle
             end
         end
         function setCalibration(obj,calibration,I)
+            %
+            %   setCalibration(obj,calibration,I)
+            %
+            %   Inputs
+            %   ------
+            %   calibration :
+            %   I : 
+            %
+            %   See Also
+            %   --------
+            %   
             
             if ~isempty(calibration.units)
-               obj.setUnits(calibration.units,I); 
+                obj.setUnits(calibration.units,I);
             end
             
             %For right now, line and I are the same (1 to 1 match)
-            %   - we might eventually have more lines ...
+            %   - we might eventually have more lines for each axes
+            
             selected_line = obj.line_handles{I};
+            
+            %This passes the calibration to the underlying streaming data
+            %object
             interactive_plot.data_interface.setCalibration(...
                 selected_line,calibration);
+            
             obj.eventz.notify('calibration',calibration);
             obj.calibrations{I} = calibration;
             
@@ -280,8 +310,6 @@ classdef axes_props < handle
             s.axes_I = I;
             s.custom_data = calibration;
             obj.eventz.notify('session_updated',s);
-            
-            
             
         end
         function s = struct(obj)

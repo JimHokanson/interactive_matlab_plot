@@ -72,8 +72,8 @@ classdef x_zoom < handle
         function cb_zoomIn(obj)
             if obj.auto_scroll_enabled
                 factor = 1 - obj.options.x_stream_in_scale;
-                
-                obj.settings.streaming_window_size = obj.settings.streaming_window_size*factor;
+               	new_value = obj.settings.streaming_window_size*factor;
+                obj.settings.setStreamingWindowSize(new_value);
             else
                 current_xlim = get(obj.h_axes,'XLim');
                 range_in_view = current_xlim(2)-current_xlim(1);
@@ -90,9 +90,12 @@ classdef x_zoom < handle
         end
         function cb_zoomOut(obj)
             if obj.auto_scroll_enabled
+                %Note that we don't actually change the plot. We just wait
+                %until the next streaming event when time is adjusted
                 factor = 1 + obj.options.x_stream_out_scale;
-                
-                obj.settings.streaming_window_size = obj.settings.streaming_window_size*factor;
+                new_value = obj.settings.streaming_window_size*factor;
+                obj.settings.setStreamingWindowSize(new_value);
+                %obj.settings.streaming_window_size = obj.settings.streaming_window_size*factor;
             else
                 current_xlim = get(obj.h_axes,'XLim');
                 range_in_view = current_xlim(2)-current_xlim(1);

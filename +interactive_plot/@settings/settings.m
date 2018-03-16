@@ -18,6 +18,10 @@ classdef settings < handle
         
         %The current window size for streaming
         streaming_window_size
+        %Set via: setStreamingWindowSize
+        
+        %------------------
+        bottom_panel
     end
     
 %     methods (Static)
@@ -42,9 +46,22 @@ classdef settings < handle
             obj.auto_scroll_enabled = shared.options.streaming;
             
             obj.streaming_window_size = shared.options.streaming_window_size;
+                        
         end
         function load(obj,s)
             keyboard
+        end
+        function linkObjects(obj,bottom_panel)
+            obj.bottom_panel = bottom_panel;
+            is_streaming_value = true;
+            bottom_panel.setWidthValue(obj.streaming_window_size,is_streaming_value)
+        end
+        function setStreamingWindowSize(obj,new_size)
+            obj.streaming_window_size = new_size;
+            if ~isempty(obj.bottom_panel)
+                is_streaming_value = true;
+                obj.bottom_panel.setWidthValue(obj.streaming_window_size,is_streaming_value)
+            end
         end
     end
     

@@ -2,6 +2,13 @@ classdef session < handle
     %
     %   Class:
     %   interactive_plot.session
+    %
+    %   Holder of session data.
+    %
+    %   See Also
+    %   --------
+    %   interactive_plot.settings
+    %   interactive_plot.comments
     
     %Update the menu to allow:
     %1) Saving the settings, saving the session
@@ -40,6 +47,15 @@ classdef session < handle
     
     methods
         function saveCalibrations(obj,varargin)
+            %
+            %   saveCalibrations(obj,varargin)
+            %   
+            %   Optional Inputs
+            %   ---------------
+            %   save_path : string (default 'prompt')
+            %       If 'prompt' the user is prompted via GUI to select
+            %       the save location.
+            
            in.save_path = 'prompt';
            in = interactive_plot.sl.in.processVarargin(in,varargin);
            
@@ -57,6 +73,7 @@ classdef session < handle
            end
            
            ax_props = obj.settings.axes_props;
+           %Note this is a method call ...
            s = struct(ax_props);
            cals = s.calibrations;
            date_string = datestr(now,'yyyy_mm_dd__HH_MM_SS');
