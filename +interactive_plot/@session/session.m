@@ -8,6 +8,10 @@ classdef session < handle
     
     %Need autosave functionality ...
     
+    properties (Hidden)
+        shared  %for creating comments after the fact ...
+    end
+    
     properties
         settings    %interactive_plot.settings
         
@@ -25,6 +29,7 @@ classdef session < handle
             %
             %   shared : interactive_plot.shared_props
             obj.settings = interactive_plot.settings(shared);
+            obj.shared = shared;
             
             if shared.options.comments
                 obj.comments = interactive_plot.comments(shared);
@@ -90,9 +95,15 @@ classdef session < handle
     
     %Pass through methods =================================================
     methods
+        function addComments(obj,times,strings)
+            if isempty(obj.comments)
+                obj.comments = interactive_plot.comments(obj.shared);
+            end
+            obj.comments.addComments(times,strings);
+        end
         function addComment(obj,time,str)
             if isempty(obj.comments)
-                error('Unable to add a comment since comments are not enabled')
+                obj.comments = interactive_plot.comments(obj.shared);
             end
             
             obj.comments.addComment(time,str)

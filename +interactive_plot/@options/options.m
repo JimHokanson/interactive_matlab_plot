@@ -40,13 +40,15 @@ classdef options < handle
     end
     
     properties
+        y_lim_auto = []; %logical
+        
         update_on_drag = true
         %If true, the plots update as the scroll bar is dragged. Otherwise
         %the plots only update once the scroll bar has been released.
         
         %NYI - The idea here is to disable rendering of items
-        scroll = true %NYI
-        lines = true %NYI
+%         scroll = true %NYI
+%         lines = true %NYI
         
         xlim %Default xlim to use, implemented??? NYI????
     end

@@ -93,6 +93,19 @@ classdef left_panel
                 addlistener(ax, 'Position', 'PostSet', @(~,~) obj.yLimChanged(k));
             end
             
+            if ~isempty(options.y_lim_auto)
+                value = options.y_lim_auto;
+                if options.y_lim_auto
+                    value = 'auto';
+                else
+                    value = 'manual';
+                end
+                for k = 1:n_axes
+                    h_axes = obj.axes_handles{k};
+                    set(h_axes,'YLimMode',value);
+                end
+            end
+            
             obj.y_axis_resizer = interactive_plot.left.y_axis_resizer(...
                 mouse_manager,handles);
             obj.y_zoom_buttons = interactive_plot.left.y_zoom_buttons(...

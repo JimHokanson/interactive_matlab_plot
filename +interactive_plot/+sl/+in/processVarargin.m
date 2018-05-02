@@ -152,6 +152,9 @@ elseif isstruct(v{1}) && length(v) == 1
 elseif iscell(v) && length(v) == 1 && isempty(v{1})
     %User passed in empty cell option to varargin instead of just ommitting input
     parse_input = false;
+elseif isobject(v{1}) && length(v) == 1
+    v = v{1};
+    parse_input = true;    
 else
     parse_input = true;
     v = interactive_plot.sl.in.propValuePairsToStruct(v,'allow_spaces',c.allow_spaces);

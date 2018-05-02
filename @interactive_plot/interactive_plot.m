@@ -9,6 +9,10 @@ classdef interactive_plot < handle
     %   Changes/assumptions
     %   -------------------
     %   1) Figure units changed to normalized
+    %
+    %   See Also
+    %   --------
+    %   interactive_plot.interactive_plot
     
     
     %Resizing Issues
@@ -84,15 +88,7 @@ classdef interactive_plot < handle
             %   
             %   Optional Inputs
             %   ---------------
-            %   See interactive_plot.options for all options.
-            %
-            %   update_on_drag : default true
-            %       If true plots will be updated as scrolling happens.
-            %   scroll : default true
-            %       If true a scroll bar is included on the plot.
-            %   lines : default true
-            %       If true draggable lines are included
-            %
+            %   **** See interactive_plot.options for all options. ****
             %
             %   Improvements
             %   ------------
@@ -101,6 +97,13 @@ classdef interactive_plot < handle
             %   3) Adjust yticks to not be on the line ...
             %   4) Manual yticks with support for changing via buttons &
             %   mouse
+            %
+            %   Examples
+            %   ---------
+            %   %TODO: Show a standard example ...
+            %
+            %   options = interactive_plot.options;
+            %   obj = interactive_plot(fig_handle, axes_handles, options)
             
             %JAH: Had remote desktop active
             %TODO: Verify proper renderer
@@ -115,98 +118,14 @@ classdef interactive_plot < handle
             
             obj.shared_props = shared;
             
-            shared.render_params = interactive_plot.render_params;
-            shared.fig_handle = fig_handle;
-            obj.fig_handle = fig_handle;
-            
-            %Current limitation of the software
-            set(fig_handle,'Units','normalized');
-            set(fig_handle,'CloseRequestFcn', @(~,~) obj.cb_close);
-            
-            %TODO: Verify correct setup of the axes handles since these 
-            %come from the user, not internally ...
-            shared.axes_handles = axes_handles;
-            shared.handles = interactive_plot.handles(fig_handle,axes_handles);
-            
-            all_axes = [axes_handles{:}];
-            linkaxes(all_axes,'x');
-            
-            %Non-rendered components
-            %--------------------------------------------------------------
-            shared.mouse_manager = interactive_plot.mouse_manager(shared.handles);
-            shared.eventz = interactive_plot.eventz(@notify);
-            shared.session = interactive_plot.session(shared);
-            obj.session = shared.session;
-            obj.eventz = shared.eventz;
-            
-            %Top Components
-            %--------------------------------------------------------------
-            shared.toolbar = interactive_plot.toolbar(shared);
-            
-            obj.top_panel = interactive_plot.top.top_panel(shared);
-            %refresh(fig_handle)
-            %These make the whole process feel much more snappy
-            drawnow('nocallbacks')
-            
-            %Center
-            obj.axes_panel = interactive_plot.axes.axes_panel(...
-                shared,obj.top_panel.top_for_axes);
-            %refresh(fig_handle)
-            drawnow('nocallbacks')
-            
-            %Left
-            obj.left_panel = interactive_plot.left.left_panel(shared);
-            %refresh(fig_handle)
-            drawnow('nocallbacks')
-            
-        	%Right
-         	obj.right_panel = interactive_plot.right.right_panel(shared);
-            %refresh(fig_handle)
-            drawnow('nocallbacks')
-            
-            %We do this later so that the lines draw over the text objects
-            %...
-            obj.axes_panel.createLines();
-            %refresh(fig_handle)
-            drawnow('nocallbacks')
-            
-            %Bottom
-            obj.bottom_panel = interactive_plot.bottom.bottom_panel(...
-                shared);
-            %refresh(fig_handle)
-            drawnow('nocallbacks')
-            
-            obj.streaming = interactive_plot.streaming(...
-                shared,obj.bottom_panel);
-
-            obj.menu = interactive_plot.fig_menu(shared);
-            
-            
-            %Some final parts ...
-            %------------------------
-            obj.fig_size_change = interactive_plot.fig_size_change(obj);
-            fsc = obj.fig_size_change;
-            fsc.linkObjects(obj.left_panel,obj.right_panel);
-            
-            shared.toolbar.linkComponents(...
-                obj.axes_panel.axes_action_manager,...
-                obj.left_panel,...
-                obj.axes_panel)
-            shared.mouse_manager.linkObjects(...
-                obj.axes_panel.axes_action_manager,...
-                obj.left_panel.y_axis_resizer);
-            obj.top_panel.linkObjects(...
-                obj.axes_panel.axes_action_manager);
-            obj.left_panel.y_axis_options.linkObjects(...
-                obj.axes_panel.axes_action_manager);
-            shared.mouse_manager.updateAxesLimits();
-            obj.bottom_panel.linkObjects(obj.right_panel);
-            
-            %Link right hand text display to the axes manager
-            obj.axes_panel.axes_action_manager.linkObjects(obj.right_panel,obj.bottom_panel);
+            %Moved into a function to remove size from this file
+            obj.initialize(shared,fig_handle,axes_handles);
         end
     end
     
+    %======================================================================
+    %                       Public Methods
+    %======================================================================
     methods
         function save(obj,varargin)
             %
@@ -237,17 +156,37 @@ classdef interactive_plot < handle
         end
         function s = getSessionData(obj)
             %
-            %   s = 
+            %   s = getSessionData(obj)
             %
-            %   
-            s = struct(obj.session);
+            %   Session data are returned as a structure (struct) for saving.
+            %
+            
+            s = obj.session.struct();
         end
         function s = getCalibrationsSummary(obj)
+            %
+            %   s = getCalibrationsSummary(obj)
+            
             s = obj.session.settings.axes_props.getCalibrationsSummary();
+        end
+        function addComments(obj,comment_times,comment_strings)
+            %
+            %   addComments(obj,comment_times,comment_strings)
+            %
+            %   See Also
+            %   --------
+            %   interactive_plot.session 
+            %   interactive_plot.comment
+            obj.session.addComments(comment_times,comment_strings);
         end
         function addComment(obj,comment_time,comment_string)
             %
             %   addComment(obj,comment_time,comment_string)
+            %   
+            %   See Also
+            %   --------
+            %   interactive_plot.session 
+            %   interactive_plot.comments
             
             obj.session.addComment(comment_time,comment_string);
         end
@@ -278,6 +217,10 @@ classdef interactive_plot < handle
     methods (Hidden) 
         %TODO: Save on figure close???? - auto_save
         function cb_close(obj)
+            
+            %In case we can't close due to invalid function
+            %set(gcf,'CloseRequestFcn',@(x,y)delete(gcf))
+            
             delete(obj.fig_handle);
             delete(obj)
         end

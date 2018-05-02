@@ -44,8 +44,8 @@ classdef comments < handle
         
         bottom_axes %Handle to the axes on the bottom (for text placement)
         
-        %These are currently inaccurate due to resizing that begins at the
-        %beginning
+        %These are currently slightly inaccurate due to resizing that 
+        %begins at the beginning
         y_top_axes %Normalized y postion of the top of the top axes
         y_bottom_axes
         
@@ -270,9 +270,18 @@ classdef comments < handle
             s.comment_index = obj.selected_line_I;
             obj.commentsUpdated('comment_moved',s)
         end
+    end
+    methods
         function addComments(obj,times,strings)
+            %
+            %   addComments(obj,times,strings)
             %NYI
             %   - intended for loading from disk
+            
+            %For now we'll just call the single comment adder
+            for i = 1:length(times)
+                obj.addComment(times(i),strings{i})
+            end
         end
         function addComment(obj,time,str)
             %
@@ -280,6 +289,9 @@ classdef comments < handle
             %
             %   Add comment to figure. Currently exposed in GUI via
             %   top_panel.
+            %
+            %   Exposed in code as:
+            %   interactive_plot.addComment()
             
             if isempty(str)
                 return

@@ -105,6 +105,10 @@ classdef axes_props < handle
             temp = cell(1,obj.n_axes);
             for i = 1:obj.n_axes
                 h_line = obj.line_handles{i};
+                %TEMP HACK
+                if length(h_line) > 1
+                    h_line = h_line(1);
+                end
                 temp{i} = big_plot.getRawDataPointer(h_line);
             end
             obj.data_ptrs = temp;
