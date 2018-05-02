@@ -4,6 +4,8 @@ classdef calibration_summary
     %   interactive_plot.axes.calibration_summary
     %   interactive_plot.calibration
     %
+    %   A simpler form of the calibration for others to use.
+    %
     %   See Also
     %   --------
     %   interactive_plot.axes.axes_props

@@ -1,4 +1,4 @@
-classdef streaming
+classdef streaming < handle
     %
     %   Class:
     %   interactive_plot.streaming
@@ -8,14 +8,15 @@ classdef streaming
     %
     %   See Also
     %   --------
-    %   
+    %   interactive_plot.session
+    %   interactive_plot.settings
     
     properties 
         options
-        settings
+        settings    %interactive_plot.settings
         axes_handles
         class_enabled = true
-        bottom_panel
+        bottom_panel  %interactive_plot.bottom.bottom_panel
     end
     
     properties (Dependent)
@@ -25,6 +26,9 @@ classdef streaming
     methods
         function value = get.streaming_window_size(obj)
             value = obj.settings.streaming_window_size;
+        end
+        function set.streaming_window_size(obj,value)
+            obj.settings.setStreamingWindowSize(value);
         end
     end
     

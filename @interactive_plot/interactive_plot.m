@@ -24,7 +24,7 @@ classdef interactive_plot < handle
     properties
         fig_handle
       
-        session         %   interactive_plot.session
+        session 	%   interactive_plot.session
         %   interactive_plot.settings
         %   interactive_plot.axes.axes_props
         
@@ -38,7 +38,7 @@ classdef interactive_plot < handle
         menu
      
         fig_size_change  %interactive_plot.fig_size_change
-        streaming
+        streaming   %interactive_plot.streaming
         eventz
     end
     methods (Static)
@@ -90,26 +90,11 @@ classdef interactive_plot < handle
             %   ---------------
             %   **** See interactive_plot.options for all options. ****
             %
-            %   Improvements
-            %   ------------
-            %   1) Support multiple columns
-            %   2) Vertical and hortizontal scaling
-            %   3) Adjust yticks to not be on the line ...
-            %   4) Manual yticks with support for changing via buttons &
-            %   mouse
-            %
-            %   Examples
-            %   ---------
-            %   %TODO: Show a standard example ...
-            %
-            %   options = interactive_plot.options;
-            %   obj = interactive_plot(fig_handle, axes_handles, options)
             
             %JAH: Had remote desktop active
             %TODO: Verify proper renderer
             %Video card info incorrect
             %- opengl info
-            
             
             in = interactive_plot.options();
             
@@ -118,8 +103,10 @@ classdef interactive_plot < handle
             
             obj.shared_props = shared;
             
+
             %Moved into a function to remove size from this file
             obj.initialize(shared,fig_handle,axes_handles);
+
         end
     end
     
@@ -135,6 +122,8 @@ classdef interactive_plot < handle
             %   ---------------
             %   save_path : (default, in this repo)
             %   save_data : (default false) NYI
+            %       The idea here is that that we would only save the
+            %       session data but not the plotted data.
             
             in.save_path = [];
             in.save_data = false;
@@ -161,6 +150,7 @@ classdef interactive_plot < handle
             %   Session data are returned as a structure (struct) for saving.
             %
             
+            %obj.session : interactive_plot.session
             s = obj.session.struct();
         end
         function s = getCalibrationsSummary(obj)
@@ -191,10 +181,42 @@ classdef interactive_plot < handle
             obj.session.addComment(comment_time,comment_string);
         end
         function dataAdded(obj,new_max_time,new_data_means)
+            %
+            %   dataAdded(obj,new_max_time,*new_data_means)
+            %
+            %   Indicate to the plot that new data has been added. 
+            %
+            %   Code Usage
+            %   -----------
+            %   The current usage is to first add data to streaming data
+            %   types (see big_plot.streaming_data). When ready call this
+            %   function with the new max time to plot.
+            %
+            %   Inputs
+            %   ------
+            %   new_max_time : 
+            %       The maximum time of the data plotted
+            %   
+            %   Optional Inputs
+            %   ---------------
+            %   new_data_means :
+            %       If specified the right display entries for each axis
+            %       are updated with these new mean values.
+            %
+            %   Examples
+            %   ---------
+            %   %Standard usage
+            %   iplot.dataAdded(20);
+            %
+            %   %Update means for 4 channels as well
+            %   iplot.dataAdded(30,[5 0 -3 2.567]);
+            
             %Notify the code that new data has been added ...
             if isvalid(obj.fig_handle)
+                %obj.streaming : interactive_plot.streaming
                 obj.streaming.changeMaxTime(new_max_time);
             end
+            
             if nargin == 3
                 if obj.session.settings.auto_scroll_enabled
                     rp = obj.right_panel;
@@ -206,8 +228,22 @@ classdef interactive_plot < handle
             end
         end
         function loadCalibrations(obj,file_paths,varargin)
+            %
+            %   loadCalibrations(obj,file_paths,varargin)
+            %
+            %   Input
+            %   -----
+            %   file_paths : string or cellstr
+            %       The path or paths of calibration files to load.
+            %       Calibrations are currently saved individually so to
+            %       calibrate multiple channels multiple file paths must be
+            %       specified.
+            %
+            
             %interactive_plot.axes.axes_props
             axes_props = obj.session.settings.axes_props;
+            
+            %interactive_plot.axes.axes_props.loadCalibrations
             axes_props.loadCalibrations(file_paths,varargin);
         end
         function h_fig = getFigureHandle(obj)

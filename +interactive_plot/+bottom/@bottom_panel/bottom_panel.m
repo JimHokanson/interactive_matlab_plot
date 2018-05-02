@@ -1,7 +1,12 @@
 classdef bottom_panel < handle
     %
     %   Class:
-    %   interactive_plot.bottom_panel
+    %   interactive_plot.bottom.bottom_panel
+    %
+    %   Improvements
+    %   ------------
+    %   Do we want to make the width text valid
+    %   for both streaming and reviewing?
     
     properties
         mouse_man
@@ -31,15 +36,20 @@ classdef bottom_panel < handle
         %Handles to created objects
         %--------------------------
         scroll_background_bar
-        slider
-        left_button
-        right_button
-        auto_scroll_button
+        slider %annotation
+        left_button %uicontrol : pushbutton
+        right_button %uicontrol : pushbutton
+        
+        auto_scroll_button %uicontrol
+        width_text
+        
         zoom_out_button
         zoom_in_button
+        
         x_disp_handle
+        
         x_options_button
-        x_options
+        x_options %uicontrol : pushbutton
         
         %State
         %----------------------------
@@ -62,6 +72,8 @@ classdef bottom_panel < handle
     
     methods
         function obj = bottom_panel(shared)
+            
+            SCROLL_WIDTH_TEXT_WIDTH = 0.1;
             
             options = shared.options;
             render_params = shared.render_params;
@@ -98,12 +110,17 @@ classdef bottom_panel < handle
             %----------------------------------------
             if options.streaming
                 n_buttons_rightside = 4;
+                pct_back = n_buttons_rightside*button_width + SCROLL_WIDTH_TEXT_WIDTH;
             else
                 n_buttons_rightside = 3;
+                pct_back = n_buttons_rightside*button_width;
             end
             
+            %left + width
+            axes_right_side = p_axes(1) + p_axes(3);
+            
             obj.scroll_left_limit = x + 2*button_width;
-            obj.scroll_right_limit = p_axes(1) + p_axes(3) - n_buttons_rightside*button_width;
+            obj.scroll_right_limit =  axes_right_side - pct_back;
             obj.scroll_bottom = y;
             obj.scroll_height = render_params.scroll_bar_height;
             obj.scroll_width = obj.scroll_right_limit - obj.scroll_left_limit;
@@ -136,11 +153,23 @@ classdef bottom_panel < handle
                 'units', 'normalized', 'Position',p_button,...
                 'Visible', 'on');
             
+            %X Zoom Buttons
+            %-------------------------------------------------
+            p_button(1) = obj.scroll_right_limit + button_width;
+            
+            obj.zoom_out_button = interactive_plot.utils.ip_button(...
+                obj.fig_handle,p_button,'-');
+            
+            p_button(1) = obj.scroll_right_limit + 2*button_width;
+            
+            obj.zoom_in_button = interactive_plot.utils.ip_button(...
+                obj.fig_handle,p_button,'+');
+            
             %Auto Scroll Button
             %---------------------------------------------
             if options.streaming
                 
-                p_button(1) = obj.scroll_right_limit + button_width;
+                p_button(1) = axes_right_side - button_width;
                 
                 obj.auto_scroll_button = uicontrol(obj.fig_handle,...
                     'Style', 'togglebutton', 'String', '~',...
@@ -148,19 +177,17 @@ classdef bottom_panel < handle
                     'Visible','on','callback', @(~,~) obj.cb_scrollStatusChanged);
                 
                 obj.auto_scroll_enabled = true;
+                
+                p_text = p_button;
+                p_text(1) = obj.scroll_right_limit + 3*button_width;
+                p_text(3) = SCROLL_WIDTH_TEXT_WIDTH;
+                
+                obj.width_text = uicontrol(obj.fig_handle,...
+                    'Style','edit','units', 'normalized',...
+                    'Visible','on','Position',p_text,...
+                    'callback', @(~,~) obj.cb_widthChanged);
             end
             
-            %X Zoom Button
-            %-------------------------------------------------
-            p_button(1) = obj.scroll_right_limit + (n_buttons_rightside-2)*button_width;
-            
-            obj.zoom_out_button = interactive_plot.utils.ip_button(...
-                obj.fig_handle,p_button,'-');
-            
-            p_button(1) = obj.scroll_right_limit + (n_buttons_rightside-1)*button_width;
-            
-            obj.zoom_in_button = interactive_plot.utils.ip_button(...
-                obj.fig_handle,p_button,'+');
             
             %X Numeric Display
             %--------------------------------------------
@@ -196,6 +223,9 @@ classdef bottom_panel < handle
         end
     end
     methods
+        function setWidthValue(obj,value,is_streaming_value)
+            obj.width_text.String = sprintf('%g',value);
+        end
         function setXDisplayString(obj,str)
             obj.x_disp_handle.String = str;
         end
@@ -207,6 +237,16 @@ classdef bottom_panel < handle
             is_cb = false;
             h__processNewAutoScrollValue(obj,logic_value,is_cb)
         end
+        function cb_widthChanged(obj)
+            %TODO: If not streaming, then we need to adjust the zoom
+           value = str2double(obj.width_text.String);
+           if isnan(value)
+              %TODO: reset
+           else
+               obj.settings.setStreamingWindowSize(value);
+           end
+           %JAH: 
+        end
        	function cb_scrollStatusChanged(obj)
             logic_value = ~get(obj.auto_scroll_button,'Value');
             is_cb = true;
@@ -217,13 +257,25 @@ classdef bottom_panel < handle
 end
 
 function h__processNewAutoScrollValue(obj,logic_value,is_cb)
+    %
+    %
+    %   h__processNewAutoScrollValue(obj,logic_value,is_cb)
+    %
+    %   Inputs
+    %   -------
+    %   logic_value :
+    %   is_cb :
+    
+    %TODO: On toggling - change width values appropriately
     
     obj.auto_scroll_enabled = logic_value;
     obj.settings.auto_scroll_enabled = logic_value;
+    
     if ~logic_value
        %Clear all y-display strings 
        obj.right_panel.clearDisplayStrings();
     end
+    
     if is_cb
         h__setAutoScrollString(obj);
     elseif ~isempty(obj.auto_scroll_button)

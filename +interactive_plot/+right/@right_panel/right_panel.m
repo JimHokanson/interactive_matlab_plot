@@ -24,6 +24,11 @@ classdef right_panel < handle
         default_name_heights_pixel
         
         y_display_handles
+        %
+        %   See Also
+        %   --------
+        %   interactive_plot.dataAdded
+        
     end
     
     methods
