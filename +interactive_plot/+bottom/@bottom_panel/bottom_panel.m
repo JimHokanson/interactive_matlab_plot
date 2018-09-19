@@ -13,8 +13,8 @@ classdef bottom_panel < handle
         options
         settings
         render_params
-        fig_handle
-        axes_handles
+        h_fig
+        axes_handles %cell or array?
         right_panel
         
         %Processor Classes
@@ -81,16 +81,12 @@ classdef bottom_panel < handle
             obj.settings = shared.session.settings;
             obj.mouse_man = shared.mouse_manager;
             obj.options = shared.options;
-            obj.fig_handle = shared.fig_handle;
+            obj.h_fig = shared.fig_handle;
             obj.axes_handles = shared.axes_handles;
             
             
             
             % We are assuming at this point all figure units are normalized
-            
-            %obj.small_button_width = render_params.small_button_width;
-            %obj.small_button_height = render_params.small_button_height;
-            
             p_axes = get(obj.axes_handles{1},'Position');
             x = p_axes(1);
             y = render_params.scroll_bar_bottom; % y position of the bottom of the scroll bar
@@ -101,7 +97,7 @@ classdef bottom_panel < handle
             
             %X Options Button
             %-------------------------------------------
-            obj.x_options_button = uicontrol(obj.fig_handle,...
+            obj.x_options_button = uicontrol(obj.h_fig,...
                 'Style', 'pushbutton', 'String', '...',...
                 'units', 'normalized', 'Position',p_button,...
                 'Visible', 'on');
@@ -129,10 +125,10 @@ classdef bottom_panel < handle
                 obj.scroll_width, obj.scroll_height];
             
             %Background - doesn't move
-            obj.scroll_background_bar = annotation('rectangle', p_scroll, 'FaceColor', 'w');
+            obj.scroll_background_bar = annotation(obj.h_fig,'rectangle', p_scroll, 'FaceColor', 'w');
             
             %Foreground
-            obj.slider = annotation('rectangle', p_scroll, 'FaceColor', 'k');
+            obj.slider = annotation(obj.h_fig,'rectangle', p_scroll, 'FaceColor', 'k');
             
             %Scroll Bar Buttons
             %--------------------------------------------------------- 
@@ -141,29 +137,31 @@ classdef bottom_panel < handle
             % uicontrol push buttons don't look quite as good in this case,
             % but they have a visible response when clicked and are
             % slightly easier to work with
-            obj.left_button = uicontrol(obj.fig_handle,...
+            obj.left_button = uicontrol(obj.h_fig,...
                 'Style', 'pushbutton', 'String', '<',...
                 'units', 'normalized', 'Position',p_button,...
                 'Visible', 'on');
             
             p_button(1) = obj.scroll_right_limit;
             
-            obj.right_button = uicontrol(obj.fig_handle,...
+            obj.right_button = uicontrol(obj.h_fig,...
                 'Style', 'pushbutton', 'String', '>',...
                 'units', 'normalized', 'Position',p_button,...
                 'Visible', 'on');
+            
             
             %X Zoom Buttons
             %-------------------------------------------------
             p_button(1) = obj.scroll_right_limit + button_width;
             
             obj.zoom_out_button = interactive_plot.utils.ip_button(...
-                obj.fig_handle,p_button,'-');
+                obj.h_fig,p_button,'-');
             
             p_button(1) = obj.scroll_right_limit + 2*button_width;
             
             obj.zoom_in_button = interactive_plot.utils.ip_button(...
-                obj.fig_handle,p_button,'+');
+                obj.h_fig,p_button,'+');
+            
             
             %Auto Scroll Button
             %---------------------------------------------
@@ -171,7 +169,7 @@ classdef bottom_panel < handle
                 
                 p_button(1) = axes_right_side - button_width;
                 
-                obj.auto_scroll_button = uicontrol(obj.fig_handle,...
+                obj.auto_scroll_button = uicontrol(obj.h_fig,...
                     'Style', 'togglebutton', 'String', '~',...
                     'units', 'normalized', 'Position',p_button,...
                     'Visible','on','callback', @(~,~) obj.cb_scrollStatusChanged);
@@ -182,7 +180,7 @@ classdef bottom_panel < handle
                 p_text(1) = obj.scroll_right_limit + 3*button_width;
                 p_text(3) = SCROLL_WIDTH_TEXT_WIDTH;
                 
-                obj.width_text = uicontrol(obj.fig_handle,...
+                obj.width_text = uicontrol(obj.h_fig,...
                     'Style','edit','units', 'normalized',...
                     'Visible','on','Position',p_text,...
                     'callback', @(~,~) obj.cb_widthChanged);
@@ -202,7 +200,7 @@ classdef bottom_panel < handle
             %This background matches the default figure color background
             %...
          	bc = [0.9400    0.9400    0.9400];
-            obj.x_disp_handle = annotation(obj.fig_handle,'textbox',p_x_disp,...
+            obj.x_disp_handle = annotation(obj.h_fig,'textbox',p_x_disp,...
                     'Units', 'normalized', ...
                     'String','Testing','FontSize',8,...
                     'margin',2,'FitBoxToText','on',...
@@ -224,6 +222,8 @@ classdef bottom_panel < handle
     end
     methods
         function setWidthValue(obj,value,is_streaming_value)
+            %TODO: At some point I'd like to support width setting
+            %for both streaming and non-streaming ...
             obj.width_text.String = sprintf('%g',value);
         end
         function setXDisplayString(obj,str)

@@ -56,6 +56,8 @@ classdef right_panel < handle
             obj.figureSizeChanged();
         end
         function initializeTextBoxes(obj)
+            %Why am I doing this in pixels and not normalized????
+            %Is this for the height?
             local_units = 'pixels';
             n_axes = length(obj.axes_handles);
             
@@ -70,7 +72,7 @@ classdef right_panel < handle
                 %p = [0 0 0.1 0.1];
                 
                 %p = [0 0 0.1 0.1];
-                p = [0 0 0.003 0.03];
+                %p = [0 0 0.003 0.03];
                 
                 %JAH: This is a work in progress. For some reason
                 %textbox annotations appears to take up a lot of processing
@@ -82,12 +84,16 @@ classdef right_panel < handle
                 
                 %For uicontrol
                 %-------------
-                width = 70;
+                %width = 70;
+                %Setting this really high, it might overflow but I think
+                %that's ok
+                width = 300;
+                
                 height = 15;
                 p = [0 0 width height];
                 %Enabling this causes the program to do a lot of extra work
-                fit_to_text = 'off';
-                bc = [0.9400 0.9400 0.9400];
+                %fit_to_text = 'off';
+                %bc = [0.9400 0.9400 0.9400];
 %                 names_handles{i} = annotation(obj.fig_handle,'textbox',p,...
 %                     'Units', local_units, ...
 %                     'String',cur_string,'FontSize',8,...
@@ -105,9 +111,11 @@ classdef right_panel < handle
                 
                 names_handles{i} = uicontrol(obj.fig_handle,'style','text',...
                     'String',cur_string,...
-                    'position',p,'FontSize',8,'Units', local_units);
+                    'position',p,'FontSize',8,'Units', local_units,...
+                    'HorizontalAlignment','left');
                 disp_handles{i} = uicontrol(obj.fig_handle,'style','text',...
-                    'position',p,'FontSize',8,'Units', local_units);
+                    'position',p,'FontSize',8,'Units', local_units,...
+                    'HorizontalAlignment','left');
                 
             end
             obj.name_text_handles = names_handles;
@@ -139,34 +147,51 @@ classdef right_panel < handle
 end
 
 function h__rerender(obj,index)
-h_axes = obj.axes_handles{index};
-h_name = obj.name_text_handles{index};
-h_disp = obj.y_display_handles{index};
+%TODO: When is this called
 
-p_name = get(h_name,'Position');
-p_disp = get(h_disp,'Position');
-p_axes = get(h_axes,'Position');
-axes_right_edge = p_axes(1)+p_axes(3);
-top = p_axes(2)+p_axes(4);
+%TODO: This could fail if the axes is invalid ...
+try
+    h_axes = obj.axes_handles{index};
+    h_name = obj.name_text_handles{index};
+    h_disp = obj.y_display_handles{index};
 
-p_pixel = getpixelposition(h_axes);
-axes_height_pixel = p_pixel(4);
-axes_width_pixel = p_pixel(3);
+    p_name = get(h_name,'Position');
+    p_disp = get(h_disp,'Position');
+    p_axes = get(h_axes,'Position');
+    axes_right_edge = p_axes(1)+p_axes(3);
+    top = p_axes(2)+p_axes(4);
 
-% norm_per_pixels_x = p_axes(3)./axes_width_pixel;
-% norm_per_pixels_y = p_axes(4)./axes_height_pixel;
+    p_pixel = getpixelposition(h_axes);
+    axes_height_pixel = p_pixel(4);
+    axes_width_pixel = p_pixel(3);
+
+    % norm_per_pixels_x = p_axes(3)./axes_width_pixel;
+    % norm_per_pixels_y = p_axes(4)./axes_height_pixel;
 
 
-x = p_pixel(1) + p_pixel(3) + 2;
-top_pixel = p_pixel(2)+p_pixel(4);
+    x = p_pixel(1) + p_pixel(3) + 2;
+    top_pixel = p_pixel(2)+p_pixel(4);
 
-bottom_name = top_pixel - p_name(4) - 1;
-bottom_disp = bottom_name - p_disp(4)-2;
+    bottom_name = top_pixel - p_name(4) - 1;
+    bottom_disp = bottom_name - p_disp(4)-2;
 
-p_name_new = [x bottom_name p_name(3) p_name(4)];
-set(h_name,'Position',p_name_new)
-p_disp_new = [x bottom_disp p_disp(3) p_disp(4)];
-set(h_disp,'Position',p_disp_new)
+    p_name_new = [x bottom_name p_name(3) p_name(4)];
+    set(h_name,'Position',p_name_new)
+    p_disp_new = [x bottom_disp p_disp(3) p_disp(4)];
+    set(h_disp,'Position',p_disp_new)
+catch ME
+    if strcmp(ME.identifier,'MATLAB:class:InvalidHandle')
+        %pass
+        %TODO: For something like this we should have a logging mechanism
+        %that this occurred in case it is actually an error that it is
+        %invalid, rather than user interaction closing the figure
+        %
+        %OR - have something that checks for a figure clearing ...
+        % => Can we dictate first action of clf (or some preset event?)
+    else
+       rethrow(ME) 
+    end
+end
 
 % disp(h_axes.Position)
 % disp(h_name.Position)

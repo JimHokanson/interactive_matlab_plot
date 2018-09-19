@@ -148,7 +148,13 @@ classdef mouse_manager < handle
             
             %Determine appropriate cursor
             %----------------------------
-            ptr = h__getInfoByMousePosition(obj,x,y,false);
+            try
+                  ptr = h__getInfoByMousePosition(obj,x,y,false);
+            catch ME
+               if strcmp(ME.identifier,'MATLAB:class:InvalidHandle')
+                  return 
+               end
+            end
             
             if isempty(ptr)
                 return;

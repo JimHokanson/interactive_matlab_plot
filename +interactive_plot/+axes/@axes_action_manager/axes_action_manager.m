@@ -91,7 +91,7 @@ classdef axes_action_manager < handle
             obj.xy_positions = xy_positions;
             obj.axes_props = obj.settings.axes_props;
             
-            c = uicontextmenu;
+            c = uicontextmenu(obj.h_fig);
             uimenu(c,'Label','data select','Callback',@(~,~)obj.setActiveAction(4));
             uimenu(c,'Label','horizontal zoom','Callback',@(~,~)obj.setActiveAction(1));
             uimenu(c,'Label','vertical zoom','Callback',@(~,~)obj.setActiveAction(2));

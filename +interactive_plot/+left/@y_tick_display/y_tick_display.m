@@ -73,6 +73,7 @@ classdef y_tick_display < handle
             %=> 5,50,500 etc
             %
             %   Along with multiples of these, e.g. 2,4,6,8
+            try
             BASE_OPTIONS = [1 2 5 10];
             
             PIXEL_BUFFER = 5; %pixels
@@ -161,6 +162,13 @@ classdef y_tick_display < handle
 %             yruler.Exponent = 0;
 %             yruler.TickLabelFormat = format;
             set(h_axes,'YTick',y_ticks);
+            catch ME
+               if strcmp(ME.identifier,'MATLAB:class:InvalidHandle')
+                  %do nothing
+               else
+                   rethrow(ME)
+               end
+            end
             
         end
     end

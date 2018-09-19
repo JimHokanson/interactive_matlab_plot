@@ -34,13 +34,18 @@ classdef options < handle
         comments  = false %logical, default false
         %If true then an area to add comments is shown on the screen
         
-        axes_names = []
+        axes_names
+        %This should be a cellstr, with one string per axes
+        
+        title
         
         default_units = {};
     end
     
     properties
-        y_lim_auto = []; %logical
+        y_lim_auto %logical
+        %??? - can this be a scalar?
+        %TODO: Link to relevant processor
         
         update_on_drag = true
         %If true, the plots update as the scroll bar is dragged. Otherwise
@@ -54,6 +59,7 @@ classdef options < handle
     end
     
     properties
+        %TODO: These need to be documented ...
         x_stream_in_scale = 0.333
         x_stream_out_scale = 0.5;
         

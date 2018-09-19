@@ -90,6 +90,22 @@ classdef interactive_plot < handle
             %   ---------------
             %   **** See interactive_plot.options for all options. ****
             %
+            %   Options example
+            %   ---------------
+            %   %1) Modify and pass in an options instance
+            %   options = interactive_plot.options;
+            %   names = {'chan1' 'chan2' 'chan3'};
+            %   options.axes_names = names;
+            %   iplot = interactive_plot(fig_handle, axes_handles, options)
+            %
+            %   %2) Pass in the prop/value pairs directly
+            %   %Properties are the properties of the options class
+            %   iplot = interactive_plot(fig_handle, axes_handles,
+            %                                   'axes_names',names)
+            
+            %TODO: If for some reason the axes handles don't have
+            %fig_handle as the parent we will run into problems.
+            %This should be checked explicitly
             
             %JAH: Had remote desktop active
             %TODO: Verify proper renderer
@@ -103,7 +119,6 @@ classdef interactive_plot < handle
             
             obj.shared_props = shared;
             
-
             %Moved into a function to remove size from this file
             obj.initialize(shared,fig_handle,axes_handles);
 

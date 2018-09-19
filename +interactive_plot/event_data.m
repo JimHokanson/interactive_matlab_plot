@@ -9,6 +9,8 @@ classdef (ConstructOnLoad) event_data < event.EventData
     %   sent out for a notify call must inherit from the listed superclass
     %   and must be ConstructOnLoad. 
     %
+    %   JAH TODO: Document how this is used in the code base
+    %
     %   https://www.mathworks.com/help/matlab/matlab_oop/class-with-custom-event-data.html
     %
     %   See Also

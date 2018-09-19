@@ -89,6 +89,8 @@ classdef x_zoom < handle
             end
         end
         function cb_zoomOut(obj)
+            %TODO: If we are zoomed out to the max already it would be nice
+            %to display a warning indicating that we can't zoom out anymore
             if obj.auto_scroll_enabled
                 %Note that we don't actually change the plot. We just wait
                 %until the next streaming event when time is adjusted
