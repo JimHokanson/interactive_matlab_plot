@@ -22,6 +22,9 @@ classdef axes_props < handle
         data_ptrs %cell of either [] or big_plot.line_data_pointer
         eventz          %interative_plot.eventz
         
+        %These are modified by:
+        %   - interactive_plot.scroll_bar
+        %   - others??
         x_min
         x_max
         
@@ -34,13 +37,18 @@ classdef axes_props < handle
         n_axes
     end
     properties (Dependent)
-        y_min
-        y_max
+        cur_xlim
+        y_min %[1 n]
+        y_max %[1 n]
         has_calibration
         clean_names
     end
     
     methods
+        function value = get.cur_xlim(obj)
+            ax = obj.axes_handles{1};
+            value = ax.XLim;
+        end
         function value = get.y_min(obj)
             value = zeros(1,obj.n_axes);
             for i = 1:obj.n_axes

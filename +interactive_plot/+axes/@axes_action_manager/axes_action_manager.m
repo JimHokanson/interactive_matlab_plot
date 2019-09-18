@@ -124,6 +124,9 @@ classdef axes_action_manager < handle
                 obj.x_zoom_axes_idx = [];
                 obj.y_zoom_axes_idx = [];
                 
+                
+                %TODO: JAH 2019-03 - I think this is wrong
+                %why keep track of this on a per row basis???
                 obj.initial_x_ranges = zeros(length(obj.axes_handles), 2);
                 % [left1, right1 ...
                 %  left2, right2]
@@ -142,6 +145,18 @@ classdef axes_action_manager < handle
             %
             %    - cursor update ...
             %    - set mouse down action ...
+            %
+            %
+            %   Inputs
+            %   ------
+            %   is_action : 
+            %       - false - mouse is moving
+            %       - true - mouse is down
+            %   
+            %   See Also
+            %   --------
+            %   interactive_plot.mouse_manager>defaultMouseMovingCallback
+            %   interactive_plot.mouse_manager>defaultMouseDownCallback
             
             %https://undocumentedmatlab.com/blog/undocumented-mouse-pointer-functions
             
@@ -210,19 +225,37 @@ classdef axes_action_manager < handle
     %Selected Data Methods =========================
     methods
         function plotDataInNewWindow(obj)
+            %
             if ~isempty(obj.selected_data)
                 I = obj.selected_axes_I;
                 
                 d = obj.selected_data;
                 
-                s = obj.settings.axes_props.getRawLineData(...
+                s = obj.axes_props.getRawLineData(...
                     I,'get_x_data',true,'xlim',d.x_range);
                 
                 figure()
                 %plot(s.x,s.y_final);
                 plotBig(s.x,s.y_final)
             else
-                error('Unable to expand plot without selected data')
+                
+                %Ask which channels to plot
+                %- time is based on current zoom level
+                
+                x_range = obj.axes_props.cur_xlim;
+                names = obj.axes_props.names;
+                [I,selection_made] = listdlg('ListString',names);
+                if selection_made && ~isempty(I)
+                    figure()
+                    n_I = length(I);
+                    for i = 1:n_I
+                        s = obj.settings.axes_props.getRawLineData(...
+                            I(i),'get_x_data',true,'xlim',x_range); 
+                        subplot(n_I,1,i)
+                        plotBig(s.x,s.y_final);
+                    end
+                end
+                %error('Unable to expand plot without selected data')
             end
         end
         function calibrateData(obj)
@@ -233,8 +266,8 @@ classdef axes_action_manager < handle
             %TODO: Rescale ylim following calibration i.e. if we double
             %the data, double the ylim
             %
-            %- This gets tricky if we are calibrating on already calibrated
-            %  data.
+            %- This gets really tricky if we are calibrating on already 
+            %   calibrated data.
             
 
             

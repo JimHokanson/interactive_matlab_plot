@@ -18,6 +18,8 @@ classdef fig_menu < handle
             %2017b specific 'Text'
             m = uimenu(obj.h_fig,'Text','File');
             mitem = uimenu(m,'Text','Save Calibrations','MenuSelectedFcn',@(~,~)shared.session.saveCalibrations);
+          	%mitem = uimenu(m,'Text','Save Calibrations','MenuSelectedFcn',@(~,~)shared.session.saveCalibrations);
+
         end
     end
 end

@@ -23,7 +23,7 @@ classdef scroll_bar <handle
         options
         fig_handle
         axes_props
-        h_axes
+        h_axes %handle to the first axes ...
         
         scroll_left_limit
         scroll_right_limit
